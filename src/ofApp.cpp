@@ -6,9 +6,9 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(239);
+	ofBackground(39);
 
-	for (int i = 0; i < 25; i++) {
+	for (int i = 0; i < 9; i++) {
 
 		this->param_list.push_back(glm::vec3(ofRandom(1000), ofRandom(1000), ofRandom(1000)));
 	}
@@ -24,16 +24,16 @@ void ofApp::draw() {
 
 	ofTranslate(ofGetWindowSize() * 0.5);
 
-	auto len = 25;
+	auto len = 15;
 
 	for (int k = 0; k < this->param_list.size(); k++) {
 
-		auto head_size = 5;
+		auto head_size = 16;
 		ofSetColor(255);
 		for (int j = 0; j < 2; j++) {
 
 			ofPushMatrix();
-			ofTranslate((k % 5) * 144 - 288, (k / 5) * 144 - 288);
+			ofTranslate((k % 3) * 240 - 240, (k / 3) * 240 - 240);
 
 			ofMesh mesh;
 			vector<glm::vec3> right, left, frame;
@@ -43,10 +43,10 @@ void ofApp::draw() {
 
 			for (int i = 0; i < len; i++) {
 
-				auto noise_deg = ofMap(ofNoise(this->param_list[k].x, (ofGetFrameNum() + i) * 0.01), 0, 1, -360, 360);
-				auto noise_radius = ofMap(ofNoise(this->param_list[k].y, (ofGetFrameNum() + i) * 0.015), 0, 1, -70, 70);
-				auto next_noise_deg = ofMap(ofNoise(this->param_list[k].x, (ofGetFrameNum() + i + 1) * 0.01), 0, 1, -360, 360);
-				auto next_noise_radius = ofMap(ofNoise(this->param_list[k].y, (ofGetFrameNum() + i + 1) * 0.015), 0, 1, -70, 70);
+				auto noise_deg = ofMap(ofNoise(this->param_list[k].x, (ofGetFrameNum() + i) * 0.0025), 0, 1, -360, 360);
+				auto noise_radius = ofMap(ofNoise(this->param_list[k].y, (ofGetFrameNum() + i) * 0.015), 0, 1, -110, 110);
+				auto next_noise_deg = ofMap(ofNoise(this->param_list[k].x, (ofGetFrameNum() + i + 1) * 0.0025), 0, 1, -360, 360);
+				auto next_noise_radius = ofMap(ofNoise(this->param_list[k].y, (ofGetFrameNum() + i + 1) * 0.015), 0, 1, -110, 110);
 
 				auto location = glm::vec3(noise_radius * cos(noise_deg * DEG_TO_RAD), noise_radius * sin(noise_deg * DEG_TO_RAD), 0);
 				auto next = glm::vec3(next_noise_radius * cos(next_noise_deg * DEG_TO_RAD), next_noise_radius * sin(next_noise_deg * DEG_TO_RAD), 0);
@@ -54,8 +54,8 @@ void ofApp::draw() {
 				auto direction = next - location;
 				auto theta = atan2(direction.y, direction.x);
 
-				right.push_back(location + glm::vec3(ofMap(i, 0, len, 0, head_size) * cos(theta + PI * 0.5), ofMap(i, 0, 25, 0, head_size) * sin(theta + PI * 0.5), 0));
-				left.push_back(location + glm::vec3(ofMap(i, 0, len, 0, head_size) * cos(theta - PI * 0.5), ofMap(i, 0, 25, 0, head_size) * sin(theta - PI * 0.5), 0));
+				right.push_back(location + glm::vec3(ofMap(i, 0, len, 0, head_size) * cos(theta + PI * 0.5), ofMap(i, 0, 16, 0, head_size) * sin(theta + PI * 0.5), 0));
+				left.push_back(location + glm::vec3(ofMap(i, 0, len, 0, head_size) * cos(theta - PI * 0.5), ofMap(i, 0, 16, 0, head_size) * sin(theta - PI * 0.5), 0));
 
 				last_location = location;
 				last_theta = theta;
@@ -91,10 +91,9 @@ void ofApp::draw() {
 
 			if (abs(last_radius) < 2) { this->param_list[k].z += 0.1; }
 
-			//int span = ofMap(ofNoise(this->param_list[k].z), 0, 1, 1, 7);
-			int span = 5;
+			int span = 8;
 			int deg_span = 360 / span;
-			for (int deg = 0; deg < 360; deg += 30) {
+			for (int deg = 0; deg < 360; deg += deg_span) {
 
 				ofRotate(deg_span);
 				mesh.draw();
@@ -102,9 +101,9 @@ void ofApp::draw() {
 
 			ofPopMatrix();
 
-			head_size -= 3;
+			head_size -= 1;
 
-			ofSetColor(ofColor(0));
+			ofSetColor(ofColor(39));
 		}
 	}
 
