@@ -6,7 +6,8 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
+	ofBackground(39);
+	ofSetColor(255);
 	ofSetRectMode(ofRectMode::OF_RECTMODE_CENTER);
 
 	this->noise_param = ofRandom(1000);
@@ -15,7 +16,7 @@ void ofApp::setup() {
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	this->noise_param += 0.01;
+	this->noise_param += 0.001;
 }
 
 //--------------------------------------------------------------
@@ -26,19 +27,21 @@ void ofApp::draw() {
 		for (int y = 0; y < ofGetWindowHeight(); y += 1) {
 
 			auto location = glm::vec2(x, y);
-			auto noise_value = ofNoise(x * 0.0075, y * 0.0075, this->noise_param );
+			auto noise_value = ofNoise(x * 0.005, y * 0.005, this->noise_param );
 
-			if ((noise_value > 0.32 && noise_value < 0.38) || (noise_value > 0.62 && noise_value < 0.68)) {
+			for (float i = 0; i < 10; i += 1) {
 
-				ofSetColor(0);
-				ofDrawRectangle(location, 1, 1);
+				if (noise_value > i * 0.1 + 0.043 && noise_value < i * 0.1 + 0.057) {
+
+					ofDrawRectangle(location, 1, 1);
+				}
 			}
 		}
 	}
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 500;
+	int start = 5;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
