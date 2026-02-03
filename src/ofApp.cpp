@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofEnableDepthTest();
 
 	this->frame.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
@@ -22,8 +22,8 @@ void ofApp::update() {
 	auto noise_seed = glm::vec2(ofRandom(1000), ofRandom(1000));
 	for (auto radius = 60; radius <= 360; radius += 15) {
 
-		auto angle_x = ofMap(ofNoise(noise_seed.x, ofGetFrameNum() * -0.01 + radius * 0.0025), 0, 1, -60, 60);
-		auto angle_y = ofMap(ofNoise(noise_seed.y, ofGetFrameNum() * -0.01 + radius * 0.0025), 0, 1, -60, 60);
+		auto angle_x = ofMap(ofNoise(noise_seed.x, ofGetFrameNum() * -0.01 + radius * 0.0025), 0, 1, -30, 30);
+		auto angle_y = ofMap(ofNoise(noise_seed.y, ofGetFrameNum() * -0.01 + radius * 0.0025), 0, 1, -30, 30);
 		this->setRingToMesh(this->face, this->frame, glm::vec3(), radius, 3, 10, angle_x * DEG_TO_RAD, angle_y * DEG_TO_RAD);
 	}
 }
@@ -33,12 +33,11 @@ void ofApp::draw() {
 
 	this->cam.begin();
 	ofRotateX(180);
-	ofRotateY(ofGetFrameNum() * 1.44);
 
 	ofSetColor(0);
 	this->face.draw();
 
-	ofSetColor(255, 0, 128);
+	ofSetColor(128, 0, 255);
 	this->frame.drawWireframe();
 
 	this->cam.end();
@@ -67,7 +66,7 @@ void ofApp::setRingToMesh(ofMesh& face_target, ofMesh& frame_target, glm::vec3 l
 	auto rotation_x = glm::rotate(glm::mat4(), angle_x, glm::vec3(1, 0, 0));
 	auto rotation_y = glm::rotate(glm::mat4(), angle_y, glm::vec3(0, 1, 0));
 
-	int deg_span = 60;
+	int deg_span = 360 / (int)ofMap(ofNoise(radius * 0.005 - ofGetFrameNum() * 0.05), 0, 1, 3, 8);
 	for (int deg = 0; deg < 360; deg += deg_span) {
 
 		auto face_index = face_target.getNumVertices();
