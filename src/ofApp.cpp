@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofEnableDepthTest();
 }
 
@@ -28,56 +28,63 @@ void ofApp::draw() {
 	ofMesh face, line;
 	line.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
 
-	float noise_seed = ofRandom(1000);
-	for (int v = 0; v <= 360; v += v_span * 1.5) {
+	ofColor line_color;
 
-		int u_start = ofMap(ofNoise(noise_seed, cos(v * DEG_TO_RAD) * 0.35, sin(v * DEG_TO_RAD) * 0.35, ofGetFrameNum() * 0.015), 0, 1, -360, 360);
-		int next_u = ofMap(ofNoise(noise_seed, cos((v + v_span * 0.9) * DEG_TO_RAD) * 0.35, sin((v + v_span * 0.9) * DEG_TO_RAD) * 0.35, ofGetFrameNum() * 0.015), 0, 1, -360, 360);
+	for (int i = 0; i < 2; i++) {
 
-		int r = ofMap(ofNoise(noise_seed, cos(v * DEG_TO_RAD) * 0.25, sin(v * DEG_TO_RAD) * 0.25, ofGetFrameNum() * 0.03), 0, 1, -100, 100);
-		int next_r = ofMap(ofNoise(noise_seed, cos((v + v_span * 0.9) * DEG_TO_RAD) * 0.25, sin((v + v_span * 0.9) * DEG_TO_RAD) * 0.25, ofGetFrameNum() * 0.03), 0, 1, -100, 100);
-	
-		for (int u = u_start; u < u_start + 360; u += u_span) {
+		int v_start = i * v_span * 0.75;
+		line_color.setHsb(ofMap(i, 0, 2, 0, 255), 200, 255);
 
-			face.addVertex(this->make_point(R, r, u, v));
-			face.addVertex(this->make_point(R, r, u + u_span, v));
-			face.addVertex(this->make_point(R, next_r, next_u + u_span, v + v_span * 0.5));
-			face.addVertex(this->make_point(R, next_r, next_u, v + v_span * 0.5));
+		float noise_seed = ofRandom(1000);
+		for (int v = v_start; v <= v_start + 360; v += v_span * 1.5) {
 
-			line.addVertex(this->make_point(R, r, u, v));
-			line.addVertex(this->make_point(R, r, u + u_span, v));
-			line.addVertex(this->make_point(R, next_r, next_u + u_span, v + v_span * 0.5));
-			line.addVertex(this->make_point(R, next_r, next_u, v + v_span * 0.5));
+			int u_start = ofMap(ofNoise(noise_seed, cos(v * DEG_TO_RAD) * 0.35, sin(v * DEG_TO_RAD) * 0.35, ofGetFrameNum() * 0.015), 0, 1, -360, 360);
+			int next_u = ofMap(ofNoise(noise_seed, cos((v + v_span * 0.9) * DEG_TO_RAD) * 0.35, sin((v + v_span * 0.9) * DEG_TO_RAD) * 0.35, ofGetFrameNum() * 0.015), 0, 1, -360, 360);
 
-			ofColor face_color = ofColor(0);
-			ofColor line_color = ofColor(239, 39, 39);
+			int r = ofMap(ofNoise(noise_seed, cos(v * DEG_TO_RAD) * 0.25, sin(v * DEG_TO_RAD) * 0.25, ofGetFrameNum() * 0.03), 0, 1, 0, 100);
+			int next_r = ofMap(ofNoise(noise_seed, cos((v + v_span * 0.9) * DEG_TO_RAD) * 0.25, sin((v + v_span * 0.9) * DEG_TO_RAD) * 0.25, ofGetFrameNum() * 0.03), 0, 1, 0, 100);
 
-			face.addColor(face_color);
-			face.addColor(face_color);
-			face.addColor(face_color);
-			face.addColor(face_color);
+			for (int u = u_start; u < u_start + 360; u += u_span) {
 
-			line.addColor(line_color);
-			line.addColor(line_color);
-			line.addColor(line_color);
-			line.addColor(line_color);
+				face.addVertex(this->make_point(R, r, u, v));
+				face.addVertex(this->make_point(R, r, u + u_span, v));
+				face.addVertex(this->make_point(R, next_r, next_u + u_span, v + v_span * 0.5));
+				face.addVertex(this->make_point(R, next_r, next_u, v + v_span * 0.5));
 
-			face.addIndex(face.getNumVertices() - 1); face.addIndex(face.getNumVertices() - 2); face.addIndex(face.getNumVertices() - 3);
-			face.addIndex(face.getNumVertices() - 1); face.addIndex(face.getNumVertices() - 3); face.addIndex(face.getNumVertices() - 4);
+				line.addVertex(this->make_point(R, r, u, v));
+				line.addVertex(this->make_point(R, r, u + u_span, v));
+				line.addVertex(this->make_point(R, next_r, next_u + u_span, v + v_span * 0.5));
+				line.addVertex(this->make_point(R, next_r, next_u, v + v_span * 0.5));
 
-			line.addIndex(line.getNumVertices() - 1); line.addIndex(line.getNumVertices() - 4);
-			line.addIndex(line.getNumVertices() - 2); line.addIndex(line.getNumVertices() - 3);
+				ofColor face_color = ofColor(0);
 
-			line.addIndex(line.getNumVertices() - 1); line.addIndex(line.getNumVertices() - 2);
-			line.addIndex(line.getNumVertices() - 3); line.addIndex(line.getNumVertices() - 4);
+				face.addColor(face_color);
+				face.addColor(face_color);
+				face.addColor(face_color);
+				face.addColor(face_color);
 
-			if (v > 0) {
+				line.addColor(line_color);
+				line.addColor(line_color);
+				line.addColor(line_color);
+				line.addColor(line_color);
 
-				line.addIndex(line.getNumVertices() - 4); line.addIndex(line.getNumVertices() - 17);
+				face.addIndex(face.getNumVertices() - 1); face.addIndex(face.getNumVertices() - 2); face.addIndex(face.getNumVertices() - 3);
+				face.addIndex(face.getNumVertices() - 1); face.addIndex(face.getNumVertices() - 3); face.addIndex(face.getNumVertices() - 4);
+
+				line.addIndex(line.getNumVertices() - 1); line.addIndex(line.getNumVertices() - 4);
+				line.addIndex(line.getNumVertices() - 2); line.addIndex(line.getNumVertices() - 3);
+
+				line.addIndex(line.getNumVertices() - 1); line.addIndex(line.getNumVertices() - 2);
+				line.addIndex(line.getNumVertices() - 3); line.addIndex(line.getNumVertices() - 4);
+
+				if (v > 0) {
+
+					line.addIndex(line.getNumVertices() - 4); line.addIndex(line.getNumVertices() - 17);
+				}
+
+				next_u += u_span;
+
 			}
-
-			next_u += u_span;
-
 		}
 	}
 
