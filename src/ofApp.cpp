@@ -1,98 +1,94 @@
-#include "ofApp.h"
+#include "ofApp.h"	
 
 //--------------------------------------------------------------
 void ofApp::setup() {
 
 	ofSetFrameRate(25);
-	ofSetWindowTitle("openframeworks");
+	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(39);
-	ofEnableDepthTest();
+	ofBackground(239);
+	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_SUBTRACT);
+	ofNoFill();
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	ofSeedRandom(39);
+	ofColor color;
+	for (int i = 0; i < 20; i++) {
+
+		auto deg = ofRandom(360);
+		auto start_radius = ofRandom(2) < 1 ? 190 : 310;
+		auto location = glm::vec2(start_radius * cos(deg * DEG_TO_RAD), start_radius * sin(deg * DEG_TO_RAD));
+
+		color.setHsb(start_radius == 190 ? 0 : 128, 255, 255);
+
+		vector<glm::vec2> log;
+		log.push_back(location);
+		this->log_list.push_back(log);
+		this->color_list.push_back(color);
+		this->life_list.push_back(ofRandom(100, 150));
+	}
+
+	int radius = 4;
+	for (int i = this->log_list.size() - 1; i >= 0; i--) {
+
+		this->life_list[i] -= 1;
+		if (this->life_list[i] < 0) {
+
+			this->log_list.erase(this->log_list.begin() + i);
+			this->color_list.erase(this->color_list.begin() + i);
+			this->life_list.erase(this->life_list.begin() + i);
+
+			continue;
+		}
+
+		int count = 0;
+		while (true) {
+
+			auto deg = ofMap(ofNoise(glm::vec3(this->log_list[i].back() * 0.01, count * 0.01 + ofGetFrameNum() * 0.01)), 0, 1, -360, 360);
+			auto tmp = this->log_list[i].back() + glm::vec2(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD));
+			if (glm::length(tmp) > 190 && glm::length(tmp) < 310) {
+
+				this->log_list[i].push_back(this->log_list[i].back() + glm::vec2(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD)));
+				break;
+			}
+			else {
+
+				count++;
+			}
+		}
+		while (this->log_list[i].size() > 600) {
+
+			this->log_list[i].erase(this->log_list[i].begin());
+		}
+	}
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-	this->cam.begin();
+	ofTranslate(ofGetWidth() * 0.5, ofGetHeight() * 0.5);
+	ofRotateZ(90);
 
-	int v_span = 8;
-	int u_span = 90;
-	int R = 200;
+	for (int i = 0; i < this->log_list.size(); i++) {
 
-	ofMesh face, line;
-	line.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
+		if (this->life_list[i] > 80) {
 
-	ofColor line_color;
-
-	for (int i = 0; i < 2; i++) {
-
-		int v_start = i * v_span * 0.75;
-		line_color.setHsb(ofMap(i, 0, 2, 0, 255), 200, 255);
-
-		float noise_seed = ofRandom(1000);
-		for (int v = v_start; v <= v_start + 360; v += v_span * 1.5) {
-
-			int u_start = ofMap(ofNoise(noise_seed, cos(v * DEG_TO_RAD) * 0.35, sin(v * DEG_TO_RAD) * 0.35, ofGetFrameNum() * 0.015), 0, 1, -360, 360);
-			int next_u = ofMap(ofNoise(noise_seed, cos((v + v_span * 0.9) * DEG_TO_RAD) * 0.35, sin((v + v_span * 0.9) * DEG_TO_RAD) * 0.35, ofGetFrameNum() * 0.015), 0, 1, -360, 360);
-
-			int r = ofMap(ofNoise(noise_seed, cos(v * DEG_TO_RAD) * 0.25, sin(v * DEG_TO_RAD) * 0.25, ofGetFrameNum() * 0.03), 0, 1, 0, 100);
-			int next_r = ofMap(ofNoise(noise_seed, cos((v + v_span * 0.9) * DEG_TO_RAD) * 0.25, sin((v + v_span * 0.9) * DEG_TO_RAD) * 0.25, ofGetFrameNum() * 0.03), 0, 1, 0, 100);
-
-			for (int u = u_start; u < u_start + 360; u += u_span) {
-
-				face.addVertex(this->make_point(R, r, u, v));
-				face.addVertex(this->make_point(R, r, u + u_span, v));
-				face.addVertex(this->make_point(R, next_r, next_u + u_span, v + v_span * 0.5));
-				face.addVertex(this->make_point(R, next_r, next_u, v + v_span * 0.5));
-
-				line.addVertex(this->make_point(R, r, u, v));
-				line.addVertex(this->make_point(R, r, u + u_span, v));
-				line.addVertex(this->make_point(R, next_r, next_u + u_span, v + v_span * 0.5));
-				line.addVertex(this->make_point(R, next_r, next_u, v + v_span * 0.5));
-
-				ofColor face_color = ofColor(0);
-
-				face.addColor(face_color);
-				face.addColor(face_color);
-				face.addColor(face_color);
-				face.addColor(face_color);
-
-				line.addColor(line_color);
-				line.addColor(line_color);
-				line.addColor(line_color);
-				line.addColor(line_color);
-
-				face.addIndex(face.getNumVertices() - 1); face.addIndex(face.getNumVertices() - 2); face.addIndex(face.getNumVertices() - 3);
-				face.addIndex(face.getNumVertices() - 1); face.addIndex(face.getNumVertices() - 3); face.addIndex(face.getNumVertices() - 4);
-
-				line.addIndex(line.getNumVertices() - 1); line.addIndex(line.getNumVertices() - 4);
-				line.addIndex(line.getNumVertices() - 2); line.addIndex(line.getNumVertices() - 3);
-
-				line.addIndex(line.getNumVertices() - 1); line.addIndex(line.getNumVertices() - 2);
-				line.addIndex(line.getNumVertices() - 3); line.addIndex(line.getNumVertices() - 4);
-
-				if (v > 0) {
-
-					line.addIndex(line.getNumVertices() - 4); line.addIndex(line.getNumVertices() - 17);
-				}
-
-				next_u += u_span;
-
-			}
+			ofSetColor(this->color_list[i]);
+			ofSetLineWidth(2);
 		}
+		else {
+
+			ofSetColor(ofColor(this->color_list[i], ofMap(this->life_list[i], 0, 80, 0, 255)));
+			ofSetLineWidth(ofMap(this->life_list[i], 0, 80, 0, 2));
+		}
+
+		ofBeginShape();
+		ofVertices(this->log_list[i]);
+		ofEndShape();
 	}
-
-	face.drawFaces();
-	line.drawWireframe();
-
-	this->cam.end();
-
+	
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
 	int start = 500;
@@ -109,21 +105,6 @@ void ofApp::draw() {
 		}
 	}
 	*/
-}
-
-//--------------------------------------------------------------
-glm::vec3 ofApp::make_point(float R, float r, float u, float v) {
-
-	// 数学デッサン教室 描いて楽しむ数学たち　P.31
-
-	u *= DEG_TO_RAD;
-	v *= DEG_TO_RAD;
-
-	auto x = (R + r * cos(u)) * cos(v);
-	auto y = (R + r * cos(u)) * sin(v);
-	auto z = r * sin(u);
-
-	return glm::vec3(x, y, z);
 }
 
 //--------------------------------------------------------------
