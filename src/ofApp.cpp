@@ -1,69 +1,18 @@
-#include "ofApp.h"	
+#include "ofApp.h"
 
 //--------------------------------------------------------------
 void ofApp::setup() {
 
 	ofSetFrameRate(25);
-	ofSetWindowTitle("openFrameworks");
+	ofSetWindowTitle("openframeworks");
 
-	ofBackground(39);
-	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
-	ofNoFill();
+	ofBackground(239);
+	ofSetLineWidth(2);
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	ofColor color;
-	for (int i = 0; i < 20; i++) {
-
-		auto deg = ofRandom(360);
-		auto start_radius = ofRandom(2) < 1 ? 180 : 320;
-		auto location = glm::vec2(start_radius * cos(deg * DEG_TO_RAD), start_radius * sin(deg * DEG_TO_RAD));
-
-		color.setHsb(start_radius == 180 ? ofRandom(60, 80) : ofRandom(190, 210), 200, 255);
-
-		vector<glm::vec2> log;
-		log.push_back(location);
-		this->log_list.push_back(log);
-		this->color_list.push_back(color);
-		this->life_list.push_back(ofRandom(100, 150));
-	}
-
-	int radius = 4;
-	for (int i = this->log_list.size() - 1; i >= 0; i--) {
-
-		this->life_list[i] -= 1;
-		if (this->life_list[i] < 0) {
-
-			this->log_list.erase(this->log_list.begin() + i);
-			this->color_list.erase(this->color_list.begin() + i);
-			this->life_list.erase(this->life_list.begin() + i);
-
-			continue;
-		}
-
-		int count = 0;
-		while (true) {
-
-			auto deg = ofMap(ofNoise(glm::vec3(this->log_list[i].back() * 0.01, count * 0.01 + ofGetFrameNum() * 0.01)), 0, 1, -360, 360);
-			auto tmp = this->log_list[i].back() + glm::vec2(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD));
-			if (glm::length(tmp) > 180 && glm::length(tmp) < 320) {
-
-				this->log_list[i].push_back(this->log_list[i].back() + glm::vec2(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD)));
-				break;
-			}
-			else {
-
-				count++;
-			}
-		}
-
-		while (this->log_list[i].size() > 100) {
-
-			this->log_list[i].erase(this->log_list[i].begin());
-		}
-	}
 }
 
 //--------------------------------------------------------------
@@ -71,29 +20,29 @@ void ofApp::draw() {
 
 	ofTranslate(ofGetWindowSize() * 0.5);
 
-	for (int i = 0; i < this->log_list.size(); i++) {
+	for (int k = 0; k < 18; k++) {
 
-		ofPushMatrix();
+		ofRotate(5);
 
-		int t = this->color_list[i].getHue();
-		t >= 190 && t <= 210 ? ofRotateZ(ofGetFrameNum() * 0.36) : ofRotateZ(ofGetFrameNum() * -0.36);
+		vector<glm::vec2> vertices;
+		for (int i = 0; i < 65; i++) {
 
-		if (this->life_list[i] > 80) {
+			auto radius = ofMap(sin((ofGetFrameNum() + i) * 0.314 * 0.75), -1, 1, 200, 300);
+			auto deg = (ofGetFrameNum() + i) * 4;
+			auto location = glm::vec2(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD));
 
-			ofSetColor(this->color_list[i]);
-			ofSetLineWidth(1);
-		}
-		else {
-
-			ofSetColor(ofColor(this->color_list[i], ofMap(this->life_list[i], 0, 80, 0, 255)));
-			ofSetLineWidth(ofMap(this->life_list[i], 0, 80, 0, 1));
+			vertices.push_back(location);
 		}
 
+		ofSetColor(ofMap(k, 0, 18, 200, 39));
+
+		ofNoFill();
 		ofBeginShape();
-		ofVertices(this->log_list[i]);
+		ofVertices(vertices);
 		ofEndShape();
 
-		ofPopMatrix();
+		ofFill();
+		ofDrawCircle(vertices[vertices.size() - 1], 3);
 	}
 
 	/*

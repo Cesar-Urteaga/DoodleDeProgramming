@@ -17,8 +17,4 @@ public:
 	void windowResized(int w, int h) {};
 	void dragEvent(ofDragInfo dragInfo) {};
 	void gotMessage(ofMessage msg) {};
-
-	vector<vector<glm::vec2>> log_list;
-	vector<ofColor> color_list;
-	vector<float> life_list;
 };
