@@ -6,8 +6,8 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(239);
-	ofSetLineWidth(2);
+	ofBackground(39);
+	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
 }
 
 //--------------------------------------------------------------
@@ -20,29 +20,29 @@ void ofApp::draw() {
 
 	ofTranslate(ofGetWindowSize() * 0.5);
 
-	for (int k = 0; k < 18; k++) {
+	for (int m = 0; m < 7; m++) {
 
-		ofRotate(5);
+		for (int k = 0; k < 9; k++) {
 
-		vector<glm::vec2> vertices;
-		for (int i = 0; i < 65; i++) {
+			ofRotate(10);
 
-			auto radius = ofMap(sin((ofGetFrameNum() + i) * 0.314 * 0.75), -1, 1, 200, 300);
-			auto deg = (ofGetFrameNum() + i) * 4;
-			auto location = glm::vec2(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD));
+			vector<glm::vec2> vertices;
+			for (int i = 0; i < 65; i++) {
 
-			vertices.push_back(location);
+				auto radius = ofMap(sin((ofGetFrameNum() + i) * 0.314 * 0.75), -1, 1, 25 + m * 75, 60 + m * 75);
+				auto deg = (ofGetFrameNum() + i) * 4;
+				auto location = glm::vec2(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD));
+
+				vertices.push_back(location);
+			}
+
+			ofSetColor(ofMap(k, 0, 9, 39, 239), 39, 39);
+
+			ofNoFill();
+			ofBeginShape();
+			ofVertices(vertices);
+			ofEndShape();
 		}
-
-		ofSetColor(ofMap(k, 0, 18, 200, 39));
-
-		ofNoFill();
-		ofBeginShape();
-		ofVertices(vertices);
-		ofEndShape();
-
-		ofFill();
-		ofDrawCircle(vertices[vertices.size() - 1], 3);
 	}
 
 	/*
