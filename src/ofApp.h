@@ -14,7 +14,16 @@ public:
 	void mouseDragged(int x, int y, int button) {};
 	void mousePressed(int x, int y, int button) {};
 	void mouseReleased(int x, int y, int button) {};
+	void mouseEntered(int x, int y) {};
+	void mouseExited(int x, int y) {};
 	void windowResized(int w, int h) {};
 	void dragEvent(ofDragInfo dragInfo) {};
 	void gotMessage(ofMessage msg) {};
+
+	void setHexagonToMesh(ofMesh& face_target, ofMesh& frame_target, glm::vec3 location, float radius, float height);
+
+	vector<glm::vec3> location_list;
+
+	ofEasyCam cam;
+	ofMesh face, frame;
 };
