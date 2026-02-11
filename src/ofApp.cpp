@@ -6,30 +6,27 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofEnableDepthTest();
 
-	auto radius = 20;
+	auto radius = 30;
 	auto x_span = radius * sqrt(3);
 	auto flg = true;
-	for (float y = -330; y < 330; y += radius * 1.5) {
+	for (float y = -450; y <= 450; y += radius * 1.5) {
 
-		for (float x = -330; x < 330; x += x_span) {
+		for (float x = -450; x <= 450; x += x_span) {
 
-			for (float z = -150; z <= 150; z += 5) {
+			glm::vec3 location;
+			if (flg) {
 
-				glm::vec3 location;
-				if (flg) {
-
-					location = glm::vec3(x, y, z);
-				}
-				else {
-
-					location = glm::vec3(x + (x_span / 2), y, z);
-				}
-
-				this->location_list.push_back(location);
+				location = glm::vec3(x, y, 0);
 			}
+			else {
+
+				location = glm::vec3(x + (x_span / 2), y, 0);
+			}
+
+			this->location_list.push_back(location);
 		}
 		flg = !flg;
 	}
@@ -40,14 +37,18 @@ void ofApp::setup() {
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	ofSeedRandom(39);
-
 	this->face.clear();
 	this->frame.clear();
 
 	for (int i = 0; i < this->location_list.size(); i++) {
 
-		this->setHexagonToMesh(this->face, this->frame, this->location_list[i], 20, 5);
+		auto height = ofMap(ofNoise(this->location_list[i].x * 0.005, this->location_list[i].y * 0.005, ofGetFrameNum() * 0.005), 0, 1, 5, 700);
+
+		if (height < 350) {
+
+			height = 350;
+		}
+		this->setHexagonToMesh(this->face, this->frame, this->location_list[i], 30, height);
 	}
 
 }
@@ -57,9 +58,6 @@ void ofApp::draw() {
 
 	this->cam.begin();
 
-	ofRotateY(sin(ofGetFrameNum() * 0.0314) * 16);
-	ofRotateX(sin(ofGetFrameNum() * 0.0314) * 8);
-
 	this->face.draw();
 	this->frame.draw();
 
@@ -67,7 +65,7 @@ void ofApp::draw() {
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 250;
+	int start = 500;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
@@ -86,16 +84,11 @@ void ofApp::draw() {
 //--------------------------------------------------------------
 void ofApp::setHexagonToMesh(ofMesh& face_target, ofMesh& frame_target, glm::vec3 location, float radius, float height) {
 
-	ofColor face_color = ofColor(ofMap(location.z, -150, 150, 0, 255));
-	ofColor frame_color = ofColor(0);
+	ofColor face_color = ofColor(0);
+	ofColor frame_color = ofColor(255);
 
 	auto noise_param = ofNoise(location.x * 0.005, location.y * 0.005, location.z * 0.001, ofGetFrameNum() * 0.005);
 	auto face_radius = radius - 0.5;
-
-	if (noise_param < 0.45) {
-
-		return;
-	}
 
 	for (int deg = 90; deg < 450; deg += 60) {
 
