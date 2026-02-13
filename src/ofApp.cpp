@@ -6,8 +6,8 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
-	ofSetColor(39);
+	ofBackground(39);
+	ofSetColor(239);
 	ofNoFill();
 	ofSetCircleResolution(60);
 
@@ -23,49 +23,37 @@ void ofApp::update() {
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-	int span = 120;
-	for (int x = span * 1; x <= ofGetWindowWidth() - span * 1; x += span) {
+	auto center = glm::vec2(ofGetWindowSize() * 0.5);
+	auto radius = 340;
+	auto flag = ofRandom(100) < 50 ? true : false;
 
-		for (int y = span * 1; y <= ofGetWindowHeight() - span * 1; y += span) {
+	vector<glm::vec2> vertices;
+	for (int draw_radius = radius; draw_radius > 5;) {
 
-			auto center = glm::vec2(x, y);
-			auto radius = span * 0.75;
-			auto flag = ofRandom(100) < 50 ? true : false;
+		vertices.push_back(center);
 
-			vector<glm::vec2> vertices;
-			for (int draw_radius = radius; draw_radius > 5;) {
+		flag = !flag;
 
-				vertices.push_back(center);
+		auto tmp_radius = draw_radius;
+		draw_radius *= 0.8;
 
-				flag = !flag;
+		auto deg = ofMap(ofNoise(center.x * 0.0005, center.y * 0.0005, ofGetFrameNum() * 0.005), 0, 1, -720, 720);
+		auto center_radius = tmp_radius - draw_radius;
+		center = center + glm::vec2(center_radius * cos(deg * DEG_TO_RAD), center_radius * sin(deg * DEG_TO_RAD));
+	}
 
-				auto tmp_radius = draw_radius;
-				draw_radius *= ofRandom(0.4, 0.8);
+	ofBeginShape();
+	ofVertices(vertices);
+	ofEndShape();
 
-				auto deg = ofMap(ofNoise(ofRandom(1000), ofGetFrameNum() * 0.005), 0, 1, -720, 720);
-				auto center_radius = tmp_radius - draw_radius;
-				center = center + glm::vec2(center_radius * cos(deg * DEG_TO_RAD), center_radius * sin(deg * DEG_TO_RAD));
+	for (auto& vertex : vertices) {
 
-
-			}
-
-			ofNoFill();
-
-			ofBeginShape();
-			ofVertices(vertices);
-			ofEndShape();
-
-			ofFill();
-			for (auto& vertex : vertices) {
-
-				ofDrawCircle(vertex, 3);
-			}
-		}
+		ofDrawCircle(vertex, 5);
 	}
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 500;
+	int start = 1;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
