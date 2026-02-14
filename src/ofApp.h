@@ -18,5 +18,8 @@ public:
 	void dragEvent(ofDragInfo dragInfo) {};
 	void gotMessage(ofMessage msg) {};
 
-	float seed_value;
+	vector<vector<glm::vec2>> log_list;
+	vector<glm::vec2> velocity_list;
+	vector<float> noise_seed_list;
+	vector<ofColor> color_list;
 };

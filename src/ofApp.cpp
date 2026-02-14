@@ -4,56 +4,83 @@
 void ofApp::setup() {
 
 	ofSetFrameRate(25);
-	ofSetWindowTitle("openFrameworks");
+	ofSetWindowTitle("openframeworks");
 
-	ofBackground(39);
-	ofSetColor(239);
-	ofNoFill();
-	ofSetCircleResolution(60);
-
-	this->seed_value = ofRandom(1000);
+	ofBackground(239);
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	ofSeedRandom(this->seed_value);
+	ofColor color;
+	for (int i = 0; i < 75; i++) {
+
+		auto noise_location = glm::vec2(
+			ofMap(ofNoise(39 + i * 1000, ofGetFrameNum() * 0.0015), 0, 1, -600, 600),
+			ofMap(ofNoise(239 + i * 1000, ofGetFrameNum() * 0.0015), 0, 1, -600, 600));
+		noise_location = glm::length(noise_location) < 500 ? noise_location : glm::normalize(noise_location) * 500;
+
+		auto next_noise_location = glm::vec2(
+			ofMap(ofNoise(39 + i * 1000, (ofGetFrameNum() + 1) * 0.0015), 0, 1, -600, 600),
+			ofMap(ofNoise(239 + i * 1000, (ofGetFrameNum() + 1) * 0.0015), 0, 1, -600, 600));
+		next_noise_location = glm::length(next_noise_location) < 500 ? next_noise_location : glm::normalize(next_noise_location) * 500;
+
+		vector<glm::vec2> log;
+		log.push_back(noise_location);
+		this->log_list.push_back(log);
+
+		auto deg = glm::atan(next_noise_location.y - noise_location.y, next_noise_location.x - noise_location.x) * RAD_TO_DEG + 180 + ofRandom(-15, 15);
+		glm::vec2 velocity = glm::vec2(cos(deg * DEG_TO_RAD), sin(deg * DEG_TO_RAD));
+		this->velocity_list.push_back(velocity);
+
+		this->noise_seed_list.push_back(ofRandom(1000));
+
+		color.setHsb(ofMap(i % 3, 0, 3, 0, 255), 200, 255);
+		this->color_list.push_back(color);
+	}
+
+	for (int i = 0; i < this->log_list.size(); i++) {
+
+		auto future = this->velocity_list[i] * 200;
+		auto random_deg = ofMap(ofNoise(glm::vec2(this->noise_seed_list[i], ofGetFrameNum() * 0.01)), 0, 1, 0, 360);
+		future += glm::vec2(50 * cos(random_deg * DEG_TO_RAD), 50 * sin(random_deg * DEG_TO_RAD));
+
+		auto next = this->log_list[i].back() + glm::normalize(future) * 3;
+		next = glm::length(next) < 500 ? next : glm::normalize(next) * 500;
+		this->log_list[i].push_back(next);
+
+		if (this->log_list[i].size() > 30) {
+
+			this->log_list.erase(this->log_list.begin() + i);
+			this->velocity_list.erase(this->velocity_list.begin() + i);
+			this->noise_seed_list.erase(this->noise_seed_list.begin() + i);
+			this->color_list.erase(this->color_list.begin() + i);
+		}
+	}
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-	auto center = glm::vec2(ofGetWindowSize() * 0.5);
-	auto radius = 340;
-	auto flag = ofRandom(100) < 50 ? true : false;
+	ofTranslate(ofGetWidth() * 0.5, ofGetHeight() * 0.5);
 
-	vector<glm::vec2> vertices;
-	for (int draw_radius = radius; draw_radius > 5;) {
+	for (int i = 0; i < this->log_list.size(); i++) {
 
-		vertices.push_back(center);
-
-		flag = !flag;
-
-		auto tmp_radius = draw_radius;
-		draw_radius *= 0.8;
-
-		auto deg = ofMap(ofNoise(center.x * 0.0005, center.y * 0.0005, ofGetFrameNum() * 0.005), 0, 1, -720, 720);
-		auto center_radius = tmp_radius - draw_radius;
-		center = center + glm::vec2(center_radius * cos(deg * DEG_TO_RAD), center_radius * sin(deg * DEG_TO_RAD));
+		ofSetColor(this->color_list[i]);
+		auto size = this->log_list[i].size() < 3 ? 12 : ofMap(this->log_list[i].size(), 3, 30, 12, 0);
+		ofDrawCircle(this->log_list[i].back(), size);
 	}
 
-	ofBeginShape();
-	ofVertices(vertices);
-	ofEndShape();
+	for (int i = 0; i < this->log_list.size(); i++) {
 
-	for (auto& vertex : vertices) {
-
-		ofDrawCircle(vertex, 5);
+		ofSetColor(39);
+		auto size = this->log_list[i].size() < 3 ? 9 : ofMap(this->log_list[i].size(), 3, 30, 9, 0);
+		ofDrawCircle(this->log_list[i].back(), size);
 	}
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 1;
+	int start = 500;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
