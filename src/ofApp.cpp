@@ -6,24 +6,23 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(239);
+	ofBackground(39);
+	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
 	ofColor color;
-	for (int i = 0; i < 75; i++) {
+	for (int i = 0; i < 16; i++) {
 
 		auto noise_location = glm::vec2(
-			ofMap(ofNoise(39 + i * 1000, ofGetFrameNum() * 0.0015), 0, 1, -600, 600),
-			ofMap(ofNoise(239 + i * 1000, ofGetFrameNum() * 0.0015), 0, 1, -600, 600));
-		noise_location = glm::length(noise_location) < 500 ? noise_location : glm::normalize(noise_location) * 500;
+			ofMap(ofNoise(39 + i * 1000, ofGetFrameNum() * 0.0025), 0, 1, -400, 400),
+			ofMap(ofNoise(239 + i * 1000, ofGetFrameNum() * 0.0025), 0, 1, -400, 400));
 
 		auto next_noise_location = glm::vec2(
-			ofMap(ofNoise(39 + i * 1000, (ofGetFrameNum() + 1) * 0.0015), 0, 1, -600, 600),
-			ofMap(ofNoise(239 + i * 1000, (ofGetFrameNum() + 1) * 0.0015), 0, 1, -600, 600));
-		next_noise_location = glm::length(next_noise_location) < 500 ? next_noise_location : glm::normalize(next_noise_location) * 500;
+			ofMap(ofNoise(39 + i * 1000, (ofGetFrameNum() + 1) * 0.0025), 0, 1, -400, 400),
+			ofMap(ofNoise(239 + i * 1000, (ofGetFrameNum() + 1) * 0.0025), 0, 1, -400, 400));
 
 		vector<glm::vec2> log;
 		log.push_back(noise_location);
@@ -35,7 +34,7 @@ void ofApp::update() {
 
 		this->noise_seed_list.push_back(ofRandom(1000));
 
-		color.setHsb(ofMap(i % 3, 0, 3, 0, 255), 200, 255);
+		color.setHsb(ofMap((i * 16 + ofGetFrameNum() * 5) % 255, 0, 255, 0, 255), 200, 255);
 		this->color_list.push_back(color);
 	}
 
@@ -46,7 +45,6 @@ void ofApp::update() {
 		future += glm::vec2(50 * cos(random_deg * DEG_TO_RAD), 50 * sin(random_deg * DEG_TO_RAD));
 
 		auto next = this->log_list[i].back() + glm::normalize(future) * 3;
-		next = glm::length(next) < 500 ? next : glm::normalize(next) * 500;
 		this->log_list[i].push_back(next);
 
 		if (this->log_list[i].size() > 30) {
@@ -71,10 +69,10 @@ void ofApp::draw() {
 		ofDrawCircle(this->log_list[i].back(), size);
 	}
 
+	ofSetColor(239);
 	for (int i = 0; i < this->log_list.size(); i++) {
 
-		ofSetColor(39);
-		auto size = this->log_list[i].size() < 3 ? 9 : ofMap(this->log_list[i].size(), 3, 30, 9, 0);
+		auto size = this->log_list[i].size() < 3 ? 5 : ofMap(this->log_list[i].size(), 3, 30, 5, 0);
 		ofDrawCircle(this->log_list[i].back(), size);
 	}
 
