@@ -6,75 +6,91 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(39);
-	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
+	ofBackground(239);
+	ofSetColor(39);
+	ofSetLineWidth(2);
+	ofEnableDepthTest();
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	ofColor color;
-	for (int i = 0; i < 16; i++) {
-
-		auto noise_location = glm::vec2(
-			ofMap(ofNoise(39 + i * 1000, ofGetFrameNum() * 0.0025), 0, 1, -400, 400),
-			ofMap(ofNoise(239 + i * 1000, ofGetFrameNum() * 0.0025), 0, 1, -400, 400));
-
-		auto next_noise_location = glm::vec2(
-			ofMap(ofNoise(39 + i * 1000, (ofGetFrameNum() + 1) * 0.0025), 0, 1, -400, 400),
-			ofMap(ofNoise(239 + i * 1000, (ofGetFrameNum() + 1) * 0.0025), 0, 1, -400, 400));
-
-		vector<glm::vec2> log;
-		log.push_back(noise_location);
-		this->log_list.push_back(log);
-
-		auto deg = glm::atan(next_noise_location.y - noise_location.y, next_noise_location.x - noise_location.x) * RAD_TO_DEG + 180 + ofRandom(-15, 15);
-		glm::vec2 velocity = glm::vec2(cos(deg * DEG_TO_RAD), sin(deg * DEG_TO_RAD));
-		this->velocity_list.push_back(velocity);
-
-		this->noise_seed_list.push_back(ofRandom(1000));
-
-		color.setHsb(ofMap((i * 16 + ofGetFrameNum() * 5) % 255, 0, 255, 0, 255), 200, 255);
-		this->color_list.push_back(color);
-	}
-
-	for (int i = 0; i < this->log_list.size(); i++) {
-
-		auto future = this->velocity_list[i] * 200;
-		auto random_deg = ofMap(ofNoise(glm::vec2(this->noise_seed_list[i], ofGetFrameNum() * 0.01)), 0, 1, 0, 360);
-		future += glm::vec2(50 * cos(random_deg * DEG_TO_RAD), 50 * sin(random_deg * DEG_TO_RAD));
-
-		auto next = this->log_list[i].back() + glm::normalize(future) * 3;
-		this->log_list[i].push_back(next);
-
-		if (this->log_list[i].size() > 30) {
-
-			this->log_list.erase(this->log_list.begin() + i);
-			this->velocity_list.erase(this->velocity_list.begin() + i);
-			this->noise_seed_list.erase(this->noise_seed_list.begin() + i);
-			this->color_list.erase(this->color_list.begin() + i);
-		}
-	}
+	ofSeedRandom(39);
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-	ofTranslate(ofGetWidth() * 0.5, ofGetHeight() * 0.5);
+	this->cam.begin();
 
-	for (int i = 0; i < this->log_list.size(); i++) {
+	ofRotateZ(ofRandom(360) + ofGetFrameNum() * ofRandom(1, 3));
+	ofRotateY(ofRandom(360) + ofGetFrameNum() * ofRandom(1, 3));
+	ofRotateX(ofRandom(360) + ofGetFrameNum() * ofRandom(1, 3));
 
-		ofSetColor(this->color_list[i]);
-		auto size = this->log_list[i].size() < 3 ? 12 : ofMap(this->log_list[i].size(), 3, 30, 12, 0);
-		ofDrawCircle(this->log_list[i].back(), size);
+	ofMesh mesh;
+	auto param = 130;
+	glm::vec3 avg;
+	float noise_value;
+
+	vector<glm::vec3> vertices;
+	vertices.push_back(glm::vec4(param, param, param, 0));
+	vertices.push_back(glm::vec4(param, -param, -param, 0));
+	vertices.push_back(glm::vec4(-param, param, -param, 0));
+	vertices.push_back(glm::vec4(-param, -param, param, 0));
+
+	avg = (vertices[0] + vertices[1] + vertices[2]) / 3;
+	noise_value = ofNoise(glm::vec4(avg * 0.0085, ofGetFrameNum() * 0.05));
+	noise_value = noise_value < 0.5 ? 0 : ofMap(noise_value, 0.5, 1, 0, 10);
+
+	mesh.addVertex(vertices[0] + avg * noise_value);
+	mesh.addVertex(vertices[1] + avg * noise_value);
+	mesh.addVertex(vertices[2] + avg * noise_value);
+
+	ofDrawLine(glm::vec3(), avg + avg * noise_value);
+	ofDrawBox(avg + avg * noise_value, 5);
+
+	avg = (vertices[0] + vertices[1] + vertices[3]) / 3;
+	noise_value = ofNoise(glm::vec4(avg * 0.0085, ofGetFrameNum() * 0.05));
+	noise_value = noise_value < 0.5 ? 0 : ofMap(noise_value, 0.5, 1, 0, 10);
+
+	mesh.addVertex(vertices[0] + avg * noise_value);
+	mesh.addVertex(vertices[1] + avg * noise_value);
+	mesh.addVertex(vertices[3] + avg * noise_value);
+
+	ofDrawLine(glm::vec3(), avg + avg * noise_value);
+	ofDrawBox(avg + avg * noise_value, 5);
+
+	avg = (vertices[0] + vertices[2] + vertices[3]) / 3;
+	noise_value = ofNoise(glm::vec4(avg * 0.0085, ofGetFrameNum() * 0.05));
+	noise_value = noise_value < 0.5 ? 0 : ofMap(noise_value, 0.5, 1, 0, 10);
+
+	mesh.addVertex(vertices[0] + avg * noise_value);
+	mesh.addVertex(vertices[2] + avg * noise_value);
+	mesh.addVertex(vertices[3] + avg * noise_value);
+
+	ofDrawLine(glm::vec3(), avg + avg * noise_value);
+	ofDrawBox(avg + avg * noise_value, 5);
+
+	avg = (vertices[1] + vertices[2] + vertices[3]) / 3;
+	noise_value = ofNoise(glm::vec4(avg * 0.0085, ofGetFrameNum() * 0.05));
+	noise_value = noise_value < 0.5 ? 0 : ofMap(noise_value, 0.5, 1, 0, 5);
+
+	mesh.addVertex(vertices[1] + avg * noise_value);
+	mesh.addVertex(vertices[2] + avg * noise_value);
+	mesh.addVertex(vertices[3] + avg * noise_value);
+
+	ofDrawLine(glm::vec3(), avg + avg * noise_value);
+	ofDrawBox(avg + avg * noise_value, 5);
+
+	mesh.drawWireframe();
+
+	for (auto& vertex : mesh.getVertices()) {
+
+		ofDrawSphere(vertex, 10);
 	}
+	ofDrawSphere(glm::vec3(), 10);
 
-	ofSetColor(239);
-	for (int i = 0; i < this->log_list.size(); i++) {
-
-		auto size = this->log_list[i].size() < 3 ? 5 : ofMap(this->log_list[i].size(), 3, 30, 5, 0);
-		ofDrawCircle(this->log_list[i].back(), size);
-	}
+	this->cam.end();
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
