@@ -6,9 +6,9 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(239);
-	ofSetColor(39);
-	ofSetLineWidth(2);
+	ofBackground(39);
+	ofSetColor(239);
+	ofSetLineWidth(1.5);
 	ofEnableDepthTest();
 }
 
@@ -27,68 +27,53 @@ void ofApp::draw() {
 	ofRotateY(ofRandom(360) + ofGetFrameNum() * ofRandom(1, 3));
 	ofRotateX(ofRandom(360) + ofGetFrameNum() * ofRandom(1, 3));
 
-	ofMesh mesh;
-	auto param = 130;
-	glm::vec3 avg;
-	float noise_value;
+	for (auto param = 130; param >= 10; param -= 60) {
 
-	vector<glm::vec3> vertices;
-	vertices.push_back(glm::vec4(param, param, param, 0));
-	vertices.push_back(glm::vec4(param, -param, -param, 0));
-	vertices.push_back(glm::vec4(-param, param, -param, 0));
-	vertices.push_back(glm::vec4(-param, -param, param, 0));
+		ofMesh mesh;
+		glm::vec3 avg;
+		float noise_value;
 
-	avg = (vertices[0] + vertices[1] + vertices[2]) / 3;
-	noise_value = ofNoise(glm::vec4(avg * 0.0085, ofGetFrameNum() * 0.05));
-	noise_value = noise_value < 0.5 ? 0 : ofMap(noise_value, 0.5, 1, 0, 10);
+		vector<glm::vec3> vertices;
+		vertices.push_back(glm::vec4(param, param, param, 0));
+		vertices.push_back(glm::vec4(param, -param, -param, 0));
+		vertices.push_back(glm::vec4(-param, param, -param, 0));
+		vertices.push_back(glm::vec4(-param, -param, param, 0));
 
-	mesh.addVertex(vertices[0] + avg * noise_value);
-	mesh.addVertex(vertices[1] + avg * noise_value);
-	mesh.addVertex(vertices[2] + avg * noise_value);
+		avg = (vertices[0] + vertices[1] + vertices[2]) / 3;
+		noise_value = ofNoise(glm::vec4(avg * 0.0085, ofGetFrameNum() * 0.05));
+		noise_value = noise_value < 0.5 ? 0 : ofMap(noise_value, 0.5, 1, 0, 10);
 
-	ofDrawLine(glm::vec3(), avg + avg * noise_value);
-	ofDrawBox(avg + avg * noise_value, 5);
+		mesh.addVertex(vertices[0] + avg * noise_value);
+		mesh.addVertex(vertices[1] + avg * noise_value);
+		mesh.addVertex(vertices[2] + avg * noise_value);
 
-	avg = (vertices[0] + vertices[1] + vertices[3]) / 3;
-	noise_value = ofNoise(glm::vec4(avg * 0.0085, ofGetFrameNum() * 0.05));
-	noise_value = noise_value < 0.5 ? 0 : ofMap(noise_value, 0.5, 1, 0, 10);
+		avg = (vertices[0] + vertices[1] + vertices[3]) / 3;
+		noise_value = ofNoise(glm::vec4(avg * 0.0085, ofGetFrameNum() * 0.05));
+		noise_value = noise_value < 0.5 ? 0 : ofMap(noise_value, 0.5, 1, 0, 10);
 
-	mesh.addVertex(vertices[0] + avg * noise_value);
-	mesh.addVertex(vertices[1] + avg * noise_value);
-	mesh.addVertex(vertices[3] + avg * noise_value);
+		mesh.addVertex(vertices[0] + avg * noise_value);
+		mesh.addVertex(vertices[1] + avg * noise_value);
+		mesh.addVertex(vertices[3] + avg * noise_value);
 
-	ofDrawLine(glm::vec3(), avg + avg * noise_value);
-	ofDrawBox(avg + avg * noise_value, 5);
+		avg = (vertices[0] + vertices[2] + vertices[3]) / 3;
+		noise_value = ofNoise(glm::vec4(avg * 0.0085, ofGetFrameNum() * 0.05));
+		noise_value = noise_value < 0.5 ? 0 : ofMap(noise_value, 0.5, 1, 0, 10);
 
-	avg = (vertices[0] + vertices[2] + vertices[3]) / 3;
-	noise_value = ofNoise(glm::vec4(avg * 0.0085, ofGetFrameNum() * 0.05));
-	noise_value = noise_value < 0.5 ? 0 : ofMap(noise_value, 0.5, 1, 0, 10);
+		mesh.addVertex(vertices[0] + avg * noise_value);
+		mesh.addVertex(vertices[2] + avg * noise_value);
+		mesh.addVertex(vertices[3] + avg * noise_value);
 
-	mesh.addVertex(vertices[0] + avg * noise_value);
-	mesh.addVertex(vertices[2] + avg * noise_value);
-	mesh.addVertex(vertices[3] + avg * noise_value);
+		avg = (vertices[1] + vertices[2] + vertices[3]) / 3;
+		noise_value = ofNoise(glm::vec4(avg * 0.0085, ofGetFrameNum() * 0.05));
+		noise_value = noise_value < 0.5 ? 0 : ofMap(noise_value, 0.5, 1, 0, 5);
 
-	ofDrawLine(glm::vec3(), avg + avg * noise_value);
-	ofDrawBox(avg + avg * noise_value, 5);
+		mesh.addVertex(vertices[1] + avg * noise_value);
+		mesh.addVertex(vertices[2] + avg * noise_value);
+		mesh.addVertex(vertices[3] + avg * noise_value);
 
-	avg = (vertices[1] + vertices[2] + vertices[3]) / 3;
-	noise_value = ofNoise(glm::vec4(avg * 0.0085, ofGetFrameNum() * 0.05));
-	noise_value = noise_value < 0.5 ? 0 : ofMap(noise_value, 0.5, 1, 0, 5);
-
-	mesh.addVertex(vertices[1] + avg * noise_value);
-	mesh.addVertex(vertices[2] + avg * noise_value);
-	mesh.addVertex(vertices[3] + avg * noise_value);
-
-	ofDrawLine(glm::vec3(), avg + avg * noise_value);
-	ofDrawBox(avg + avg * noise_value, 5);
-
-	mesh.drawWireframe();
-
-	for (auto& vertex : mesh.getVertices()) {
-
-		ofDrawSphere(vertex, 10);
+		ofSetColor(239);
+		mesh.drawWireframe();
 	}
-	ofDrawSphere(glm::vec3(), 10);
 
 	this->cam.end();
 
