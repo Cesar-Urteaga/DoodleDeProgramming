@@ -6,10 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(39);
-	ofSetColor(239);
-	ofSetLineWidth(1.5);
-	ofEnableDepthTest();
+	ofBackground(239);
 }
 
 //--------------------------------------------------------------
@@ -21,61 +18,84 @@ void ofApp::update() {
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-	this->cam.begin();
+	ofTranslate(ofGetWindowSize() * 0.5);
 
-	ofRotateZ(ofRandom(360) + ofGetFrameNum() * ofRandom(1, 3));
-	ofRotateY(ofRandom(360) + ofGetFrameNum() * ofRandom(1, 3));
-	ofRotateX(ofRandom(360) + ofGetFrameNum() * ofRandom(1, 3));
+	auto len = 15;
 
-	for (auto param = 130; param >= 10; param -= 60) {
+	for (int k = 0; k < 6; k++) {
 
-		ofMesh mesh;
-		glm::vec3 avg;
-		float noise_value;
+		auto head_size = 8;
+		auto param = glm::vec2(ofRandom(1000), ofRandom(1000));
 
-		vector<glm::vec3> vertices;
-		vertices.push_back(glm::vec4(param, param, param, 0));
-		vertices.push_back(glm::vec4(param, -param, -param, 0));
-		vertices.push_back(glm::vec4(-param, param, -param, 0));
-		vertices.push_back(glm::vec4(-param, -param, param, 0));
+		for (int j = 0; j < 3; j++) {
 
-		avg = (vertices[0] + vertices[1] + vertices[2]) / 3;
-		noise_value = ofNoise(glm::vec4(avg * 0.0085, ofGetFrameNum() * 0.05));
-		noise_value = noise_value < 0.5 ? 0 : ofMap(noise_value, 0.5, 1, 0, 10);
+			j % 2 == 0 ? ofSetColor(0) : ofSetColor(255, 0, 0);
 
-		mesh.addVertex(vertices[0] + avg * noise_value);
-		mesh.addVertex(vertices[1] + avg * noise_value);
-		mesh.addVertex(vertices[2] + avg * noise_value);
+			ofMesh mesh;
+			vector<glm::vec3> right, left, frame;
 
-		avg = (vertices[0] + vertices[1] + vertices[3]) / 3;
-		noise_value = ofNoise(glm::vec4(avg * 0.0085, ofGetFrameNum() * 0.05));
-		noise_value = noise_value < 0.5 ? 0 : ofMap(noise_value, 0.5, 1, 0, 10);
+			glm::vec3 last_location;
+			float last_theta, last_radius;
 
-		mesh.addVertex(vertices[0] + avg * noise_value);
-		mesh.addVertex(vertices[1] + avg * noise_value);
-		mesh.addVertex(vertices[3] + avg * noise_value);
+			for (int i = 0; i < len; i++) {
 
-		avg = (vertices[0] + vertices[2] + vertices[3]) / 3;
-		noise_value = ofNoise(glm::vec4(avg * 0.0085, ofGetFrameNum() * 0.05));
-		noise_value = noise_value < 0.5 ? 0 : ofMap(noise_value, 0.5, 1, 0, 10);
+				auto noise_deg = ofMap(ofNoise(param.x, (ofGetFrameNum() + i) * 0.0025), 0, 1, -720, 720);
+				auto noise_radius = ofMap(ofNoise(param.y, (ofGetFrameNum() + i) * 0.015), 0, 1, -360, 360);
+				auto next_noise_deg = ofMap(ofNoise(param.x, (ofGetFrameNum() + i + 1) * 0.0025), 0, 1, -720, 720);
+				auto next_noise_radius = ofMap(ofNoise(param.y, (ofGetFrameNum() + i + 1) * 0.015), 0, 1, -360, 360);
 
-		mesh.addVertex(vertices[0] + avg * noise_value);
-		mesh.addVertex(vertices[2] + avg * noise_value);
-		mesh.addVertex(vertices[3] + avg * noise_value);
+				auto location = glm::vec3(noise_radius * cos(noise_deg * DEG_TO_RAD), noise_radius * sin(noise_deg * DEG_TO_RAD), 0);
+				auto next = glm::vec3(next_noise_radius * cos(next_noise_deg * DEG_TO_RAD), next_noise_radius * sin(next_noise_deg * DEG_TO_RAD), 0);
 
-		avg = (vertices[1] + vertices[2] + vertices[3]) / 3;
-		noise_value = ofNoise(glm::vec4(avg * 0.0085, ofGetFrameNum() * 0.05));
-		noise_value = noise_value < 0.5 ? 0 : ofMap(noise_value, 0.5, 1, 0, 5);
+				auto direction = next - location;
+				auto theta = atan2(direction.y, direction.x);
 
-		mesh.addVertex(vertices[1] + avg * noise_value);
-		mesh.addVertex(vertices[2] + avg * noise_value);
-		mesh.addVertex(vertices[3] + avg * noise_value);
+				right.push_back(location + glm::vec3(ofMap(i, 0, len, 0, head_size) * cos(theta + PI * 0.5), ofMap(i, 0, 16, 0, head_size) * sin(theta + PI * 0.5), 0));
+				left.push_back(location + glm::vec3(ofMap(i, 0, len, 0, head_size) * cos(theta - PI * 0.5), ofMap(i, 0, 16, 0, head_size) * sin(theta - PI * 0.5), 0));
 
-		ofSetColor(239);
-		mesh.drawWireframe();
+				last_location = location;
+				last_theta = theta;
+				last_radius = noise_radius;
+			}
+
+			for (int i = 0; i < right.size(); i++) {
+
+				mesh.addVertex(left[i]);
+				mesh.addVertex(right[i]);
+			}
+
+			for (int i = 0; i < mesh.getNumVertices() - 2; i += 2) {
+
+				mesh.addIndex(i + 0); mesh.addIndex(i + 1); mesh.addIndex(i + 3);
+				mesh.addIndex(i + 0); mesh.addIndex(i + 2); mesh.addIndex(i + 3);
+			}
+
+			auto tmp_head_size = ofMap(mesh.getNumVertices() - 2, 0, mesh.getNumVertices(), 0, head_size);
+
+			mesh.addVertex(last_location);
+			int index = mesh.getNumVertices();
+			for (auto theta = last_theta - PI * 0.5; theta <= last_theta + PI * 0.5; theta += PI / 20) {
+
+				mesh.addVertex(last_location + glm::vec3(tmp_head_size * cos(theta), tmp_head_size * sin(theta), 0));
+				frame.push_back(last_location + glm::vec3(tmp_head_size * cos(theta), tmp_head_size * sin(theta), 0));
+			}
+
+			for (int i = index; i < mesh.getNumVertices() - 1; i++) {
+
+				mesh.addIndex(index); mesh.addIndex(i + 0); mesh.addIndex(i + 1);
+			}
+
+			int span = 6;
+			int deg_span = 360 / span;
+			for (int deg = 0; deg < 360; deg += deg_span) {
+
+				ofRotate(deg_span);
+				mesh.draw();
+			}
+
+			head_size -= 2;
+		}
 	}
-
-	this->cam.end();
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
@@ -94,6 +114,7 @@ void ofApp::draw() {
 	}
 	*/
 }
+
 
 //--------------------------------------------------------------
 int main() {

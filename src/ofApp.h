@@ -18,5 +18,5 @@ public:
 	void dragEvent(ofDragInfo dragInfo) {};
 	void gotMessage(ofMessage msg) {};
 
-	ofEasyCam cam;
+	vector<glm::vec3> param_list;
 };
