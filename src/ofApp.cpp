@@ -6,7 +6,9 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(239);
+	ofBackground(39);
+	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
+	ofSetColor(64);
 }
 
 //--------------------------------------------------------------
@@ -20,16 +22,13 @@ void ofApp::draw() {
 
 	ofTranslate(ofGetWindowSize() * 0.5);
 
-	auto len = 15;
-
-	for (int k = 0; k < 6; k++) {
+	auto len = 20;
+	for (int k = 0; k < 4; k++) {
 
 		auto head_size = 8;
 		auto param = glm::vec2(ofRandom(1000), ofRandom(1000));
 
-		for (int j = 0; j < 3; j++) {
-
-			j % 2 == 0 ? ofSetColor(0) : ofSetColor(255, 0, 0);
+		for (int j = 0; j < 4; j++) {
 
 			ofMesh mesh;
 			vector<glm::vec3> right, left, frame;
@@ -39,9 +38,9 @@ void ofApp::draw() {
 
 			for (int i = 0; i < len; i++) {
 
-				auto noise_deg = ofMap(ofNoise(param.x, (ofGetFrameNum() + i) * 0.0025), 0, 1, -720, 720);
+				auto noise_deg = ofMap(ofNoise(param.x, (ofGetFrameNum() + i) * 0.003), 0, 1, -720, 720);
 				auto noise_radius = ofMap(ofNoise(param.y, (ofGetFrameNum() + i) * 0.015), 0, 1, -360, 360);
-				auto next_noise_deg = ofMap(ofNoise(param.x, (ofGetFrameNum() + i + 1) * 0.0025), 0, 1, -720, 720);
+				auto next_noise_deg = ofMap(ofNoise(param.x, (ofGetFrameNum() + i + 1) * 0.003), 0, 1, -720, 720);
 				auto next_noise_radius = ofMap(ofNoise(param.y, (ofGetFrameNum() + i + 1) * 0.015), 0, 1, -360, 360);
 
 				auto location = glm::vec3(noise_radius * cos(noise_deg * DEG_TO_RAD), noise_radius * sin(noise_deg * DEG_TO_RAD), 0);
@@ -85,7 +84,7 @@ void ofApp::draw() {
 				mesh.addIndex(index); mesh.addIndex(i + 0); mesh.addIndex(i + 1);
 			}
 
-			int span = 6;
+			int span = 2;
 			int deg_span = 360 / span;
 			for (int deg = 0; deg < 360; deg += deg_span) {
 
@@ -93,7 +92,7 @@ void ofApp::draw() {
 				mesh.draw();
 			}
 
-			head_size -= 2;
+			head_size -= 4;
 		}
 	}
 
