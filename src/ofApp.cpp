@@ -6,94 +6,106 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(39);
-	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
-	ofSetColor(64);
+	ofBackground(239);
+	ofSetLineWidth(1.5);
+
+	this->radius = 30;
+	vector<glm::vec2> start_location_list;
+	auto x_span = this->radius * sqrt(3);
+	auto flg = true;
+	for (float y = 0; y < ofGetHeight() + this->radius; y += this->radius * 1.5) {
+
+		for (float x = 0; x < ofGetWidth() + this->radius; x += x_span) {
+
+			glm::vec2 location;
+			if (flg) {
+
+				location = glm::vec2(x, y);
+			}
+			else {
+
+				location = glm::vec2(x + (this->radius * sqrt(3) / 2), y);
+			}
+
+			start_location_list.push_back(location);
+		}
+		flg = !flg;
+	}
+
+	ofColor color;
+	for (int i = 0; i < 16; i++) {
+
+		color.setHsb(ofMap(i, 0, 16, 0, 255), 255, 200);
+		int r = ofRandom(start_location_list.size());
+
+		auto log_list = vector<glm::vec2>();
+		log_list.push_back(start_location_list[r]);
+		this->hexagon_list.push_back(log_list);
+
+		this->color_list.push_back(color);
+	}
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	ofSeedRandom(39);
+	if (ofGetFrameNum() % 2 == 0) {
+
+		auto span = this->radius * sqrt(3);
+		for (auto& log_list : this->hexagon_list) {
+
+			int r = ofRandom(6);
+			int deg_start = r * 60;
+			for (int deg = deg_start; deg < deg_start + 360; deg += 60) {
+
+				auto tmp_location = log_list.back() + glm::vec2(span * cos(deg * DEG_TO_RAD), span * sin(deg * DEG_TO_RAD));
+				if (tmp_location.x < 0 || tmp_location.x > ofGetWidth() + this->radius || tmp_location.y < 0 || tmp_location.y > ofGetHeight() + this->radius) {
+
+					continue;
+				}
+
+				log_list.push_back(tmp_location);
+				break;
+			}
+
+			while (log_list.size() > 10) {
+
+				log_list.erase(log_list.begin());
+			}
+		}
+	}
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-	ofTranslate(ofGetWindowSize() * 0.5);
+	int color_index = 0;
+	for (auto& log_list : this->hexagon_list) {
 
-	auto len = 20;
-	for (int k = 0; k < 4; k++) {
+		for (int i = 0; i < log_list.size(); i++) {
 
-		auto head_size = 8;
-		auto param = glm::vec2(ofRandom(1000), ofRandom(1000));
+			vector<glm::vec2> vertices_1;
+			for (auto deg = 90; deg < 450; deg += 60) {
 
-		for (int j = 0; j < 4; j++) {
-
-			ofMesh mesh;
-			vector<glm::vec3> right, left, frame;
-
-			glm::vec3 last_location;
-			float last_theta, last_radius;
-
-			for (int i = 0; i < len; i++) {
-
-				auto noise_deg = ofMap(ofNoise(param.x, (ofGetFrameNum() + i) * 0.003), 0, 1, -720, 720);
-				auto noise_radius = ofMap(ofNoise(param.y, (ofGetFrameNum() + i) * 0.015), 0, 1, -360, 360);
-				auto next_noise_deg = ofMap(ofNoise(param.x, (ofGetFrameNum() + i + 1) * 0.003), 0, 1, -720, 720);
-				auto next_noise_radius = ofMap(ofNoise(param.y, (ofGetFrameNum() + i + 1) * 0.015), 0, 1, -360, 360);
-
-				auto location = glm::vec3(noise_radius * cos(noise_deg * DEG_TO_RAD), noise_radius * sin(noise_deg * DEG_TO_RAD), 0);
-				auto next = glm::vec3(next_noise_radius * cos(next_noise_deg * DEG_TO_RAD), next_noise_radius * sin(next_noise_deg * DEG_TO_RAD), 0);
-
-				auto direction = next - location;
-				auto theta = atan2(direction.y, direction.x);
-
-				right.push_back(location + glm::vec3(ofMap(i, 0, len, 0, head_size) * cos(theta + PI * 0.5), ofMap(i, 0, 16, 0, head_size) * sin(theta + PI * 0.5), 0));
-				left.push_back(location + glm::vec3(ofMap(i, 0, len, 0, head_size) * cos(theta - PI * 0.5), ofMap(i, 0, 16, 0, head_size) * sin(theta - PI * 0.5), 0));
-
-				last_location = location;
-				last_theta = theta;
-				last_radius = noise_radius;
+				vertices_1.push_back(log_list[i] + glm::vec2(this->radius * ((i + 1) * 0.1) * cos(deg * DEG_TO_RAD), this->radius * ((i + 1) * 0.1) * sin(deg * DEG_TO_RAD)));
 			}
 
-			for (int i = 0; i < right.size(); i++) {
+			ofFill();
+			ofSetColor(ofColor(this->color_list[color_index], ofMap(i, 0, log_list.size(), 255, 0)));
 
-				mesh.addVertex(left[i]);
-				mesh.addVertex(right[i]);
-			}
+			ofBeginShape();
+			ofVertices(vertices_1);
+			ofEndShape(true);
 
-			for (int i = 0; i < mesh.getNumVertices() - 2; i += 2) {
+			ofNoFill();
+			ofSetColor(ofColor(this->color_list[color_index]));
 
-				mesh.addIndex(i + 0); mesh.addIndex(i + 1); mesh.addIndex(i + 3);
-				mesh.addIndex(i + 0); mesh.addIndex(i + 2); mesh.addIndex(i + 3);
-			}
-
-			auto tmp_head_size = ofMap(mesh.getNumVertices() - 2, 0, mesh.getNumVertices(), 0, head_size);
-
-			mesh.addVertex(last_location);
-			int index = mesh.getNumVertices();
-			for (auto theta = last_theta - PI * 0.5; theta <= last_theta + PI * 0.5; theta += PI / 20) {
-
-				mesh.addVertex(last_location + glm::vec3(tmp_head_size * cos(theta), tmp_head_size * sin(theta), 0));
-				frame.push_back(last_location + glm::vec3(tmp_head_size * cos(theta), tmp_head_size * sin(theta), 0));
-			}
-
-			for (int i = index; i < mesh.getNumVertices() - 1; i++) {
-
-				mesh.addIndex(index); mesh.addIndex(i + 0); mesh.addIndex(i + 1);
-			}
-
-			int span = 2;
-			int deg_span = 360 / span;
-			for (int deg = 0; deg < 360; deg += deg_span) {
-
-				ofRotate(deg_span);
-				mesh.draw();
-			}
-
-			head_size -= 4;
+			ofBeginShape();
+			ofVertices(vertices_1);
+			ofEndShape(true);
 		}
+
+		color_index++;
 	}
 
 	/*
@@ -113,7 +125,6 @@ void ofApp::draw() {
 	}
 	*/
 }
-
 
 //--------------------------------------------------------------
 int main() {
