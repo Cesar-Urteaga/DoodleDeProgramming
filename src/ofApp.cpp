@@ -6,16 +6,17 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(239);
-	ofSetLineWidth(1.5);
+	ofBackground(39);
+	ofSetLineWidth(2);
+	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
 
-	this->radius = 30;
+	this->radius = 14;
 	vector<glm::vec2> start_location_list;
 	auto x_span = this->radius * sqrt(3);
 	auto flg = true;
-	for (float y = 0; y < ofGetHeight() + this->radius; y += this->radius * 1.5) {
+	for (float y = 0; y < ofGetHeight() - this->radius; y += this->radius * 1.5) {
 
-		for (float x = 0; x < ofGetWidth() + this->radius; x += x_span) {
+		for (float x = x_span * 4; x <= ofGetWidth() - x_span * 4; x += x_span) {
 
 			glm::vec2 location;
 			if (flg) {
@@ -33,9 +34,9 @@ void ofApp::setup() {
 	}
 
 	ofColor color;
-	for (int i = 0; i < 16; i++) {
+	for (int i = 0; i < 64; i++) {
 
-		color.setHsb(ofMap(i, 0, 16, 0, 255), 255, 200);
+		color.setHsb(ofMap(i, 0, 64, 0, 255), 200, 255);
 		int r = ofRandom(start_location_list.size());
 
 		auto log_list = vector<glm::vec2>();
@@ -51,6 +52,8 @@ void ofApp::update() {
 
 	if (ofGetFrameNum() % 2 == 0) {
 
+		auto x_span = this->radius * sqrt(3);
+
 		auto span = this->radius * sqrt(3);
 		for (auto& log_list : this->hexagon_list) {
 
@@ -59,7 +62,7 @@ void ofApp::update() {
 			for (int deg = deg_start; deg < deg_start + 360; deg += 60) {
 
 				auto tmp_location = log_list.back() + glm::vec2(span * cos(deg * DEG_TO_RAD), span * sin(deg * DEG_TO_RAD));
-				if (tmp_location.x < 0 || tmp_location.x > ofGetWidth() + this->radius || tmp_location.y < 0 || tmp_location.y > ofGetHeight() + this->radius) {
+				if (tmp_location.x < x_span * 4 || tmp_location.x >= ofGetWidth() - x_span * 4 || tmp_location.y < 0 || tmp_location.y > ofGetHeight() + this->radius) {
 
 					continue;
 				}
@@ -90,15 +93,7 @@ void ofApp::draw() {
 				vertices_1.push_back(log_list[i] + glm::vec2(this->radius * ((i + 1) * 0.1) * cos(deg * DEG_TO_RAD), this->radius * ((i + 1) * 0.1) * sin(deg * DEG_TO_RAD)));
 			}
 
-			ofFill();
-			ofSetColor(ofColor(this->color_list[color_index], ofMap(i, 0, log_list.size(), 255, 0)));
-
-			ofBeginShape();
-			ofVertices(vertices_1);
-			ofEndShape(true);
-
-			ofNoFill();
-			ofSetColor(ofColor(this->color_list[color_index]));
+			ofSetColor(ofColor(this->color_list[color_index], 128));
 
 			ofBeginShape();
 			ofVertices(vertices_1);
