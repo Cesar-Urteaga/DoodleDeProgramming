@@ -6,101 +6,130 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(39);
-	ofSetLineWidth(2);
-	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
-
-	this->radius = 14;
-	vector<glm::vec2> start_location_list;
-	auto x_span = this->radius * sqrt(3);
-	auto flg = true;
-	for (float y = 0; y < ofGetHeight() - this->radius; y += this->radius * 1.5) {
-
-		for (float x = x_span * 4; x <= ofGetWidth() - x_span * 4; x += x_span) {
-
-			glm::vec2 location;
-			if (flg) {
-
-				location = glm::vec2(x, y);
-			}
-			else {
-
-				location = glm::vec2(x + (this->radius * sqrt(3) / 2), y);
-			}
-
-			start_location_list.push_back(location);
-		}
-		flg = !flg;
-	}
-
-	ofColor color;
-	for (int i = 0; i < 64; i++) {
-
-		color.setHsb(ofMap(i, 0, 64, 0, 255), 200, 255);
-		int r = ofRandom(start_location_list.size());
-
-		auto log_list = vector<glm::vec2>();
-		log_list.push_back(start_location_list[r]);
-		this->hexagon_list.push_back(log_list);
-
-		this->color_list.push_back(color);
-	}
+	ofBackground(239);
+	ofNoFill();
+	ofSetLineWidth(3);
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	if (ofGetFrameNum() % 2 == 0) {
 
-		auto x_span = this->radius * sqrt(3);
-
-		auto span = this->radius * sqrt(3);
-		for (auto& log_list : this->hexagon_list) {
-
-			int r = ofRandom(6);
-			int deg_start = r * 60;
-			for (int deg = deg_start; deg < deg_start + 360; deg += 60) {
-
-				auto tmp_location = log_list.back() + glm::vec2(span * cos(deg * DEG_TO_RAD), span * sin(deg * DEG_TO_RAD));
-				if (tmp_location.x < x_span * 4 || tmp_location.x >= ofGetWidth() - x_span * 4 || tmp_location.y < 0 || tmp_location.y > ofGetHeight() + this->radius) {
-
-					continue;
-				}
-
-				log_list.push_back(tmp_location);
-				break;
-			}
-
-			while (log_list.size() > 10) {
-
-				log_list.erase(log_list.begin());
-			}
-		}
-	}
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-	int color_index = 0;
-	for (auto& log_list : this->hexagon_list) {
+	ofTranslate(ofGetWidth() * 0.5, ofGetHeight() * 0.5);
+	
+	ofSeedRandom(39);
+	auto noise_seed = glm::vec2(ofRandom(1000), ofRandom(1000));
 
-		for (int i = 0; i < log_list.size(); i++) {
+	int count = 60;
+	int len = 120;
+	float head_size = 3;
+	
+	ofSetColor(39);
+	for (int k = 0; k < count; k++) {
 
-			vector<glm::vec2> vertices_1;
-			for (auto deg = 90; deg < 450; deg += 60) {
+		vector<glm::vec3> right, left, frame;
 
-				vertices_1.push_back(log_list[i] + glm::vec2(this->radius * ((i + 1) * 0.1) * cos(deg * DEG_TO_RAD), this->radius * ((i + 1) * 0.1) * sin(deg * DEG_TO_RAD)));
-			}
+		glm::vec3 last_location;
+		float last_theta;
 
-			ofSetColor(ofColor(this->color_list[color_index], 128));
+		float random = ofRandom(1000);
+		float deg = ofMap(k, 0, count, 0, 360);
+		float span = ofRandom(0.01, 0.08);
+		for (int i = 0; i < len; i++) {
 
-			ofBeginShape();
-			ofVertices(vertices_1);
-			ofEndShape(true);
+			auto radius = ofMap(sin((random + ofGetFrameNum() + i) * span), 0, 1, 270, 330);
+			auto next_radius = ofMap(sin((random + ofGetFrameNum() + i + 1) * span), 0, 1, 270, 330);
+
+			auto location = glm::vec3(radius * cos((ofGetFrameNum() + i + deg) * DEG_TO_RAD), radius * sin((ofGetFrameNum() + i + deg) * DEG_TO_RAD), 0);
+			auto next = glm::vec3(next_radius * cos((ofGetFrameNum() + i + 1 + deg) * DEG_TO_RAD), next_radius * sin((ofGetFrameNum() + i + 1 + deg) * DEG_TO_RAD), 0);
+
+			auto direction = next - location;
+			auto theta = atan2(direction.y, direction.x);
+
+			right.push_back(location + glm::vec3(ofMap(i, 0, len, 0, head_size) * cos(theta + PI * 0.5), ofMap(i, 0, len, 0, head_size) * sin(theta + PI * 0.5), 0));
+			left.push_back(location + glm::vec3(ofMap(i, 0, len, 0, head_size) * cos(theta - PI * 0.5), ofMap(i, 0, len, 0, head_size) * sin(theta - PI * 0.5), 0));
+
+			last_location = location;
+			last_theta = theta;
 		}
 
-		color_index++;
+		for (auto theta = last_theta - PI * 0.5; theta <= last_theta + PI * 0.5; theta += PI / 20) {
+
+			frame.push_back(last_location + glm::vec3(head_size * cos(theta), head_size * sin(theta), 0));
+		}
+
+		ofBeginShape();
+		ofVertices(frame);
+		std::reverse(right.begin(), right.end());
+		ofVertices(right);
+		ofVertices(left);
+		ofEndShape(true);
+	}
+
+	ofSeedRandom(39);
+	noise_seed = glm::vec2(ofRandom(1000), ofRandom(1000));
+
+	ofSetColor(239);
+	for (int k = 0; k < count; k++) {
+
+		ofMesh mesh;
+		vector<glm::vec3> right, left;
+
+		glm::vec3 last_location;
+		float last_theta;
+
+		float random = ofRandom(1000);
+		float deg = ofMap(k, 0, count, 0, 360);
+		float span = ofRandom(0.01, 0.08);
+		for (int i = 0; i < len; i++) {
+
+			auto radius = ofMap(sin((random + ofGetFrameNum() + i) * span), 0, 1, 270, 330);
+			auto next_radius = ofMap(sin((random + ofGetFrameNum() + i + 1) * span), 0, 1, 270, 330);
+
+			auto location = glm::vec3(radius * cos((ofGetFrameNum() + i + deg) * DEG_TO_RAD), radius * sin((ofGetFrameNum() + i + deg) * DEG_TO_RAD), 0);
+			auto next = glm::vec3(next_radius * cos((ofGetFrameNum() + i + 1 + deg) * DEG_TO_RAD), next_radius * sin((ofGetFrameNum() + i + 1 + deg) * DEG_TO_RAD), 0);
+
+			auto direction = next - location;
+			auto theta = atan2(direction.y, direction.x);
+
+			right.push_back(location + glm::vec3(ofMap(i, 0, len, 0, head_size) * cos(theta + PI * 0.5), ofMap(i, 0, len, 0, head_size) * sin(theta + PI * 0.5), 0));
+			left.push_back(location + glm::vec3(ofMap(i, 0, len, 0, head_size) * cos(theta - PI * 0.5), ofMap(i, 0, len, 0, head_size) * sin(theta - PI * 0.5), 0));
+
+			last_location = location;
+			last_theta = theta;
+		}
+
+		for (int i = 0; i < right.size(); i++) {
+
+			mesh.addVertex(left[i]);
+			mesh.addVertex(right[i]);
+		}
+
+
+		for (int i = 0; i < mesh.getNumVertices() - 2; i += 2) {
+
+			mesh.addIndex(i + 0); mesh.addIndex(i + 1); mesh.addIndex(i + 3);
+			mesh.addIndex(i + 0); mesh.addIndex(i + 2); mesh.addIndex(i + 3);
+		}
+
+		mesh.addVertex(last_location);
+		int index = mesh.getNumVertices();
+		for (auto theta = last_theta - PI * 0.5; theta <= last_theta + PI * 0.5; theta += PI / 20) {
+
+			mesh.addVertex(last_location + glm::vec3(head_size * cos(theta), head_size * sin(theta), 0));
+		}
+
+		for (int i = index; i < mesh.getNumVertices() - 1; i++) {
+
+			mesh.addIndex(index); mesh.addIndex(i + 0); mesh.addIndex(i + 1);
+		}
+
+		mesh.draw();
 	}
 
 	/*
