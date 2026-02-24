@@ -1,6 +1,5 @@
 #pragma once
 #include "ofMain.h"
-
 class ofApp : public ofBaseApp {
 
 public:
@@ -17,4 +16,9 @@ public:
 	void windowResized(int w, int h) {};
 	void dragEvent(ofDragInfo dragInfo) {};
 	void gotMessage(ofMessage msg) {};
+
+	void setRingToMesh(ofMesh& mesh, glm::vec3 location, float radius, float width, int deg_start, int deg_end);
+
+	ofMesh mesh;
+	float noise_param;
 };
