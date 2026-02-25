@@ -6,8 +6,8 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
-	ofSetColor(39);
+	ofBackground(39);
+	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
 
 	this->noise_param = ofRandom(1000);
 }
@@ -19,27 +19,31 @@ void ofApp::update() {
 
 	this->mesh.clear();
 
-	int width = 20;
-	int deg_span = 90;
+	int width = 10;
+	int deg_span = 30;
+
+	ofColor color;
+
 	for (int x = 180; x < ofGetWidth(); x += 360) {
 
 		for (int y = 180; y < ofGetHeight(); y += 360) {
 
-			for (int deg = 0; deg < 360; deg += deg_span) {
+			for (int i = 0; i < 8; i++) {
 
-				auto noise_param = ofRandom(1000);
+				color.setHsb(ofMap(i, 0, 8, 0, 255), 200, 255, 128);
 
-				int radius = ofMap(ofNoise(noise_param, cos(deg * DEG_TO_RAD) * 15, sin(deg * DEG_TO_RAD) * 15, this->noise_param), 0, 1, 30, 160);
+				for (int deg = 0; deg < 360; deg += deg_span) {
 
-				this->setRingToMesh(this->mesh, glm::vec3(x, y, 0), radius, width, deg, deg + deg_span);
+					auto noise_param = ofRandom(1000);
+					int radius = ofMap(ofNoise(noise_param, cos(deg * DEG_TO_RAD) * 15, sin(deg * DEG_TO_RAD) * 15, this->noise_param), 0, 1, 30, 180);
+
+					this->setRingToMesh(this->mesh, glm::vec3(x, y, 0), radius, width, deg, deg + deg_span, color);
+				}
 			}
 		}
 	}
 
-	if (ofGetFrameNum() % 50 < 40) {
-
-		this->noise_param += ofMap(ofGetFrameNum() % 50, 0, 40, 0.15, 0);
-	}
+	this->noise_param += 0.02;
 }
 
 //--------------------------------------------------------------
@@ -66,7 +70,7 @@ void ofApp::draw() {
 }
 
 //--------------------------------------------------------------
-void ofApp::setRingToMesh(ofMesh& mesh, glm::vec3 location, float radius, float width, int deg_start, int deg_end) {
+void ofApp::setRingToMesh(ofMesh& mesh, glm::vec3 location, float radius, float width, int deg_start, int deg_end, ofColor color) {
 
 	if (deg_start == deg_end) { return; }
 
@@ -85,6 +89,11 @@ void ofApp::setRingToMesh(ofMesh& mesh, glm::vec3 location, float radius, float 
 
 		mesh.addIndex(index + 0); mesh.addIndex(index + 1); mesh.addIndex(index + 2);
 		mesh.addIndex(index + 0); mesh.addIndex(index + 2); mesh.addIndex(index + 3);
+
+		mesh.addColor(color);
+		mesh.addColor(color);
+		mesh.addColor(color);
+		mesh.addColor(color);
 	}
 }
 
