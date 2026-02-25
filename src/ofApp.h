@@ -1,5 +1,6 @@
 #pragma once
 #include "ofMain.h"
+
 class ofApp : public ofBaseApp {
 
 public:
@@ -17,8 +18,8 @@ public:
 	void dragEvent(ofDragInfo dragInfo) {};
 	void gotMessage(ofMessage msg) {};
 
-	void setRingToMesh(ofMesh& mesh, glm::vec3 location, float radius, float width, int deg_start, int deg_end, ofColor color);
+	glm::vec3 make_point(float R, float r, float u, float v);
 
+	ofEasyCam cam;
 	ofMesh mesh;
-	float noise_param;
 };

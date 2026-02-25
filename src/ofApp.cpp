@@ -6,10 +6,10 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(39);
-	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
+	ofBackground(239);
+	ofNoFill();
 
-	this->noise_param = ofRandom(1000);
+	this->mesh.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
 }
 
 //--------------------------------------------------------------
@@ -17,43 +17,73 @@ void ofApp::update() {
 
 	ofSeedRandom(39);
 
+	vector<float> min_distance_list;
 	this->mesh.clear();
 
-	int width = 10;
-	int deg_span = 30;
+	for (int i = 0; i < 1000; i++) {
 
-	ofColor color;
+		auto vertex = glm::vec3(
+			ofMap(ofNoise(ofRandom(1000), ofGetFrameNum() * 0.001), 0, 1, -300, 300),
+			ofMap(ofNoise(ofRandom(1000), ofGetFrameNum() * 0.001), 0, 1, -300, 300),
+			ofMap(ofNoise(ofRandom(1000), ofGetFrameNum() * 0.001), 0, 1, -300, 300));
+		this->mesh.addVertex(vertex);
+		min_distance_list.push_back(40);
+	}
 
-	for (int x = 180; x < ofGetWidth(); x += 360) {
+	for (auto& vertex : this->mesh.getVertices()) {
 
-		for (int y = 180; y < ofGetHeight(); y += 360) {
+		vertex.x = vertex.x < -200 ? -200 : vertex.x > 200 ? 200 : vertex.x;
+		vertex.y = vertex.y < -200 ? -200 : vertex.y > 200 ? 200 : vertex.y;
+		vertex.z = vertex.z < -200 ? -200 : vertex.z > 200 ? 200 : vertex.z;
+	}
 
-			for (int i = 0; i < 8; i++) {
 
-				color.setHsb(ofMap(i, 0, 8, 0, 255), 200, 255, 128);
+	for (int i = 0; i < this->mesh.getNumVertices(); i++) {
 
-				for (int deg = 0; deg < 360; deg += deg_span) {
+		for (int k = 0; k < this->mesh.getNumVertices(); k++) {
 
-					auto noise_param = ofRandom(1000);
-					int radius = ofMap(ofNoise(noise_param, cos(deg * DEG_TO_RAD) * 15, sin(deg * DEG_TO_RAD) * 15, this->noise_param), 0, 1, 30, 180);
+			if (i == k) { continue; }
 
-					this->setRingToMesh(this->mesh, glm::vec3(x, y, 0), radius, width, deg, deg + deg_span, color);
+			auto distance = glm::distance(this->mesh.getVertex(i), this->mesh.getVertex(k));
+			if (distance < 40) {
+
+				this->mesh.addIndex(i);
+				this->mesh.addIndex(k);
+
+				if (distance < min_distance_list[i]) {
+
+					min_distance_list[i] = distance;
 				}
 			}
 		}
-	}
 
-	this->noise_param += 0.02;
+		this->mesh.addColor(ofColor(39, ofMap(min_distance_list[i], 0, 40, 255, 0)));
+	}
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
+	this->cam.begin();
+
+	ofRotateY(ofGetFrameNum() * 1.44);
+
 	this->mesh.draw();
+
+	for (int i = 0; i < this->mesh.getNumVertices(); i++) {
+
+		ofSetColor(this->mesh.getColor(i));
+		ofDrawSphere(this->mesh.getVertex(i), 1.5);
+	}
+
+	ofSetColor(0);
+	ofDrawBox(400);
+
+	this->cam.end();
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 50;
+	int start = 125;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
@@ -70,32 +100,20 @@ void ofApp::draw() {
 }
 
 //--------------------------------------------------------------
-void ofApp::setRingToMesh(ofMesh& mesh, glm::vec3 location, float radius, float width, int deg_start, int deg_end, ofColor color) {
+glm::vec3 ofApp::make_point(float R, float r, float u, float v) {
 
-	if (deg_start == deg_end) { return; }
+	// 数学デッサン教室 描いて楽しむ数学たち　P.31
 
-	int deg_span = 5;
-	for (int deg = deg_start; deg < deg_end; deg += deg_span) {
+	u *= DEG_TO_RAD;
+	v *= DEG_TO_RAD;
 
-		auto index = mesh.getNumVertices();
+	auto x = (R + r * cos(u)) * cos(v);
+	auto y = (R + r * cos(u)) * sin(v);
+	auto z = r * sin(u);
 
-		vector<glm::vec3> vertices;
-		vertices.push_back(location + glm::vec3((radius + width * 0.5) * cos(deg * DEG_TO_RAD), (radius + width * 0.5) * sin(deg * DEG_TO_RAD), 0));
-		vertices.push_back(location + glm::vec3((radius + width * 0.5) * cos((deg + deg_span) * DEG_TO_RAD), (radius + width * 0.5) * sin((deg + deg_span) * DEG_TO_RAD), 0));
-		vertices.push_back(location + glm::vec3((radius - width * 0.5) * cos((deg + deg_span) * DEG_TO_RAD), (radius - width * 0.5) * sin((deg + deg_span) * DEG_TO_RAD), 0));
-		vertices.push_back(location + glm::vec3((radius - width * 0.5) * cos(deg * DEG_TO_RAD), (radius - width * 0.5) * sin(deg * DEG_TO_RAD), 0));
-
-		mesh.addVertices(vertices);
-
-		mesh.addIndex(index + 0); mesh.addIndex(index + 1); mesh.addIndex(index + 2);
-		mesh.addIndex(index + 0); mesh.addIndex(index + 2); mesh.addIndex(index + 3);
-
-		mesh.addColor(color);
-		mesh.addColor(color);
-		mesh.addColor(color);
-		mesh.addColor(color);
-	}
+	return glm::vec3(x, y, z);
 }
+
 
 //--------------------------------------------------------------
 int main() {
