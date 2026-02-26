@@ -7,6 +7,7 @@ void ofApp::setup() {
 	ofSetWindowTitle("openFrameworks");
 
 	ofBackground(239);
+	ofEnableDepthTest();
 	ofNoFill();
 
 	this->mesh.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
@@ -20,7 +21,7 @@ void ofApp::update() {
 	vector<float> min_distance_list;
 	this->mesh.clear();
 
-	for (int i = 0; i < 1000; i++) {
+	for (int i = 0; i < 1600; i++) {
 
 		auto vertex = glm::vec3(
 			ofMap(ofNoise(ofRandom(1000), ofGetFrameNum() * 0.001), 0, 1, -300, 300),
@@ -32,9 +33,15 @@ void ofApp::update() {
 
 	for (auto& vertex : this->mesh.getVertices()) {
 
-		vertex.x = vertex.x < -200 ? -200 : vertex.x > 200 ? 200 : vertex.x;
-		vertex.y = vertex.y < -200 ? -200 : vertex.y > 200 ? 200 : vertex.y;
-		vertex.z = vertex.z < -200 ? -200 : vertex.z > 200 ? 200 : vertex.z;
+		vertex.x = vertex.x < -150 ? -150 : vertex.x > 150 ? 150 : vertex.x;
+		vertex.y = vertex.y < -150 ? -150 : vertex.y > 150 ? 150 : vertex.y;
+		vertex.z = vertex.z < -150 ? -150 : vertex.z > 150 ? 150 : vertex.z;
+
+		auto len = glm::length(vertex);
+		if (len < 210) {
+
+			vertex = glm::normalize(vertex) * 210;
+		}
 	}
 
 
@@ -45,7 +52,7 @@ void ofApp::update() {
 			if (i == k) { continue; }
 
 			auto distance = glm::distance(this->mesh.getVertex(i), this->mesh.getVertex(k));
-			if (distance < 40) {
+			if (distance < 30) {
 
 				this->mesh.addIndex(i);
 				this->mesh.addIndex(k);
@@ -57,7 +64,7 @@ void ofApp::update() {
 			}
 		}
 
-		this->mesh.addColor(ofColor(39, ofMap(min_distance_list[i], 0, 40, 255, 0)));
+		this->mesh.addColor(ofColor(39, ofMap(min_distance_list[i], 0, 30, 255, 0)));
 	}
 }
 
@@ -77,13 +84,13 @@ void ofApp::draw() {
 	}
 
 	ofSetColor(0);
-	ofDrawBox(400);
+	ofDrawBox(300);
 
 	this->cam.end();
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 125;
+	int start = 500;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
