@@ -6,51 +6,64 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
-	ofSetColor(39);
+	ofBackground(39);
 	ofSetRectMode(ofRectMode::OF_RECTMODE_CENTER);
+
+	this->noise_param = ofRandom(1000);
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
+	this->noise_param += 0.002;
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-	int span = 60;
-	int param = ofGetFrameNum() % 50;
-	int deg = param < 25 ? 0 : ofMap(param, 25, 50, 0, 90);
+	ofColor color;
+	for (int x = 0; x < ofGetWindowWidth(); x += 1) {
 
-	for (int y = span * 0.5; y < ofGetWindowHeight(); y += span * 2) {
+		for (int y = 0; y < ofGetWindowHeight(); y += 1) {
 
-		for (int x = span * 0.5; x < ofGetWindowWidth(); x += span * 2) {
+			auto location = glm::vec2(x, y);
+			auto noise_value = ofNoise(x * 0.004, y * 0.004, this->noise_param);
 
-			ofPushMatrix();
-			ofTranslate(x, y);
+			for (float i = 0; i < 10; i += 1) {
 
-			ofRotate(deg);
+				if (noise_value > i * 0.1 + 0.042 && noise_value < i * 0.1 + 0.058) {
 
-			ofDrawRectangle(glm::vec2(), span, span);
+					ofSetColor(239);
 
-			ofPopMatrix();
+					ofDrawRectangle(location, 1, 1);
+				}
+			}
+		}
+	}
 
-			ofPushMatrix();
-			ofTranslate(x + span, y + span);
+	for (int x = 0; x < ofGetWindowWidth(); x += 1) {
 
-			ofRotate(deg);
+		for (int y = 0; y < ofGetWindowHeight(); y += 1) {
 
-			ofDrawRectangle(glm::vec2(), span, span);
+			auto location = glm::vec2(x, y);
+			auto noise_value = ofNoise(x * 0.004, y * 0.004, this->noise_param);
 
-			ofPopMatrix();
+			for (float i = 0; i < 10; i += 1) {
 
+				if (noise_value > i * 0.1 + 0.048 && noise_value < i * 0.1 + 0.052) {
+
+					color.setHsb(ofMap(i, 0, 10, 0, 255), 255, 255);
+					ofSetColor(color);
+
+					ofDrawRectangle(location, 1, 1);
+				}
+			}
 		}
 	}
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 500;
+	int start = 5;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
