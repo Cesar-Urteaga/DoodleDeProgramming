@@ -6,12 +6,12 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofEnableDepthTest();
 
 	this->noise_seed = glm::vec3(ofRandom(1000), ofRandom(1000), ofRandom(1000));
 
-	ofIcoSpherePrimitive ico_sphere = ofIcoSpherePrimitive(300, 3);
+	ofIcoSpherePrimitive ico_sphere = ofIcoSpherePrimitive(150, 2);
 	vector<ofMeshFace> triangles = ico_sphere.getMesh().getUniqueFaces();
 
 	for (int i = 0; i < triangles.size(); i++) {
@@ -49,9 +49,9 @@ void ofApp::update() {
 			this->life_list.push_back(span);
 			glm::vec3 param;
 			int p = ofRandom(3);
-			if (p < 1) param = glm::vec3(3, 0, 0);
-			if (p >= 1 && p < 2) param = glm::vec3(0, 3, 0);
-			if (p >= 2 && p < 3) param = glm::vec3(0, 0, 3);
+			if (p < 1) param = glm::vec3(5, 0, 0);
+			if (p >= 1 && p < 2) param = glm::vec3(0, 5, 0);
+			if (p >= 2 && p < 3) param = glm::vec3(0, 0, 5);
 			this->param_list.push_back(param);
 		}
 	}
@@ -69,29 +69,29 @@ void ofApp::update() {
 			continue;
 		}
 
-		auto x = ofMap(ofNoise(glm::vec4(this->log_list[i].back() * 0.0035, this->noise_seed.x + ofGetFrameNum() * 0.008)), 0, 1, -80, 80);
-		auto y = ofMap(ofNoise(glm::vec4(this->log_list[i].back() * 0.0035, this->noise_seed.y + ofGetFrameNum() * 0.008)), 0, 1, -80, 80);
-		auto z = ofMap(ofNoise(glm::vec4(this->log_list[i].back() * 0.0035, this->noise_seed.z + ofGetFrameNum() * 0.008)), 0, 1, -80, 80);
+		auto x = ofMap(ofNoise(glm::vec4(this->log_list[i].back() * 0.003, this->noise_seed.x + ofGetFrameNum() * 0.008)), 0, 1, -30, 30);
+		auto y = ofMap(ofNoise(glm::vec4(this->log_list[i].back() * 0.003, this->noise_seed.y + ofGetFrameNum() * 0.008)), 0, 1, -30, 30);
+		auto z = ofMap(ofNoise(glm::vec4(this->log_list[i].back() * 0.003, this->noise_seed.z + ofGetFrameNum() * 0.008)), 0, 1, -30, 30);
 		this->log_list[i].push_back(this->log_list[i].back() + glm::vec3(x, y, z));
 	}
 
 	for (int i = 0; i < this->log_list.size(); i++) {
 
 		auto start_index = this->frame.getNumVertices();
-		auto alpha = this->life_list[i] > 30 ? 255 : ofMap(this->life_list[i], 0, 30, 0, 255);
+		auto alpha = this->life_list[i] > 80 ? 255 : ofMap(this->life_list[i], 0, 80, 0, 255);
 		for (int k = 0; k < this->log_list[i].size(); k++) {
 
 			int index = this->face.getNumVertices();
 
 			this->face.addVertex(this->log_list[i][k] + this->param_list[i]);
 			this->face.addVertex(this->log_list[i][k] - this->param_list[i]);
-			this->face.addColor(ofColor(this->color_list[i], alpha));
-			this->face.addColor(ofColor(this->color_list[i], alpha));
+			this->face.addColor(ofColor(39, alpha));
+			this->face.addColor(ofColor(39, alpha));
 
 			this->frame.addVertex(this->log_list[i][k] + this->param_list[i]);
 			this->frame.addVertex(this->log_list[i][k] - this->param_list[i]);
-			this->frame.addColor(ofColor(39, alpha));
-			this->frame.addColor(ofColor(39, alpha));
+			this->frame.addColor(ofColor(239, alpha));
+			this->frame.addColor(ofColor(239, alpha));
 
 			if (k > 0) {
 
