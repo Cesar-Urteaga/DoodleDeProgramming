@@ -18,16 +18,8 @@ public:
 	void dragEvent(ofDragInfo dragInfo) {};
 	void gotMessage(ofMessage msg) {};
 
+	void setRingToMesh(ofMesh& face_target, ofMesh& frame_target, glm::vec3 location, float radius, float width, float height, int deg_start, int deg_end);
+
 	ofEasyCam cam;
-
-	vector<glm::vec3> location_list;
-	vector<ofColor> base_color_list;
-
-	glm::vec3 noise_seed;
-	vector<vector<glm::vec3>> log_list;
-	vector<ofColor> color_list;
-	vector<float> life_list;
-	vector<glm::vec3> param_list;
-
 	ofMesh face, frame;
 };
