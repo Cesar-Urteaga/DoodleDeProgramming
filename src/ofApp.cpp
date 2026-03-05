@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofEnableDepthTest();
 
 	this->frame.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
@@ -25,7 +25,8 @@ void ofApp::update() {
 
 		for (int y = -360; y <= 360; y += radius * 2) {
 
-			auto noise_value = ofNoise(ofRandom(1000), ofGetFrameNum() * 0.005);
+			//auto noise_value = ofNoise(ofRandom(1000), ofGetFrameNum() * 0.005);
+			auto noise_value = ofNoise(x * 0.005, y * 0.005, ofGetFrameNum() * 0.005);
 			auto deg_start = 0;
 
 			if (noise_value < 0.2) { deg_start = 0; }
@@ -37,11 +38,9 @@ void ofApp::update() {
 			else if (noise_value < 0.95) { deg_start = 270; }
 			else if (noise_value < 1.0) { ofMap(noise_value, 0.95, 1.0, 270, 360); }
 
-			auto height = 3;
-			this->setRingToMesh(this->face, this->frame, glm::vec3(x, y, height * 0.5), radius, radius * 0.5, height, deg_start, deg_start + 90);
-			this->setRingToMesh(this->face, this->frame, glm::vec3(x, y, height * 0.5), radius, radius * 0.5, height, deg_start + 180, deg_start + 270);
+			auto height = 1;
+			this->setRingToMesh(this->face, this->frame, glm::vec3(x, y, height * 0.5), radius, radius * 0.45, height, deg_start, deg_start + 300);
 		}
-
 	}
 }
 
@@ -50,11 +49,8 @@ void ofApp::draw() {
 
 	this->cam.begin();
 
-	ofSetColor(39);
+	ofSetColor(239);
 	this->face.draw();
-
-	//ofSetColor(239);
-	//this->frame.drawWireframe();
 
 	this->cam.end();
 
