@@ -6,108 +6,77 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(39);
+	ofBackground(239);
+	ofSetLineWidth(2);
 	ofEnableDepthTest();
 
-	this->frame.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
+	auto ico_sphere = ofIcoSpherePrimitive(1, 5);
+	this->base_location_list = ico_sphere.getMesh().getVertices();
+
+	this->number_of_sphere = 1200;
+	while (this->sphere_list.size() < this->number_of_sphere) {
+
+		int index = ofRandom(this->base_location_list.size());
+		auto tmp_location = this->base_location_list[index];
+		tmp_location = glm::normalize(tmp_location) * ofRandom(0, 100);
+
+		auto radius = 5;
+
+		bool flag = true;
+		for (int i = 0; i < this->sphere_list.size(); i++) {
+
+			if (glm::distance(tmp_location, get<1>(this->sphere_list[i])) < get<2>(this->sphere_list[i]) + radius) {
+
+				flag = false;
+				break;
+			}
+		}
+
+		if (flag) {
+
+			ofColor color;
+			color.setHsb(ofRandom(255), 200, 255);
+
+			auto size = (radius * 2) / sqrt(3);
+
+			this->sphere_list.push_back(std::make_tuple(color, tmp_location, size));
+		}
+	}
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
 	ofSeedRandom(39);
-
-	this->face.clear();
-	this->frame.clear();
-
-	float phi_deg_step = 3;
-	float theta_deg_step = 3;
-	float noise_param = 0.35;
-	float threshold = 0.55;
-	auto noise_seed = glm::vec3(ofRandom(1000), ofRandom(1000), ofRandom(1000));
-
-	for (float radius = 50; radius <= 250; radius += 50) {
-
-		for (float phi_deg = 0; phi_deg < 360; phi_deg += phi_deg_step) {
-
-			for (float theta_deg_start = 0; theta_deg_start < 360; theta_deg_start += 180) {
-
-				for (float theta_deg = theta_deg_start; theta_deg <= theta_deg_start + 45; theta_deg += theta_deg_step) {
-
-					float angle_x = ofMap(ofNoise(noise_seed.x, radius * 0.0005 + ofGetFrameNum() * 0.005), 0, 1, PI * -2, PI * 2);
-					auto rotation_x = glm::rotate(glm::mat4(), angle_x, glm::vec3(1, 0, 0));
-
-					float angle_y = ofMap(ofNoise(noise_seed.y, radius * 0.0005 + ofGetFrameNum() * 0.005), 0, 1, PI * -2, PI * 2);
-					auto rotation_y = glm::rotate(glm::mat4(), angle_y, glm::vec3(0, 1, 0));
-
-					float angle_z = ofMap(ofNoise(noise_seed.z, radius * 0.0005 + ofGetFrameNum() * 0.005), 0, 1, PI * -2, PI * 2);
-					auto rotation_z = glm::rotate(glm::mat4(), angle_z, glm::vec3(0, 1, 0));
-
-					auto index = this->face.getNumVertices();
-					vector<glm::vec3> vertices;
-
-					vertices.push_back(glm::vec3(
-						radius * sin((theta_deg - theta_deg_step * 0.5) * DEG_TO_RAD) * cos((phi_deg + phi_deg_step * 0.5) * DEG_TO_RAD),
-						radius * sin((theta_deg - theta_deg_step * 0.5) * DEG_TO_RAD) * sin((phi_deg + phi_deg_step * 0.5) * DEG_TO_RAD),
-						radius * cos((theta_deg - theta_deg_step * 0.5) * DEG_TO_RAD)));
-					vertices.push_back(glm::vec3(
-						radius * sin((theta_deg - theta_deg_step * 0.5) * DEG_TO_RAD) * cos((phi_deg - phi_deg_step * 0.5) * DEG_TO_RAD),
-						radius * sin((theta_deg - theta_deg_step * 0.5) * DEG_TO_RAD) * sin((phi_deg - phi_deg_step * 0.5) * DEG_TO_RAD),
-						radius * cos((theta_deg - theta_deg_step * 0.5) * DEG_TO_RAD)));
-					vertices.push_back(glm::vec3(
-						radius * sin((theta_deg + theta_deg_step * 0.5) * DEG_TO_RAD) * cos((phi_deg + phi_deg_step * 0.5) * DEG_TO_RAD),
-						radius * sin((theta_deg + theta_deg_step * 0.5) * DEG_TO_RAD) * sin((phi_deg + phi_deg_step * 0.5) * DEG_TO_RAD),
-						radius * cos((theta_deg + theta_deg_step * 0.5) * DEG_TO_RAD)));
-					vertices.push_back(glm::vec3(
-						radius * sin((theta_deg + theta_deg_step * 0.5) * DEG_TO_RAD) * cos((phi_deg - phi_deg_step * 0.5) * DEG_TO_RAD),
-						radius * sin((theta_deg + theta_deg_step * 0.5) * DEG_TO_RAD) * sin((phi_deg - phi_deg_step * 0.5) * DEG_TO_RAD),
-						radius * cos((theta_deg + theta_deg_step * 0.5) * DEG_TO_RAD)));
-
-					for (auto& vertex : vertices) {
-
-						vertex = glm::vec4(vertex, 0) * rotation_z * rotation_y * rotation_x;
-					}
-
-					this->face.addVertices(vertices);
-
-					this->face.addIndex(index + 0); this->face.addIndex(index + 1); this->face.addIndex(index + 3);
-					this->face.addIndex(index + 0); this->face.addIndex(index + 3); this->face.addIndex(index + 2);
-
-					for (int k = 0; k < 4; k++) {
-
-						this->face.addColor(ofColor(ofMap(radius, 50, 250, 39, 239)));
-					}
-
-					if (theta_deg == 45) {
-
-						this->frame.addVertex(vertices[2]);
-						this->frame.addVertex(vertices[3]);
-
-						this->frame.addIndex(this->frame.getNumVertices() - 1);
-						this->frame.addIndex(this->frame.getNumVertices() - 2);
-
-						this->frame.addColor(ofColor(39));
-						this->frame.addColor(ofColor(39));
-					}
-				}
-			}
-		}
-	}
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
 	this->cam.begin();
+	ofRotateY(ofGetFrameNum() * 0.72);
 
-	this->frame.draw();
-	this->face.draw();
+	for (int i = 0; i < this->sphere_list.size(); i++) {
+
+		auto location = get<1>(this->sphere_list[i]);
+		auto size = get<2>(this->sphere_list[i]);
+
+		ofPushMatrix();
+		ofTranslate(location);
+		ofRotateZ(ofMap(ofNoise(glm::vec4(location * 0.002, ofGetFrameNum() * 0.0075)), 0, 1, -360, 360));
+		ofRotateY(ofMap(ofNoise(glm::vec4(location * 0.002, ofGetFrameNum() * 0.0075)), 0, 1, -360, 360));
+		ofRotateX(ofMap(ofNoise(glm::vec4(location * 0.002, ofGetFrameNum() * 0.0075)), 0, 1, -360, 360));
+
+		this->draw_arrow(glm::vec2(), glm::vec2(1, 1), size);
+
+		ofPopMatrix();
+	}
 
 	this->cam.end();
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 150;
+	int start = 500;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
@@ -121,6 +90,44 @@ void ofApp::draw() {
 		}
 	}
 	*/
+}
+
+//--------------------------------------------------------------
+void ofApp::draw_arrow(glm::vec2 location, glm::vec2 next_location, float size) {
+
+	auto angle = std::atan2(next_location.y - location.y, next_location.x - location.x);
+
+	ofSetColor(0);
+	ofFill();
+	ofBeginShape();
+	ofVertex(glm::vec2(size * 0.8 * cos(angle), size * 0.8 * sin(angle)) + location);
+	ofVertex(glm::vec2(size * 0.5 * cos(angle + PI * 0.5), size * 0.5 * sin(angle + PI * 0.5)) + location);
+	ofVertex(glm::vec2(size * 0.5 * cos(angle - PI * 0.5), size * 0.5 * sin(angle - PI * 0.5)) + location);
+	ofEndShape(true);
+
+	ofBeginShape();
+	ofVertex(glm::vec2(size * 0.5 * cos(angle + PI * 0.5), size * 0.5 * sin(angle + PI * 0.5)) * 0.25 + location);
+	ofVertex(glm::vec2(size * 0.5 * cos(angle + PI * 0.5), size * 0.5 * sin(angle + PI * 0.5)) * 0.25 - glm::vec2(size * cos(angle), size * sin(angle)) * 0.5 + location);
+	ofVertex(glm::vec2(size * 0.5 * cos(angle - PI * 0.5), size * 0.5 * sin(angle - PI * 0.5)) * 0.25 - glm::vec2(size * cos(angle), size * sin(angle)) * 0.5 + location);
+	ofVertex(glm::vec2(size * 0.5 * cos(angle - PI * 0.5), size * 0.5 * sin(angle - PI * 0.5)) * 0.25 + location);
+	ofEndShape(true);
+
+	ofSetColor(255);
+	ofNoFill();
+	ofBeginShape();
+	ofVertex(glm::vec2(size * 0.5 * cos(angle + PI * 0.5), size * 0.5 * sin(angle + PI * 0.5)) * 0.25 + location);
+	ofVertex(glm::vec2(size * 0.5 * cos(angle + PI * 0.5), size * 0.5 * sin(angle + PI * 0.5)) + location);
+	ofVertex(glm::vec2(size * 0.8 * cos(angle), size * 0.8 * sin(angle)) + location);
+	ofVertex(glm::vec2(size * 0.5 * cos(angle - PI * 0.5), size * 0.5 * sin(angle - PI * 0.5)) + location);
+	ofVertex(glm::vec2(size * 0.5 * cos(angle - PI * 0.5), size * 0.5 * sin(angle - PI * 0.5)) * 0.25 + location);
+	ofEndShape();
+
+	ofBeginShape();
+	ofVertex(glm::vec2(size * 0.5 * cos(angle + PI * 0.5), size * 0.5 * sin(angle + PI * 0.5)) * 0.25 + location);
+	ofVertex(glm::vec2(size * 0.5 * cos(angle + PI * 0.5), size * 0.5 * sin(angle + PI * 0.5)) * 0.25 - glm::vec2(size * cos(angle), size * sin(angle)) * 0.5 + location);
+	ofVertex(glm::vec2(size * 0.5 * cos(angle - PI * 0.5), size * 0.5 * sin(angle - PI * 0.5)) * 0.25 - glm::vec2(size * cos(angle), size * sin(angle)) * 0.5 + location);
+	ofVertex(glm::vec2(size * 0.5 * cos(angle - PI * 0.5), size * 0.5 * sin(angle - PI * 0.5)) * 0.25 + location);
+	ofEndShape();
 }
 
 //--------------------------------------------------------------
