@@ -6,40 +6,22 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofSetLineWidth(2);
 	ofEnableDepthTest();
 
 	auto ico_sphere = ofIcoSpherePrimitive(1, 5);
 	this->base_location_list = ico_sphere.getMesh().getVertices();
 
-	this->number_of_sphere = 1200;
-	while (this->sphere_list.size() < this->number_of_sphere) {
+	int span = 30;
+	for (int x = -150; x <= 150; x += span) {
 
-		int index = ofRandom(this->base_location_list.size());
-		auto tmp_location = this->base_location_list[index];
-		tmp_location = glm::normalize(tmp_location) * ofRandom(0, 100);
+		for (int y = -150; y <= 150; y += span) {
 
-		auto radius = 5;
+			for (int z = -150; z <= 150; z += span) {
 
-		bool flag = true;
-		for (int i = 0; i < this->sphere_list.size(); i++) {
-
-			if (glm::distance(tmp_location, get<1>(this->sphere_list[i])) < get<2>(this->sphere_list[i]) + radius) {
-
-				flag = false;
-				break;
+				this->sphere_list.push_back(std::make_tuple(ofColor(39), glm::vec3(x, y, z), span));
 			}
-		}
-
-		if (flag) {
-
-			ofColor color;
-			color.setHsb(ofRandom(255), 200, 255);
-
-			auto size = (radius * 2) / sqrt(3);
-
-			this->sphere_list.push_back(std::make_tuple(color, tmp_location, size));
 		}
 	}
 }
@@ -54,7 +36,7 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
-	ofRotateY(ofGetFrameNum() * 0.72);
+	ofRotateY(ofGetFrameNum() * 1.44);
 
 	for (int i = 0; i < this->sphere_list.size(); i++) {
 
@@ -63,9 +45,18 @@ void ofApp::draw() {
 
 		ofPushMatrix();
 		ofTranslate(location);
-		ofRotateZ(ofMap(ofNoise(glm::vec4(location * 0.002, ofGetFrameNum() * 0.0075)), 0, 1, -360, 360));
-		ofRotateY(ofMap(ofNoise(glm::vec4(location * 0.002, ofGetFrameNum() * 0.0075)), 0, 1, -360, 360));
-		ofRotateX(ofMap(ofNoise(glm::vec4(location * 0.002, ofGetFrameNum() * 0.0075)), 0, 1, -360, 360));
+
+		int deg_x = ofMap(ofNoise(glm::vec4(location * 0.002, ofGetFrameNum() * 0.0075)), 0, 1, -360, 360);
+		int deg_y = ofMap(ofNoise(glm::vec4(location * 0.002, ofGetFrameNum() * 0.0075)), 0, 1, -360, 360);
+		int deg_z = ofMap(ofNoise(glm::vec4(location * 0.002, ofGetFrameNum() * 0.0075)), 0, 1, -360, 360);
+
+		deg_x = (deg_x / 45) * 45;
+		deg_y = (deg_y / 45) * 45;
+		deg_z = (deg_z / 45) * 45;
+
+		ofRotateZ(deg_z);
+		ofRotateY(deg_y);
+		ofRotateX(deg_z);
 
 		this->draw_arrow(glm::vec2(), glm::vec2(1, 1), size);
 
