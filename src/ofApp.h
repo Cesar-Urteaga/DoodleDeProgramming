@@ -1,4 +1,3 @@
-#pragma once
 #include "ofMain.h"
 
 class ofApp : public ofBaseApp {
@@ -20,12 +19,5 @@ public:
 	void dragEvent(ofDragInfo dragInfo) {};
 	void gotMessage(ofMessage msg) {};
 
-	void draw_arrow(glm::vec2 location, glm::vec2 next_location, float size);
-
-	ofEasyCam cam;
-
-	vector<glm::vec3> base_location_list;
-
-	vector<std::tuple<ofColor, glm::vec3, float>> sphere_list; // BodyColor, Location, size
-	int number_of_sphere;
+	ofMesh mesh;
 };

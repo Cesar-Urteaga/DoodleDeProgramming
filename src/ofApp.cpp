@@ -6,68 +6,50 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(39);
-	ofSetLineWidth(2);
-	ofEnableDepthTest();
+	ofBackground(239);
+}
 
-	auto ico_sphere = ofIcoSpherePrimitive(1, 5);
-	this->base_location_list = ico_sphere.getMesh().getVertices();
+//--------------------------------------------------------------
+void ofApp::update() {
 
-	int span = 30;
-	for (int x = -150; x <= 150; x += span) {
+	this->mesh.clear();
 
-		for (int y = -150; y <= 150; y += span) {
+	float span = 0.5;
+	for (float noise_param = 0; noise_param < 1.1; noise_param += 0.1) {
 
-			for (int z = -150; z <= 150; z += span) {
+		for (float x = 20; x <= 700; x += span) {
 
-				this->sphere_list.push_back(std::make_tuple(ofColor(39), glm::vec3(x, y, z), span));
+			for (float y = 20; y <= 700; y += span) {
+
+				float noise_value = ofNoise(int(x / 20) * 20 * 0.0025, int(y / 20) * 20 * 0.0025, ofGetFrameNum() * 0.0005);
+				if (noise_value >= noise_param - 0.025 && noise_value <= noise_param + 0.025) {
+
+					this->mesh.addVertex(glm::vec3(x, y, 0));
+					this->mesh.addVertex(glm::vec3(x + span, y, 0));
+					this->mesh.addVertex(glm::vec3(x + span, y + span, 0));
+					this->mesh.addVertex(glm::vec3(x, y + span, 0));
+
+					this->mesh.addIndex(this->mesh.getNumVertices() - 1); this->mesh.addIndex(this->mesh.getNumVertices() - 4); this->mesh.addIndex(this->mesh.getNumVertices() - 3);
+					this->mesh.addIndex(this->mesh.getNumVertices() - 1); this->mesh.addIndex(this->mesh.getNumVertices() - 2); this->mesh.addIndex(this->mesh.getNumVertices() - 3);
+
+					for (int i = 0; i < 4; i++) {
+
+						this->mesh.addColor(ofColor(39));
+					}
+				}
 			}
 		}
 	}
 }
 
 //--------------------------------------------------------------
-void ofApp::update() {
-
-	ofSeedRandom(39);
-}
-
-//--------------------------------------------------------------
 void ofApp::draw() {
 
-	this->cam.begin();
-	ofRotateY(ofGetFrameNum() * 1.44);
-
-	for (int i = 0; i < this->sphere_list.size(); i++) {
-
-		auto location = get<1>(this->sphere_list[i]);
-		auto size = get<2>(this->sphere_list[i]);
-
-		ofPushMatrix();
-		ofTranslate(location);
-
-		int deg_x = ofMap(ofNoise(glm::vec4(location * 0.002, ofGetFrameNum() * 0.0075)), 0, 1, -360, 360);
-		int deg_y = ofMap(ofNoise(glm::vec4(location * 0.002, ofGetFrameNum() * 0.0075)), 0, 1, -360, 360);
-		int deg_z = ofMap(ofNoise(glm::vec4(location * 0.002, ofGetFrameNum() * 0.0075)), 0, 1, -360, 360);
-
-		deg_x = (deg_x / 45) * 45;
-		deg_y = (deg_y / 45) * 45;
-		deg_z = (deg_z / 45) * 45;
-
-		ofRotateZ(deg_z);
-		ofRotateY(deg_y);
-		ofRotateX(deg_z);
-
-		this->draw_arrow(glm::vec2(), glm::vec2(1, 1), size);
-
-		ofPopMatrix();
-	}
-
-	this->cam.end();
+	this->mesh.draw();
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 500;
+	int start = 1;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
@@ -81,44 +63,6 @@ void ofApp::draw() {
 		}
 	}
 	*/
-}
-
-//--------------------------------------------------------------
-void ofApp::draw_arrow(glm::vec2 location, glm::vec2 next_location, float size) {
-
-	auto angle = std::atan2(next_location.y - location.y, next_location.x - location.x);
-
-	ofSetColor(0);
-	ofFill();
-	ofBeginShape();
-	ofVertex(glm::vec2(size * 0.8 * cos(angle), size * 0.8 * sin(angle)) + location);
-	ofVertex(glm::vec2(size * 0.5 * cos(angle + PI * 0.5), size * 0.5 * sin(angle + PI * 0.5)) + location);
-	ofVertex(glm::vec2(size * 0.5 * cos(angle - PI * 0.5), size * 0.5 * sin(angle - PI * 0.5)) + location);
-	ofEndShape(true);
-
-	ofBeginShape();
-	ofVertex(glm::vec2(size * 0.5 * cos(angle + PI * 0.5), size * 0.5 * sin(angle + PI * 0.5)) * 0.25 + location);
-	ofVertex(glm::vec2(size * 0.5 * cos(angle + PI * 0.5), size * 0.5 * sin(angle + PI * 0.5)) * 0.25 - glm::vec2(size * cos(angle), size * sin(angle)) * 0.5 + location);
-	ofVertex(glm::vec2(size * 0.5 * cos(angle - PI * 0.5), size * 0.5 * sin(angle - PI * 0.5)) * 0.25 - glm::vec2(size * cos(angle), size * sin(angle)) * 0.5 + location);
-	ofVertex(glm::vec2(size * 0.5 * cos(angle - PI * 0.5), size * 0.5 * sin(angle - PI * 0.5)) * 0.25 + location);
-	ofEndShape(true);
-
-	ofSetColor(255);
-	ofNoFill();
-	ofBeginShape();
-	ofVertex(glm::vec2(size * 0.5 * cos(angle + PI * 0.5), size * 0.5 * sin(angle + PI * 0.5)) * 0.25 + location);
-	ofVertex(glm::vec2(size * 0.5 * cos(angle + PI * 0.5), size * 0.5 * sin(angle + PI * 0.5)) + location);
-	ofVertex(glm::vec2(size * 0.8 * cos(angle), size * 0.8 * sin(angle)) + location);
-	ofVertex(glm::vec2(size * 0.5 * cos(angle - PI * 0.5), size * 0.5 * sin(angle - PI * 0.5)) + location);
-	ofVertex(glm::vec2(size * 0.5 * cos(angle - PI * 0.5), size * 0.5 * sin(angle - PI * 0.5)) * 0.25 + location);
-	ofEndShape();
-
-	ofBeginShape();
-	ofVertex(glm::vec2(size * 0.5 * cos(angle + PI * 0.5), size * 0.5 * sin(angle + PI * 0.5)) * 0.25 + location);
-	ofVertex(glm::vec2(size * 0.5 * cos(angle + PI * 0.5), size * 0.5 * sin(angle + PI * 0.5)) * 0.25 - glm::vec2(size * cos(angle), size * sin(angle)) * 0.5 + location);
-	ofVertex(glm::vec2(size * 0.5 * cos(angle - PI * 0.5), size * 0.5 * sin(angle - PI * 0.5)) * 0.25 - glm::vec2(size * cos(angle), size * sin(angle)) * 0.5 + location);
-	ofVertex(glm::vec2(size * 0.5 * cos(angle - PI * 0.5), size * 0.5 * sin(angle - PI * 0.5)) * 0.25 + location);
-	ofEndShape();
 }
 
 //--------------------------------------------------------------
