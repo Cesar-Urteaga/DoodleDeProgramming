@@ -1,3 +1,4 @@
+#pragma once
 #include "ofMain.h"
 
 class ofApp : public ofBaseApp {
@@ -19,5 +20,5 @@ public:
 	void dragEvent(ofDragInfo dragInfo) {};
 	void gotMessage(ofMessage msg) {};
 
-	ofMesh mesh;
+	void draw_arrow(glm::vec2 location, glm::vec2 next_location, float size, ofColor fill_color, ofColor no_fill_color);
 };
