@@ -20,5 +20,5 @@ public:
 	void dragEvent(ofDragInfo dragInfo) {};
 	void gotMessage(ofMessage msg) {};
 
-	void draw_arrow(glm::vec2 location, glm::vec2 next_location, float size, ofColor fill_color, ofColor no_fill_color);
+	glm::vec2 make_point(int radius, int deg);
 };

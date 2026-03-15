@@ -6,8 +6,8 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
-	ofSetLineWidth(2);
+	ofBackground(39);
+	ofSetLineWidth(1.25);
 }
 
 //--------------------------------------------------------------
@@ -20,31 +20,32 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	ofTranslate(ofGetWindowSize() * 0.5);
+	ofRotate(45);
 
-	for (int k = 0; k < 270; k++) {
+	ofColor color;
+	for (int k = 0; k < 360; k++) {
 
-		auto radius = 250;
-		auto deg = ofGetFrameNum() * 1.44 + k;
-		auto next_deg = (ofGetFrameNum() + 1) * 1.44 + k;
-		auto param = glm::vec3(2, 0, 0);
+		auto radius = 350;
 		auto noise_seed = glm::vec3(ofRandom(1000), ofRandom(1000), ofRandom(1000));
-
-		auto base_location = glm::vec2(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD));
+		auto deg = ofGetFrameNum() * 0.72 + k;
+		auto base_location = this->make_point(radius, deg);
 
 		auto location = glm::vec2(
-			ofMap(ofNoise(noise_seed.x, (k + ofGetFrameNum()) * 0.008), 0, 1, -40, 40),
-			ofMap(ofNoise(noise_seed.y, (k + ofGetFrameNum()) * 0.008), 0, 1, -40, 40));
-
-		auto next_base_location = glm::vec2(radius * cos(next_deg * DEG_TO_RAD), radius * sin(next_deg * DEG_TO_RAD));
-
-		auto next = glm::vec2(
-			ofMap(ofNoise(noise_seed.x, (k + ofGetFrameNum() + 1) * 0.008), 0, 1, -40, 40),
-			ofMap(ofNoise(noise_seed.y, (k + ofGetFrameNum() + 1) * 0.008), 0, 1, -40, 40));
+			ofMap(ofNoise(noise_seed.x, (k + ofGetFrameNum()) * 0.005), 0, 1, -40, 40),
+			ofMap(ofNoise(noise_seed.y, (k + ofGetFrameNum()) * 0.005), 0, 1, -40, 40));
 
 		location += base_location;
-		next += next_base_location;
 
-		this->draw_arrow(location, next, ofMap(k, 0, 270, 5, 25), ofColor(39), ofColor(239));
+		color.setHsb(ofMap(k, 0, 360, 0, 255), 130, 255);
+		auto size = ofMap(k, 0, 360, 0, 25);
+
+		ofSetColor(ofColor(39));
+		ofFill();
+		ofDrawCircle(location, size);
+
+		ofSetColor(color);
+		ofNoFill();
+		ofDrawCircle(location, size);
 	}
 
 	/*
@@ -66,41 +67,21 @@ void ofApp::draw() {
 }
 
 //--------------------------------------------------------------
-void ofApp::draw_arrow(glm::vec2 location, glm::vec2 next_location, float size, ofColor fill_color, ofColor no_fill_color) {
+glm::vec2 ofApp::make_point(int radius, int deg) {
 
-	auto angle = std::atan2(next_location.y - location.y, next_location.x - location.x);
+	deg = deg % 360;
 
-	ofSetColor(fill_color);
-	ofFill();
-	ofBeginShape();
-	ofVertex(glm::vec2(size * 0.8 * cos(angle), size * 0.8 * sin(angle)) + location);
-	ofVertex(glm::vec2(size * 0.5 * cos(angle + PI * 0.5), size * 0.5 * sin(angle + PI * 0.5)) + location);
-	ofVertex(glm::vec2(size * 0.5 * cos(angle - PI * 0.5), size * 0.5 * sin(angle - PI * 0.5)) + location);
-	ofEndShape(true);
+	int deg_a = (deg / 90) * 90;
+	int deg_b = deg_a + 90;
 
-	ofBeginShape();
-	ofVertex(glm::vec2(size * 0.5 * cos(angle + PI * 0.5), size * 0.5 * sin(angle + PI * 0.5)) * 0.25 + location);
-	ofVertex(glm::vec2(size * 0.5 * cos(angle + PI * 0.5), size * 0.5 * sin(angle + PI * 0.5)) * 0.25 - glm::vec2(size * cos(angle), size * sin(angle)) * 0.5 + location);
-	ofVertex(glm::vec2(size * 0.5 * cos(angle - PI * 0.5), size * 0.5 * sin(angle - PI * 0.5)) * 0.25 - glm::vec2(size * cos(angle), size * sin(angle)) * 0.5 + location);
-	ofVertex(glm::vec2(size * 0.5 * cos(angle - PI * 0.5), size * 0.5 * sin(angle - PI * 0.5)) * 0.25 + location);
-	ofEndShape(true);
+	int remainder = deg % 90;
+	int diff = deg - deg_a;
 
-	ofSetColor(no_fill_color);
-	ofNoFill();
-	ofBeginShape();
-	ofVertex(glm::vec2(size * 0.5 * cos(angle + PI * 0.5), size * 0.5 * sin(angle + PI * 0.5)) * 0.25 + location);
-	ofVertex(glm::vec2(size * 0.5 * cos(angle + PI * 0.5), size * 0.5 * sin(angle + PI * 0.5)) + location);
-	ofVertex(glm::vec2(size * 0.8 * cos(angle), size * 0.8 * sin(angle)) + location);
-	ofVertex(glm::vec2(size * 0.5 * cos(angle - PI * 0.5), size * 0.5 * sin(angle - PI * 0.5)) + location);
-	ofVertex(glm::vec2(size * 0.5 * cos(angle - PI * 0.5), size * 0.5 * sin(angle - PI * 0.5)) * 0.25 + location);
-	ofEndShape();
+	auto point_a = glm::vec2(radius * cos(deg_a * DEG_TO_RAD), radius * sin(deg_a * DEG_TO_RAD));
+	auto point_b = glm::vec2(radius * cos(deg_b * DEG_TO_RAD), radius * sin(deg_b * DEG_TO_RAD));
+	auto distance = point_b - point_a;
 
-	ofBeginShape();
-	ofVertex(glm::vec2(size * 0.5 * cos(angle + PI * 0.5), size * 0.5 * sin(angle + PI * 0.5)) * 0.25 + location);
-	ofVertex(glm::vec2(size * 0.5 * cos(angle + PI * 0.5), size * 0.5 * sin(angle + PI * 0.5)) * 0.25 - glm::vec2(size * cos(angle), size * sin(angle)) * 0.5 + location);
-	ofVertex(glm::vec2(size * 0.5 * cos(angle - PI * 0.5), size * 0.5 * sin(angle - PI * 0.5)) * 0.25 - glm::vec2(size * cos(angle), size * sin(angle)) * 0.5 + location);
-	ofVertex(glm::vec2(size * 0.5 * cos(angle - PI * 0.5), size * 0.5 * sin(angle - PI * 0.5)) * 0.25 + location);
-	ofEndShape();
+	return point_a + (distance / 90) * diff;
 }
 
 //--------------------------------------------------------------
