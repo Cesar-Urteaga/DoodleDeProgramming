@@ -6,42 +6,52 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
-	ofSetColor(39);
+	ofBackground(39);
+	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
+	ofSetRandomSeed(39);
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
 	int span = 2;
+	auto seed = ofRandom(1000);
+	ofColor color;
 
-	for (int x = 0; x < ofGetWidth(); x += span) {
+	for (int i = 0; i < 5; i++) {
 
-		for (int y = 0; y < ofGetHeight(); y += span) {
+		seed += 0.05;
+		color.setHsb(ofMap(i, 0, 5, 0, 255), 255, 255, 64);
+		ofSetColor(color);
 
-			auto noise_value = ofNoise(x * 0.01, y * 0.0025 + ofGetFrameNum() * 0.035);
+		for (int x = 0; x < ofGetWidth(); x += span) {
 
-			if (y > ofGetHeight() * 0.85) {
+			for (int y = 0; y < ofGetHeight(); y += span) {
 
-				noise_value += ofMap(y, ofGetHeight() * 0.85, ofGetHeight(), 0.25, 1);
-			}
-			else if (y > ofGetHeight() * 0.65) {
+				auto noise_value = ofNoise(seed, x * 0.01, y * 0.0025 + ofGetFrameNum() * 0.035);
 
-				noise_value += ofMap(y, ofGetHeight() * 0.65, ofGetHeight() * 0.85, 0, 0.25);
-			}
-			else if (y < ofGetHeight() * 0.45) {
+				if (y > ofGetHeight() * 0.85) {
 
-				noise_value += ofMap(y, 0, ofGetHeight() * 0.45, -0.65, 0);
-			}
+					noise_value += ofMap(y, ofGetHeight() * 0.85, ofGetHeight(), 0.25, 1);
+				}
+				else if (y > ofGetHeight() * 0.65) {
 
-			if (noise_value > 0.35) {
+					noise_value += ofMap(y, ofGetHeight() * 0.65, ofGetHeight() * 0.85, 0, 0.25);
+				}
+				else if (y < ofGetHeight() * 0.45) {
 
-				ofDrawRectangle(glm::vec2(x, y), span, span);
+					noise_value += ofMap(y, 0, ofGetHeight() * 0.45, -0.65, 0);
+				}
+
+				if (noise_value > 0.35) {
+
+					ofDrawRectangle(glm::vec2(x, y), span, span);
+				}
 			}
 		}
 	}
