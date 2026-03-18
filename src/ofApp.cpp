@@ -6,59 +6,44 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(39);
-	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
+	ofBackground(239);
+	ofSetLineWidth(1.5);
+	ofEnableDepthTest();
+
+	this->frame.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	ofSetRandomSeed(39);
+	ofSeedRandom(39);
+
+	this->face.clear();
+	this->frame.clear();
+
+	for (int z = -1500; z <= 0; z += 15) {
+
+		auto alpha = ofMap(z, 0, -1500, 255, 16);
+		auto face_color = ofColor(239);
+		auto frame_color = ofColor(0);
+
+		this->setRingToMesh(this->face, this->frame, glm::vec3(0, 0, z), 300, 75, 5, face_color, frame_color);
+	}
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-	int span = 2;
-	auto seed = ofRandom(1000);
-	ofColor color;
+	this->cam.begin();
 
-	for (int i = 0; i < 5; i++) {
+	this->face.draw();
+	this->frame.drawWireframe();
 
-		seed += 0.05;
-		color.setHsb(ofMap(i, 0, 5, 0, 255), 255, 255, 64);
-		ofSetColor(color);
-
-		for (int x = 0; x < ofGetWidth(); x += span) {
-
-			for (int y = 0; y < ofGetHeight(); y += span) {
-
-				auto noise_value = ofNoise(seed, x * 0.01, y * 0.0025 + ofGetFrameNum() * 0.035);
-
-				if (y > ofGetHeight() * 0.85) {
-
-					noise_value += ofMap(y, ofGetHeight() * 0.85, ofGetHeight(), 0.25, 1);
-				}
-				else if (y > ofGetHeight() * 0.65) {
-
-					noise_value += ofMap(y, ofGetHeight() * 0.65, ofGetHeight() * 0.85, 0, 0.25);
-				}
-				else if (y < ofGetHeight() * 0.45) {
-
-					noise_value += ofMap(y, 0, ofGetHeight() * 0.45, -0.65, 0);
-				}
-
-				if (noise_value > 0.35) {
-
-					ofDrawRectangle(glm::vec2(x, y), span, span);
-				}
-			}
-		}
-	}
+	this->cam.end();
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 30;
+	int start = 500;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
@@ -73,6 +58,94 @@ void ofApp::draw() {
 	}
 	*/
 }
+
+//--------------------------------------------------------------
+void ofApp::setRingToMesh(ofMesh& face_target, ofMesh& frame_target, glm::vec3 location, float radius, float width, float height, ofColor face_color, ofColor frame_color) {
+
+	int index = face_target.getNumVertices();
+
+	for (int param = 0; param < 100; param++) {
+
+		float deg = param * 3.6 - 135;
+		float deg_span = 3.6;
+
+		auto noise_location = location + glm::vec3(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD), 0);
+		auto next_noise_location = location + glm::vec3(radius * cos((deg + deg_span) * DEG_TO_RAD), radius * sin((deg + deg_span) * DEG_TO_RAD), 0);
+
+		int inner_radius = radius - width * ofMap(ofNoise(glm::vec4(noise_location.x * 0.001, noise_location.y * 0.001, noise_location.z * 0.003, radius * 0.003 + ofGetFrameNum() * 0.015)), 0, 1, 0, 3);
+		int next_inner_radius = radius - width * ofMap(ofNoise(glm::vec4(next_noise_location.x * 0.001, next_noise_location.y * 0.001, next_noise_location.z * 0.003, radius * 0.003 + ofGetFrameNum() * 0.015)), 0, 1, 0, 3);
+
+		auto face_index = face_target.getNumVertices();
+
+		vector<glm::vec3> vertices;
+		vertices.push_back(glm::vec3(inner_radius * cos(deg * DEG_TO_RAD), inner_radius * sin(deg * DEG_TO_RAD), height * -0.5));
+		vertices.push_back(glm::vec3(next_inner_radius * cos((deg + deg_span) * DEG_TO_RAD), next_inner_radius * sin((deg + deg_span) * DEG_TO_RAD), height * -0.5));
+		vertices.push_back(glm::vec3(next_inner_radius * cos((deg + deg_span) * DEG_TO_RAD), next_inner_radius * sin((deg + deg_span) * DEG_TO_RAD), height * 0.5));
+		vertices.push_back(glm::vec3(inner_radius * cos(deg * DEG_TO_RAD), inner_radius * sin(deg * DEG_TO_RAD), height * 0.5));
+
+		vertices.push_back(glm::vec3(this->make_point(radius * 2, param), height * -0.5));
+		vertices.push_back(glm::vec3(this->make_point(radius * 2, param + 1), height * -0.5));
+		vertices.push_back(glm::vec3(this->make_point(radius * 2, param + 1), height * 0.5));
+		vertices.push_back(glm::vec3(this->make_point(radius * 2, param), height * 0.5));
+
+		for (auto& vertex : vertices) {
+
+			vertex += location;
+		}
+
+		face_target.addVertices(vertices);
+
+		face_target.addIndex(face_index + 0); face_target.addIndex(face_index + 1); face_target.addIndex(face_index + 2);
+		face_target.addIndex(face_index + 0); face_target.addIndex(face_index + 2); face_target.addIndex(face_index + 3);
+
+		face_target.addIndex(face_index + 4); face_target.addIndex(face_index + 5); face_target.addIndex(face_index + 6);
+		face_target.addIndex(face_index + 4); face_target.addIndex(face_index + 6); face_target.addIndex(face_index + 7);
+
+		face_target.addIndex(face_index + 0); face_target.addIndex(face_index + 4); face_target.addIndex(face_index + 5);
+		face_target.addIndex(face_index + 0); face_target.addIndex(face_index + 5); face_target.addIndex(face_index + 1);
+
+		face_target.addIndex(face_index + 3); face_target.addIndex(face_index + 7); face_target.addIndex(face_index + 6);
+		face_target.addIndex(face_index + 3); face_target.addIndex(face_index + 6); face_target.addIndex(face_index + 2);
+
+		auto frame_index = frame_target.getNumVertices();
+
+		frame_target.addVertices(vertices);
+
+		frame_target.addIndex(frame_index + 0); frame_target.addIndex(frame_index + 1);
+		frame_target.addIndex(frame_index + 2); frame_target.addIndex(frame_index + 3);
+		frame_target.addIndex(frame_index + 4); frame_target.addIndex(frame_index + 5);
+		frame_target.addIndex(frame_index + 6); frame_target.addIndex(frame_index + 7);
+
+		for (int i = 0; i < 8; i++) {
+
+			this->face.addColor(face_color);
+			this->frame.addColor(frame_color);
+		}
+	}
+}
+
+//--------------------------------------------------------------
+glm::vec2 ofApp::make_point(int len, int param) {
+
+	param = param % 100;
+	if (param < 25) {
+
+		return glm::vec2(ofMap(param, 0, 25, -len * 0.5, len * 0.5), -len * 0.5);
+	}
+	else if (param < 50) {
+
+		return glm::vec2(len * 0.5, ofMap(param, 25, 50, -len * 0.5, len * 0.5));
+	}
+	else if (param < 75) {
+
+		return glm::vec2(ofMap(param, 50, 75, len * 0.5, -len * 0.5), len * 0.5);
+	}
+	else {
+
+		return glm::vec2(-len * 0.5, ofMap(param, 75, 100, len * 0.5, -len * 0.5));
+	}
+}
+
 
 //--------------------------------------------------------------
 int main() {
