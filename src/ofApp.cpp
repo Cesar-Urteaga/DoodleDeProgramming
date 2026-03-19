@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofSetLineWidth(1.5);
 	ofEnableDepthTest();
 
@@ -21,13 +21,13 @@ void ofApp::update() {
 	this->face.clear();
 	this->frame.clear();
 
-	for (int z = -1500; z <= 0; z += 15) {
+	for (int z = -3000; z <= 0; z += 15) {
 
 		auto alpha = ofMap(z, 0, -1500, 255, 16);
-		auto face_color = ofColor(239);
-		auto frame_color = ofColor(0);
+		auto face_color = ofColor(0);
+		auto frame_color = ofColor(239, 39, 39);
 
-		this->setRingToMesh(this->face, this->frame, glm::vec3(0, 0, z), 300, 75, 5, face_color, frame_color);
+		this->setRingToMesh(this->face, this->frame, glm::vec3(0, 0, z), 300, 100, 15, face_color, frame_color);
 	}
 }
 
@@ -72,8 +72,8 @@ void ofApp::setRingToMesh(ofMesh& face_target, ofMesh& frame_target, glm::vec3 l
 		auto noise_location = location + glm::vec3(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD), 0);
 		auto next_noise_location = location + glm::vec3(radius * cos((deg + deg_span) * DEG_TO_RAD), radius * sin((deg + deg_span) * DEG_TO_RAD), 0);
 
-		int inner_radius = radius - width * ofMap(ofNoise(glm::vec4(noise_location.x * 0.001, noise_location.y * 0.001, noise_location.z * 0.003, radius * 0.003 + ofGetFrameNum() * 0.015)), 0, 1, 0, 3);
-		int next_inner_radius = radius - width * ofMap(ofNoise(glm::vec4(next_noise_location.x * 0.001, next_noise_location.y * 0.001, next_noise_location.z * 0.003, radius * 0.003 + ofGetFrameNum() * 0.015)), 0, 1, 0, 3);
+		int inner_radius = radius - width * ofMap(ofNoise(glm::vec4(noise_location.x * 0.008, noise_location.y * 0.008, noise_location.z * 0.003, radius * 0.003 + ofGetFrameNum() * 0.015)), 0, 1, 0, 2);
+		int next_inner_radius = radius - width * ofMap(ofNoise(glm::vec4(next_noise_location.x * 0.008, next_noise_location.y * 0.008, next_noise_location.z * 0.003, radius * 0.003 + ofGetFrameNum() * 0.015)), 0, 1, 0, 2);
 
 		auto face_index = face_target.getNumVertices();
 
