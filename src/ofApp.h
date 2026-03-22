@@ -19,7 +19,4 @@ public:
 	void gotMessage(ofMessage msg) {};
 
 	ofEasyCam cam;
-
-	vector<ofMeshFace> triangle_list;
-	ofMesh mesh, frame;
 };
