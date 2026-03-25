@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofSetLineWidth(2);
 	ofEnableDepthTest();
 
@@ -21,48 +21,46 @@ void ofApp::update() {
 	this->face.clear();
 	this->frame.clear();
 
-	for (int z = -128; z <= 128; z += 16) {
+	for (int z = -1024; z <= 1024; z += 64) {
 
-		for (int radius = 180; radius <= 360; radius += 30) {
+		auto radius = 360;
+		int deg_start = 0;
+		int deg_end = 0;
+		int tmp_deg = 0;
+		for (int deg = 0; deg < 360 + tmp_deg; deg += 1) {
 
-			int deg_start = 0;
-			int deg_end = 0;
-			int tmp_deg = 0;
-			for (int deg = 0; deg < 360 + tmp_deg; deg += 1) {
+			auto noise_value = ofNoise(glm::vec4(radius * cos(deg * DEG_TO_RAD) * 0.001, radius * sin(deg * DEG_TO_RAD) * 0.001, z * 0.003, ofGetFrameNum() * 0.01));
 
-				auto noise_value = ofNoise(glm::vec4(radius * cos(deg * DEG_TO_RAD) * 0.001, radius * sin(deg * DEG_TO_RAD) * 0.001, z * 0.01, ofGetFrameNum() * 0.01));
+			if (noise_value < 0.5) {
 
-				if (noise_value < 0.5) {
+				deg_end = deg;
 
-					deg_end = deg;
+				if (deg == 0) {
 
-					if (deg == 0) {
+					while (true) {
 
-						while (true) {
-
-							tmp_deg -= 1;
-							auto tmp_noise_value = ofNoise(glm::vec4(radius * cos(tmp_deg * DEG_TO_RAD) * 0.001, radius * sin(tmp_deg * DEG_TO_RAD) * 0.001, z * 0.01, ofGetFrameNum() * 0.01));
-							if (tmp_noise_value > 0.5 || tmp_deg < -360) { break; }		
-							deg_start = tmp_deg;
-						}
+						tmp_deg -= 1;
+						auto tmp_noise_value = ofNoise(glm::vec4(radius * cos(tmp_deg * DEG_TO_RAD) * 0.001, radius * sin(tmp_deg * DEG_TO_RAD) * 0.001, z * 0.003, ofGetFrameNum() * 0.01));
+						if (tmp_noise_value > 0.5 || tmp_deg < -360) { break; }
+						deg_start = tmp_deg;
 					}
 				}
-				else {
+			}
+			else {
 
-					if (deg_start < deg_end) {
+				if (deg_start < deg_end) {
 
-						this->setRingToMesh(this->face, this->frame, glm::vec3(0, 0, z + 8), radius, 30, 14, deg_start, deg_end);
-					}
-
-					deg_start = deg;
-					deg_end = deg;
+					this->setRingToMesh(this->face, this->frame, glm::vec3(0, 0, z + 8), radius, 120, 62, deg_start, deg_end);
 				}
-			}
 
-			if (deg_start != deg_end) {
-
-				this->setRingToMesh(this->face, this->frame, glm::vec3(0, 0, z + 8), radius, 30, 14, deg_start, deg_end);
+				deg_start = deg;
+				deg_end = deg;
 			}
+		}
+
+		if (deg_start != deg_end) {
+
+			this->setRingToMesh(this->face, this->frame, glm::vec3(0, 0, z + 8), radius, 120, 62, deg_start, deg_end);
 		}
 	}
 }
@@ -71,7 +69,8 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
-	ofRotateY(ofGetFrameNum() * 1.44);
+	ofRotateX(90);
+	ofRotateZ(ofGetFrameNum() * 0.72);
 
 	ofSetColor(39);
 	this->face.draw();
