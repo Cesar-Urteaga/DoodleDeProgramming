@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofFill();
 
 	ofSetRectMode(ofRectMode::OF_RECTMODE_CENTER);
@@ -15,16 +15,13 @@ void ofApp::setup() {
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	ofColor color(39);
-	for (int i = 0; i < 10; i++) {
+	ofColor color(239);
+	for (int i = 0; i < 12; i++) {
 
-		auto noise_location = glm::vec2(
-			ofMap(ofNoise(39 + i * 1000, ofGetFrameNum() * 0.0085), 0, 1, -600, 600),
-			ofMap(ofNoise(239 + i * 1000, ofGetFrameNum() * 0.0085), 0, 1, -600, 600));
-
-		auto next_noise_location = glm::vec2(
-			ofMap(ofNoise(39 + i * 1000, (ofGetFrameNum() + 1) * 0.0085), 0, 1, -600, 600),
-			ofMap(ofNoise(239 + i * 1000, (ofGetFrameNum() + 1) * 0.0085), 0, 1, -600, 600));
+		auto deg = ofGetFrameNum() * 1.44 + i * 30;
+		auto next_deg = deg + 10;
+		auto noise_location = glm::vec2(280 * cos(deg * DEG_TO_RAD), 280 * sin(deg * DEG_TO_RAD));
+		auto next_noise_location = glm::vec2(100 * cos(next_deg * DEG_TO_RAD), 100 * sin(next_deg * DEG_TO_RAD));
 
 		for (int k = 0; k < 1; k++) {
 
@@ -76,8 +73,8 @@ void ofApp::draw() {
 		ofRotate(rad * RAD_TO_DEG + ofGetFrameNum() * 3);
 
 		ofSetColor(this->color_list[i]);
-		auto size = this->log_list[i].size() < 3 ? 35 : ofMap(this->log_list[i].size(), 3, 30, 35, 1);
-		ofDrawRectangle(glm::vec3(), size, size);
+		auto size = this->log_list[i].size() < 3 ? 25 : ofMap(this->log_list[i].size(), 3, 30, 25, 1);
+		ofDrawCircle(glm::vec3(), size);
 
 		ofPopMatrix();
 	}
@@ -90,9 +87,9 @@ void ofApp::draw() {
 		auto rad = atan2(this->velocity_list[i].y, this->velocity_list[i].x);
 		ofRotate(rad * RAD_TO_DEG + ofGetFrameNum() * 3);
 
-		ofSetColor(239);
-		auto size = this->log_list[i].size() < 3 ? 28 : ofMap(this->log_list[i].size(), 3, 30, 28, 0);
-		ofDrawRectangle(glm::vec3(), size, size);
+		ofSetColor(39);
+		auto size = this->log_list[i].size() < 3 ? 20 : ofMap(this->log_list[i].size(), 3, 30, 20, 0);
+		ofDrawCircle(glm::vec3(), size);
 
 		ofPopMatrix();
 	}
