@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofSetLineWidth(2);
 	ofEnableDepthTest();
 }
@@ -21,22 +21,23 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
+	ofRotateY(ofGetFrameNum() * 1.44);
 
-	int size = 5;
+	int size = 10;
 	for (int x = -150; x <= 150; x += size) {
 
 		for (int y = -400; y <= 400; y += size) {
 
 			for (int z = -150; z <= 150; z += size) {
 
-				auto noise_value = ofNoise(x * 0.005, y * 0.002 + ofGetFrameNum() * 0.03, z * 0.0003);
+				auto noise_value = ofNoise(x * 0.003, y * 0.003, z * 0.003, ofGetFrameNum() * 0.03);
 				if (0.45 <= noise_value && noise_value <= 0.55) {
 
-					ofSetColor(239);
+					ofSetColor(39);
 					ofFill();
 					ofDrawBox(glm::vec3(x, y, z), size * 0.95);
 
-					ofSetColor(39);
+					ofSetColor(139, 139, 239);
 					ofNoFill();
 					ofDrawBox(glm::vec3(x, y, z), size * 0.95);
 				}
@@ -44,14 +45,14 @@ void ofApp::draw() {
 		}
 	}
 
-	ofSetColor(39);
+	ofSetColor(239);
 	ofDrawBox(300 + size, 800 + size, 300 + size);
 
 	this->cam.end();
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 50;
+	int start = 250;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
