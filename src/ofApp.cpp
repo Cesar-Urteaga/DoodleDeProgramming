@@ -6,47 +6,72 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(39);
-	ofSetLineWidth(2);
+	ofBackground(239);
+
 	ofEnableDepthTest();
+	ofSetLineWidth(3);
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	ofSeedRandom(39);
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
 	this->cam.begin();
-	ofRotateY(ofGetFrameNum() * 1.44);
+	ofRotateY(180);
 
-	int size = 10;
-	for (int x = -150; x <= 150; x += size) {
+	int width = 200;
+	int height = 200;
+	int len = 5;
+	for (int z = -280; z <= 280 * 3; z += 25) {
 
-		for (int y = -400; y <= 400; y += size) {
+		ofPushMatrix();
+		ofTranslate(0, 0, z);
+		ofRotate(ofMap(ofNoise((z + 300) * 0.001 + ofGetFrameNum() * 0.01), 0, 1, -360, 360));
 
-			for (int z = -150; z <= 150; z += size) {
+		ofFill();
+		ofSetColor(239);
 
-				auto noise_value = ofNoise(x * 0.003, y * 0.003, z * 0.003, ofGetFrameNum() * 0.03);
-				if (0.45 <= noise_value && noise_value <= 0.55) {
+		ofBeginShape();
 
-					ofSetColor(39);
-					ofFill();
-					ofDrawBox(glm::vec3(x, y, z), size * 0.95);
+		ofVertex(glm::vec2(width * -0.5, height * -0.5));
+		ofVertex(glm::vec2(width * 0.5, height * -0.5));
+		ofVertex(glm::vec2(width * 0.5, height * 0.5));
+		ofVertex(glm::vec2(width * -0.5, height * 0.5));
 
-					ofSetColor(139, 139, 239);
-					ofNoFill();
-					ofDrawBox(glm::vec3(x, y, z), size * 0.95);
-				}
-			}
-		}
+		ofNextContour(true);
+
+		ofVertex(glm::vec2(width * -0.5 + len, height * -0.5 + len));
+		ofVertex(glm::vec2(width * 0.5 - len, height * -0.5 + len));
+		ofVertex(glm::vec2(width * 0.5 - len, height * 0.5 - len));
+		ofVertex(glm::vec2(width * -0.5 + len, height * 0.5 - len));
+
+		ofEndShape(true);
+
+		ofNoFill();
+		ofSetColor(0);
+
+		ofBeginShape();
+
+		ofVertex(glm::vec2(width * -0.5, height * -0.5));
+		ofVertex(glm::vec2(width * 0.5, height * -0.5));
+		ofVertex(glm::vec2(width * 0.5, height * 0.5));
+		ofVertex(glm::vec2(width * -0.5, height * 0.5));
+
+		ofNextContour(true);
+
+		ofVertex(glm::vec2(width * -0.5 + len, height * -0.5 + len));
+		ofVertex(glm::vec2(width * 0.5 - len, height * -0.5 + len));
+		ofVertex(glm::vec2(width * 0.5 - len, height * 0.5 - len));
+		ofVertex(glm::vec2(width * -0.5 + len, height * 0.5 - len));
+
+		ofEndShape(true);
+
+		ofPopMatrix();
 	}
-
-	ofSetColor(239);
-	ofDrawBox(300 + size, 800 + size, 300 + size);
 
 	this->cam.end();
 
