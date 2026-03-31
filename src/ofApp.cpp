@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(239);
+	ofBackground(39);
 
 	ofEnableDepthTest();
 	ofSetLineWidth(3);
@@ -22,18 +22,22 @@ void ofApp::draw() {
 
 	this->cam.begin();
 	ofRotateY(180);
+	ofRotateY(ofGetFrameNum() * 1.44);
 
 	int width = 200;
 	int height = 200;
-	int len = 5;
-	for (int z = -280; z <= 280 * 3; z += 25) {
+	int len = 30;
+	ofColor color;
+	for (int z = -280; z <= 280; z += 10) {
+
+		color.setHsb(ofMap(z, -280, 280, 0, 255), 130, 255);
 
 		ofPushMatrix();
 		ofTranslate(0, 0, z);
-		ofRotate(ofMap(ofNoise((z + 300) * 0.001 + ofGetFrameNum() * 0.01), 0, 1, -360, 360));
+		ofRotate(ofMap(ofNoise((z + 300) * 0.003 + ofGetFrameNum() * 0.01), 0, 1, -360, 360));
 
 		ofFill();
-		ofSetColor(239);
+		ofSetColor(39);
 
 		ofBeginShape();
 
@@ -52,7 +56,7 @@ void ofApp::draw() {
 		ofEndShape(true);
 
 		ofNoFill();
-		ofSetColor(0);
+		ofSetColor(color);
 
 		ofBeginShape();
 
