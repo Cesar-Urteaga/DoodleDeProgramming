@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofSetLineWidth(2);
 	ofEnableDepthTest();
 }
@@ -19,12 +19,13 @@ void ofApp::update() {
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-	int len = 300;
-	int size = 10;
-	float noise_span = 0.01;
-
 	this->cam.begin();
-	ofRotateY(ofGetFrameNum() * 1.44);
+	ofRotateX(270);
+	ofRotateZ(ofGetFrameNum() * 0.72);
+
+	int len = 300;
+	int size = 5;
+	float noise_span = 0.01;
 
 	for (int s_1 = len * -0.5; s_1 <= len * 0.5; s_1 += size) {
 
@@ -33,8 +34,8 @@ void ofApp::draw() {
 			vector<glm::vec3> vertices;
 			auto p = (len + size) * 0.5;
 
-			auto noise_value = ofNoise(p * noise_span, s_1 * noise_span, s_2 * noise_span, ofGetFrameNum() * 0.035);
-			auto tmp_size = (noise_value > 0.45 && noise_value < 0.55) ? 0 : size;
+			auto noise_value = ofNoise(p * noise_span, s_1 * noise_span, s_2 * noise_span + ofGetFrameNum() * 0.1);
+			auto tmp_size = (noise_value > 0.45 && noise_value < 0.55) ? size : 0;
 
 			vertices.clear();
 			vertices.push_back(glm::vec3(p, s_1 - tmp_size * 0.5, s_2 - tmp_size * 0.5));
@@ -43,8 +44,8 @@ void ofApp::draw() {
 			vertices.push_back(glm::vec3(p, s_1 - tmp_size * 0.5, s_2 + tmp_size * 0.5));
 			this->draw_panel(vertices);
 
-			noise_value = ofNoise(-p * noise_span, s_1 * noise_span, s_2 * noise_span, ofGetFrameNum() * 0.035);
-			tmp_size = (noise_value > 0.45 && noise_value < 0.55) ? 0 : size;
+			noise_value = ofNoise(-p * noise_span, s_1 * noise_span, s_2 * noise_span + ofGetFrameNum() * 0.1);
+			tmp_size = (noise_value > 0.45 && noise_value < 0.55) ? size : 0;
 
 			vertices.clear();
 			vertices.push_back(glm::vec3(-p, s_1 - tmp_size * 0.5, s_2 - tmp_size * 0.5));
@@ -53,8 +54,8 @@ void ofApp::draw() {
 			vertices.push_back(glm::vec3(-p, s_1 - tmp_size * 0.5, s_2 + tmp_size * 0.5));
 			this->draw_panel(vertices);
 
-			noise_value = ofNoise(s_1 * noise_span, p * noise_span, s_2 * noise_span, ofGetFrameNum() * 0.035);
-			tmp_size = (noise_value > 0.45 && noise_value < 0.55) ? 0 : size;
+			noise_value = ofNoise(s_1 * noise_span, p * noise_span, s_2 * noise_span + ofGetFrameNum() * 0.1);
+			tmp_size = (noise_value > 0.45 && noise_value < 0.55) ? size : 0;
 
 			vertices.clear();
 			vertices.push_back(glm::vec3(s_1 - tmp_size * 0.5, p, s_2 - tmp_size * 0.5));
@@ -63,8 +64,8 @@ void ofApp::draw() {
 			vertices.push_back(glm::vec3(s_1 - tmp_size * 0.5, p, s_2 + tmp_size * 0.5));
 			this->draw_panel(vertices);
 
-			noise_value = ofNoise(s_1 * noise_span, p * noise_span, s_2 * noise_span, ofGetFrameNum() * 0.035);
-			tmp_size = (noise_value > 0.45 && noise_value < 0.55) ? 0 : size;
+			noise_value = ofNoise(s_1 * noise_span, p * noise_span, s_2 * noise_span + ofGetFrameNum() * 0.1);
+			tmp_size = (noise_value > 0.45 && noise_value < 0.55) ? size : 0;
 
 			vertices.clear();
 			vertices.push_back(glm::vec3(s_1 - tmp_size * 0.5, -p, s_2 - tmp_size * 0.5));
@@ -73,8 +74,8 @@ void ofApp::draw() {
 			vertices.push_back(glm::vec3(s_1 - tmp_size * 0.5, -p, s_2 + tmp_size * 0.5));
 			this->draw_panel(vertices);
 
-			noise_value = ofNoise(s_1 * noise_span, s_2 * noise_span, p * noise_span, ofGetFrameNum() * 0.035);
-			tmp_size = (noise_value > 0.45 && noise_value < 0.55) ? 0 : size;
+			noise_value = ofNoise(s_1 * noise_span, s_2 * noise_span, p * noise_span + ofGetFrameNum() * 0.1);
+			tmp_size = (noise_value > 0.45 && noise_value < 0.55) ? size : 0;
 
 			vertices.clear();
 			vertices.push_back(glm::vec3(s_1 - tmp_size * 0.5, s_2 - tmp_size * 0.5, p));
@@ -83,8 +84,8 @@ void ofApp::draw() {
 			vertices.push_back(glm::vec3(s_1 - tmp_size * 0.5, s_2 + tmp_size * 0.5, p));
 			this->draw_panel(vertices);
 
-			noise_value = ofNoise(s_1 * noise_span, s_2 * noise_span, p * noise_span, ofGetFrameNum() * 0.035);
-			tmp_size = (noise_value > 0.45 && noise_value < 0.55) ? 0 : size;
+			noise_value = ofNoise(s_1 * noise_span, s_2 * noise_span, p * noise_span + ofGetFrameNum() * 0.1);
+			tmp_size = (noise_value > 0.45 && noise_value < 0.55) ? size : 0;
 
 			vertices.clear();
 			vertices.push_back(glm::vec3(s_1 - tmp_size * 0.5, s_2 - tmp_size * 0.5, -p));
