@@ -17,8 +17,4 @@ public:
 	void windowResized(int w, int h) {};
 	void dragEvent(ofDragInfo dragInfo) {};
 	void gotMessage(ofMessage msg) {};
-
-	void draw_panel(vector<glm::vec3> vertices);
-
-	ofEasyCam cam;
 };
