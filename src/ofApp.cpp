@@ -1,56 +1,86 @@
-#include "ofApp.h"	
+#include "ofApp.h"
 
 //--------------------------------------------------------------
 void ofApp::setup() {
 
 	ofSetFrameRate(25);
-	ofSetWindowTitle("openFrameworks");
+	ofSetWindowTitle("openframeworks");
 
-	ofBackground(39);
+	ofBackground(239);
+	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_SUBTRACT);
+
+	this->mesh.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
+
+	ofColor color;
+	int color_count = 24;
+	for (int i = 0; i < color_count; i++) {
+
+		color.setHsb(ofMap(i, 0, color_count, 0, 255), 200, 100);
+		this->color_list.push_back(color);
+	}
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
 	ofSeedRandom(39);
+
+	this->mesh.clear();
+
+	int radius = 500;
+	int span = 30;
+
+	for (int i = 0; i < this->color_list.size(); i++) {
+
+		int deg_start = ofRandom(360);
+		for (int deg = deg_start; deg < deg_start + 360; deg += 3) {
+
+			auto tmp_radius = (int)(ofRandom(radius) + ofGetFrameNum() * (int)ofRandom(1, 3)) % radius + 20;
+
+			this->mesh.addVertex(glm::vec3(tmp_radius * cos(deg * DEG_TO_RAD), tmp_radius * sin(deg * DEG_TO_RAD), 0));
+			this->mesh.addColor(ofColor(this->color_list[i], 0));
+		}
+	}
+
+	for (int i = 0; i < this->mesh.getNumVertices(); i++) {
+
+		for (int k = i + 1; k < this->mesh.getNumVertices(); k++) {
+
+			auto distance = glm::distance(this->mesh.getVertex(i), this->mesh.getVertex(k));
+			if (distance < span) {
+
+				auto alpha = distance < span * 0.25 ? 255 : ofMap(distance, span * 0.25, span, 255, 0);
+
+				if (this->mesh.getColor(i).a < alpha) {
+
+					this->mesh.setColor(i, ofColor(this->mesh.getColor(i), alpha));
+				}
+
+				if (this->mesh.getColor(k).a < alpha) {
+
+					this->mesh.setColor(k, ofColor(this->mesh.getColor(k), alpha));
+				}
+
+				this->mesh.addIndex(i);
+				this->mesh.addIndex(k);
+			}
+		}
+	}
+
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-	this->cam.begin();
+	ofTranslate(ofGetWidth() * 0.5, ofGetHeight() * 0.5);
 
-	auto numberOfActor = 80;
+	this->mesh.draw();
 
-	for (int i = 0; i < numberOfActor; i++) {
+	for (int i = 0; i < this->mesh.getNumVertices(); i++) {
 
-		ofPushMatrix();
-		ofRotateY(ofRandom(-20, 20));
-
-		auto radius = 50 + i * 5;
-		auto speed = ofRandom(1, 2);
-		speed *= ofRandom(1) < 0.5 ? 1 : -1;
-		auto deg = ofRandom(360) + ofGetFrameNum() * speed;
-		auto len = ofRandom(150, 500);
-
-		ofSetColor(0, 0, 255);
-		for (int k = 0; k < len; k++) {
-
-			auto location = glm::vec2(radius * cos((deg + k * 0.25) * DEG_TO_RAD), radius * sin((deg + k * 0.25) * DEG_TO_RAD));
-			ofDrawCircle(location, 3);
-		}
-
-		ofSetColor(255);
-		for (int k = 0; k < len; k++) {
-
-			auto location = glm::vec2(radius * cos((deg + k * 0.25) * DEG_TO_RAD), radius * sin((deg + k * 0.25) * DEG_TO_RAD));
-			ofDrawCircle(location, 2);
-		}
-
-		ofPopMatrix();
+		ofSetColor(this->mesh.getColor(i));
+		ofDrawCircle(this->mesh.getVertex(i), 3);
 	}
-
-	this->cam.end();
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
@@ -69,7 +99,6 @@ void ofApp::draw() {
 	}
 	*/
 }
-
 
 //--------------------------------------------------------------
 int main() {
