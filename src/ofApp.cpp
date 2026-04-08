@@ -6,8 +6,8 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(239);
-	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_SUBTRACT);
+	ofBackground(39);
+	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
 
 	this->mesh.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
 
@@ -15,7 +15,7 @@ void ofApp::setup() {
 	int color_count = 24;
 	for (int i = 0; i < color_count; i++) {
 
-		color.setHsb(ofMap(i, 0, color_count, 0, 255), 200, 100);
+		color.setHsb(ofMap(i, 0, color_count, 0, 255), 100, 255);
 		this->color_list.push_back(color);
 	}
 }
@@ -28,14 +28,14 @@ void ofApp::update() {
 	this->mesh.clear();
 
 	int radius = 500;
-	int span = 30;
+	int span = 32;
 
 	for (int i = 0; i < this->color_list.size(); i++) {
 
 		int deg_start = ofRandom(360);
-		for (int deg = deg_start; deg < deg_start + 360; deg += 3) {
+		for (int deg = deg_start; deg < deg_start + 60; deg += 2) {
 
-			auto tmp_radius = (int)(ofRandom(radius) + ofGetFrameNum() * (int)ofRandom(1, 3)) % radius + 20;
+			auto tmp_radius = radius - (int)(ofRandom(radius) + ofGetFrameNum() * (int)ofRandom(3, 5)) % radius;
 
 			this->mesh.addVertex(glm::vec3(tmp_radius * cos(deg * DEG_TO_RAD), tmp_radius * sin(deg * DEG_TO_RAD), 0));
 			this->mesh.addColor(ofColor(this->color_list[i], 0));
