@@ -6,11 +6,8 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
-
+	ofBackground(39);
 	ofEnableDepthTest();
-	ofSetCircleResolution(72);
-	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_SUBTRACT);
 
 	this->line.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
 }
@@ -23,22 +20,21 @@ void ofApp::update() {
 
 	ofColor color;
 	auto noise_seed = glm::vec2(ofRandom(1000), ofRandom(1000));
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 24; i++) {
 
-		auto rotation_z = glm::rotate(glm::mat4(), ofMap(i, 0, 4, 0, 360) * (float)DEG_TO_RAD, glm::vec3(0, 0, 1));
-		color.setHsb(ofMap(i, 0, 4, 0, 255), 230, 200);
+		auto rotation_z = glm::rotate(glm::mat4(), ofMap(i, 0, 24, 0, 360) * (float)DEG_TO_RAD, glm::vec3(0, 0, 1));
+		color.setHsb(0, 255, 255);
 
-		for (int x = -300; x <= 300; x += 2) {
+		for (float x = -300; x <= 300; x += 1.5) {
 
 			auto base_y = ofMap(ofNoise(noise_seed.x, x * 0.001 + (ofGetFrameNum() + i * 10000) * 0.002), 0, 1, -400, 400);
 			auto base_z = ofMap(ofNoise(noise_seed.y, x * 0.001 + (ofGetFrameNum() + i * 10000) * 0.002), 0, 1, -400, 400);
 
-			auto y = base_y + ofMap(ofNoise(ofRandom(1000), ofGetFrameNum() * 0.005), 0, 1, -80, 80);
-			auto z = base_z + ofMap(ofNoise(ofRandom(1000), ofGetFrameNum() * 0.005), 0, 1, -80, 80);
+			auto y = base_y + ofMap(ofNoise(ofRandom(1000), ofGetFrameNum() * 0.005), 0, 1, -30, 30);
+			auto z = base_z + ofMap(ofNoise(ofRandom(1000), ofGetFrameNum() * 0.005), 0, 1, -30, 30);
 			auto location = glm::vec3(x, y, z);
 			location = glm::length(location) > 280 ? glm::normalize(location) * 280 : location;
 			location = glm::vec4(location, 0) * rotation_z;
-			location.z = 0;
 
 			this->line.addVertex(location);
 			this->line.addColor(color);
@@ -61,19 +57,13 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
+	ofRotateY(ofGetFrameNum() * 1.44);
 
-	ofFill();
 	for (int i = 0; i < this->line.getNumVertices(); i++) {
 
 		ofSetColor(this->line.getColor(i));
-		ofDrawCircle(this->line.getVertex(i), 1.5);
+		ofDrawSphere(this->line.getVertex(i), 1);
 	}
-
-	ofSetColor(39);
-	ofNoFill();
-	ofDrawCircle(glm::vec2(), 283);
-
-	this->line.drawWireframe();
 
 	this->cam.end();
 
