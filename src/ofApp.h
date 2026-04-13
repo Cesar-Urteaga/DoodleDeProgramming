@@ -1,3 +1,4 @@
+#pragma once
 #include "ofMain.h"
 
 class ofApp : public ofBaseApp {
@@ -20,5 +21,4 @@ public:
 	void gotMessage(ofMessage msg) {};
 
 	ofEasyCam cam;
-	ofMesh line;
 };

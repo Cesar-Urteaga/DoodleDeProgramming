@@ -4,70 +4,88 @@
 void ofApp::setup() {
 
 	ofSetFrameRate(25);
-	ofSetWindowTitle("openFrameworks");
+	ofSetWindowTitle("openframeworks");
 
-	ofBackground(39);
+	ofBackground(239);
+	ofSetLineWidth(2);
+
 	ofEnableDepthTest();
-
-	this->line.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	ofSeedRandom(39);
-	this->line.clear();
-
-	ofColor color;
-	auto noise_seed = glm::vec2(ofRandom(1000), ofRandom(1000));
-	for (int i = 0; i < 24; i++) {
-
-		auto rotation_z = glm::rotate(glm::mat4(), ofMap(i, 0, 24, 0, 360) * (float)DEG_TO_RAD, glm::vec3(0, 0, 1));
-		color.setHsb(0, 255, 255);
-
-		for (float x = -300; x <= 300; x += 1.5) {
-
-			auto base_y = ofMap(ofNoise(noise_seed.x, x * 0.001 + (ofGetFrameNum() + i * 10000) * 0.002), 0, 1, -400, 400);
-			auto base_z = ofMap(ofNoise(noise_seed.y, x * 0.001 + (ofGetFrameNum() + i * 10000) * 0.002), 0, 1, -400, 400);
-
-			auto y = base_y + ofMap(ofNoise(ofRandom(1000), ofGetFrameNum() * 0.005), 0, 1, -30, 30);
-			auto z = base_z + ofMap(ofNoise(ofRandom(1000), ofGetFrameNum() * 0.005), 0, 1, -30, 30);
-			auto location = glm::vec3(x, y, z);
-			location = glm::length(location) > 280 ? glm::normalize(location) * 280 : location;
-			location = glm::vec4(location, 0) * rotation_z;
-
-			this->line.addVertex(location);
-			this->line.addColor(color);
-		}
-	}
-
-	for (int i = 0; i < this->line.getNumVertices(); i++) {
-
-		for (int k = i + 1; k < this->line.getNumVertices(); k++) {
-
-			if (glm::distance(this->line.getVertex(i), this->line.getVertex(k)) < 20) {
-
-				this->line.addIndex(i);	this->line.addIndex(k);
-			}
-		}
-	}
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
 	this->cam.begin();
-	ofRotateY(ofGetFrameNum() * 1.44);
 
-	for (int i = 0; i < this->line.getNumVertices(); i++) {
+	int radius = 50;
+	int len = 15;
+	int gap_x = radius * cos(0 * DEG_TO_RAD);
+	int gap_y = radius + (radius - cos(210 * DEG_TO_RAD)) * 0.6;
 
-		ofSetColor(this->line.getColor(i));
-		ofDrawSphere(this->line.getVertex(i), 1);
+	for (int x = -gap_x * 5; x <= gap_x * 5; x += gap_x) {
+
+		for (int y = -gap_y * 3; y <= gap_y * 3; y += gap_y) {
+
+			for (int z = 0; z <= 280; z += 15) {
+
+				auto noise_param = ofNoise(x * 0.005, y * 0.005, z * 0.005 + ofGetFrameNum() * 0.05);
+
+				if (noise_param < 0.35) { continue; }
+
+				auto alpha = ofMap(z, 0, 280, 0, 255);
+				int flag = abs(x) % (gap_x * 2) == 0;
+				int deg_start = flag ? 90 : 270;
+				int tmp_y = flag ? y : y + (radius - cos(210 * DEG_TO_RAD)) * 0.5;
+
+				ofFill();
+				ofSetColor(ofColor(39, alpha));
+
+				ofBeginShape();
+
+				for (int deg = deg_start; deg < deg_start + 360; deg += 120) {
+
+					ofVertex(glm::vec3(x + radius * cos(deg * DEG_TO_RAD), tmp_y + radius * sin(deg * DEG_TO_RAD), z));
+				}
+
+				ofNextContour(true);
+
+				for (int deg = deg_start; deg < deg_start + 360; deg += 120) {
+
+					ofVertex(glm::vec3(x + (radius - len) * cos(deg * DEG_TO_RAD), tmp_y + (radius - len) * sin(deg * DEG_TO_RAD), z));
+				}
+
+				ofEndShape(true);
+
+
+				ofNoFill();
+				ofSetColor(ofColor(239, alpha));
+
+				ofBeginShape();
+
+				for (int deg = deg_start; deg < deg_start + 360; deg += 120) {
+
+					ofVertex(glm::vec3(x + radius * cos(deg * DEG_TO_RAD), tmp_y + radius * sin(deg * DEG_TO_RAD), z));
+				}
+
+				ofNextContour(true);
+
+				for (int deg = deg_start; deg < deg_start + 360; deg += 120) {
+
+					ofVertex(glm::vec3(x + (radius - len) * cos(deg * DEG_TO_RAD), tmp_y + (radius - len) * sin(deg * DEG_TO_RAD), z));
+				}
+
+				ofEndShape(true);
+			}
+		}
 	}
 
 	this->cam.end();
 
-	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
 	int start = 500;
 	if (ofGetFrameNum() > start) {
@@ -82,7 +100,6 @@ void ofApp::draw() {
 			std::exit(1);
 		}
 	}
-	*/
 }
 
 //--------------------------------------------------------------
