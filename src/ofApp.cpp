@@ -6,8 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(239);
-	ofSetLineWidth(2);
+	ofBackground(39);
 
 	ofEnableDepthTest();
 }
@@ -21,23 +20,24 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
+	ofRotateX(270);
 
-	int radius = 50;
-	int len = 15;
+	int radius = 25;
+	int len = 10;
 	int gap_x = radius * cos(0 * DEG_TO_RAD);
 	int gap_y = radius + (radius - cos(210 * DEG_TO_RAD)) * 0.6;
 
-	for (int x = -gap_x * 5; x <= gap_x * 5; x += gap_x) {
+	for (int x = -gap_x * 20; x <= gap_x * 20; x += gap_x) {
 
-		for (int y = -gap_y * 3; y <= gap_y * 3; y += gap_y) {
+		for (int y = -gap_y * 20; y <= gap_y * 20; y += gap_y) {
 
-			for (int z = 0; z <= 280; z += 15) {
+			for (int z = -100; z <= 100; z += 200) {
 
-				auto noise_param = ofNoise(x * 0.005, y * 0.005, z * 0.005 + ofGetFrameNum() * 0.05);
+				auto noise_param = ofNoise(x * 0.0025, y * 0.0025 - ofGetFrameNum() * 0.025, z * 0.005);
 
-				if (noise_param < 0.35) { continue; }
+				if (noise_param > 0.4 && noise_param < 0.6) { continue; }
 
-				auto alpha = ofMap(z, 0, 280, 0, 255);
+				auto alpha = 255;
 				int flag = abs(x) % (gap_x * 2) == 0;
 				int deg_start = flag ? 90 : 270;
 				int tmp_y = flag ? y : y + (radius - cos(210 * DEG_TO_RAD)) * 0.5;
@@ -63,13 +63,12 @@ void ofApp::draw() {
 
 
 				ofNoFill();
-				ofSetColor(ofColor(239, alpha));
+				ofSetColor(ofColor(239, 39, 239, alpha));
 
 				ofBeginShape();
 
 				for (int deg = deg_start; deg < deg_start + 360; deg += 120) {
-
-					ofVertex(glm::vec3(x + radius * cos(deg * DEG_TO_RAD), tmp_y + radius * sin(deg * DEG_TO_RAD), z));
+										ofVertex(glm::vec3(x + radius * cos(deg * DEG_TO_RAD), tmp_y + radius * sin(deg * DEG_TO_RAD), z));
 				}
 
 				ofNextContour(true);
@@ -86,6 +85,7 @@ void ofApp::draw() {
 
 	this->cam.end();
 
+	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
 	int start = 500;
 	if (ofGetFrameNum() > start) {
@@ -100,6 +100,7 @@ void ofApp::draw() {
 			std::exit(1);
 		}
 	}
+	*/
 }
 
 //--------------------------------------------------------------
