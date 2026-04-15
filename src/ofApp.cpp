@@ -4,11 +4,13 @@
 void ofApp::setup() {
 
 	ofSetFrameRate(25);
-	ofSetWindowTitle("openframeworks");
+	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(39);
-
+	ofBackground(239);
 	ofEnableDepthTest();
+
+	auto ico_sphere = ofIcoSpherePrimitive(300, 3);
+	this->triangle_list.insert(this->triangle_list.end(), ico_sphere.getMesh().getUniqueFaces().begin(), ico_sphere.getMesh().getUniqueFaces().end());
 }
 
 //--------------------------------------------------------------
@@ -20,67 +22,47 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
-	ofRotateX(270);
+	ofRotateY(ofGetFrameNum() * 0.36);
 
-	int radius = 25;
-	int len = 10;
-	int gap_x = radius * cos(0 * DEG_TO_RAD);
-	int gap_y = radius + (radius - cos(210 * DEG_TO_RAD)) * 0.6;
+	for (int i = 0; i < this->triangle_list.size(); i++) {
 
-	for (int x = -gap_x * 20; x <= gap_x * 20; x += gap_x) {
+		glm::vec3 avg = (this->triangle_list[i].getVertex(0) + this->triangle_list[i].getVertex(1) + this->triangle_list[i].getVertex(2)) / 3;
+		auto noise_value = ofNoise(avg.x * 0.005, avg.z * 0.005, avg.y * 0.005, ofGetFrameNum() * 0.01);
 
-		for (int y = -gap_y * 20; y <= gap_y * 20; y += gap_y) {
+		auto radius = noise_value > 0.4 && noise_value < 0.6 ? 300 : 0;
+		if (radius == 0) { continue; }
 
-			for (int z = -100; z <= 100; z += 200) {
+		ofFill();
+		ofSetColor(39);
 
-				auto noise_param = ofNoise(x * 0.0025, y * 0.0025 - ofGetFrameNum() * 0.025, z * 0.005);
+		ofBeginShape();
+		ofVertex(this->triangle_list[i].getVertex(0));
+		ofVertex(this->triangle_list[i].getVertex(1));
+		ofVertex(this->triangle_list[i].getVertex(2));
 
-				if (noise_param > 0.4 && noise_param < 0.6) { continue; }
+		ofNextContour(true);
 
-				auto alpha = 255;
-				int flag = abs(x) % (gap_x * 2) == 0;
-				int deg_start = flag ? 90 : 270;
-				int tmp_y = flag ? y : y + (radius - cos(210 * DEG_TO_RAD)) * 0.5;
+		ofVertex((this->triangle_list[i].getVertex(0) - avg) * 0.6 + avg);
+		ofVertex((this->triangle_list[i].getVertex(1) - avg) * 0.6 + avg);
+		ofVertex((this->triangle_list[i].getVertex(2) - avg) * 0.6 + avg);
 
-				ofFill();
-				ofSetColor(ofColor(39, alpha));
+		ofEndShape();
 
-				ofBeginShape();
+		ofNoFill();
+		ofSetColor(239);
 
-				for (int deg = deg_start; deg < deg_start + 360; deg += 120) {
+		ofBeginShape();
+		ofVertex(this->triangle_list[i].getVertex(0));
+		ofVertex(this->triangle_list[i].getVertex(1));
+		ofVertex(this->triangle_list[i].getVertex(2));
 
-					ofVertex(glm::vec3(x + radius * cos(deg * DEG_TO_RAD), tmp_y + radius * sin(deg * DEG_TO_RAD), z));
-				}
+		ofNextContour(true);
 
-				ofNextContour(true);
+		ofVertex((this->triangle_list[i].getVertex(0) - avg) * 0.6 + avg);
+		ofVertex((this->triangle_list[i].getVertex(1) - avg) * 0.6 + avg);
+		ofVertex((this->triangle_list[i].getVertex(2) - avg) * 0.6 + avg);
 
-				for (int deg = deg_start; deg < deg_start + 360; deg += 120) {
-
-					ofVertex(glm::vec3(x + (radius - len) * cos(deg * DEG_TO_RAD), tmp_y + (radius - len) * sin(deg * DEG_TO_RAD), z));
-				}
-
-				ofEndShape(true);
-
-
-				ofNoFill();
-				ofSetColor(ofColor(239, 39, 239, alpha));
-
-				ofBeginShape();
-
-				for (int deg = deg_start; deg < deg_start + 360; deg += 120) {
-										ofVertex(glm::vec3(x + radius * cos(deg * DEG_TO_RAD), tmp_y + radius * sin(deg * DEG_TO_RAD), z));
-				}
-
-				ofNextContour(true);
-
-				for (int deg = deg_start; deg < deg_start + 360; deg += 120) {
-
-					ofVertex(glm::vec3(x + (radius - len) * cos(deg * DEG_TO_RAD), tmp_y + (radius - len) * sin(deg * DEG_TO_RAD), z));
-				}
-
-				ofEndShape(true);
-			}
-		}
+		ofEndShape();
 	}
 
 	this->cam.end();
