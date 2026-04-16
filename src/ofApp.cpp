@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofEnableDepthTest();
 
 	auto ico_sphere = ofIcoSpherePrimitive(300, 3);
@@ -24,13 +24,14 @@ void ofApp::draw() {
 	this->cam.begin();
 	ofRotateY(ofGetFrameNum() * 0.36);
 
+	auto radius = 300;
+
 	for (int i = 0; i < this->triangle_list.size(); i++) {
 
 		glm::vec3 avg = (this->triangle_list[i].getVertex(0) + this->triangle_list[i].getVertex(1) + this->triangle_list[i].getVertex(2)) / 3;
-		auto noise_value = ofNoise(avg.x * 0.005, avg.z * 0.005, avg.y * 0.005, ofGetFrameNum() * 0.01);
-
-		auto radius = noise_value > 0.4 && noise_value < 0.6 ? 300 : 0;
-		if (radius == 0) { continue; }
+		auto noise_value = ofNoise(avg.x * 0.005, avg.z * 0.005, avg.y * 0.005 + ofGetFrameNum() * 0.025);
+		noise_value = noise_value > 0.6 ? 1 : ofMap(noise_value, 0.6, 0, 1, 0);
+		auto len = ofMap(abs(noise_value - 0.5), 0, 0.5, 1, 0);
 
 		ofFill();
 		ofSetColor(39);
@@ -42,11 +43,11 @@ void ofApp::draw() {
 
 		ofNextContour(true);
 
-		ofVertex((this->triangle_list[i].getVertex(0) - avg) * 0.6 + avg);
-		ofVertex((this->triangle_list[i].getVertex(1) - avg) * 0.6 + avg);
-		ofVertex((this->triangle_list[i].getVertex(2) - avg) * 0.6 + avg);
+		ofVertex((this->triangle_list[i].getVertex(0) - avg) * len + avg);
+		ofVertex((this->triangle_list[i].getVertex(1) - avg) * len + avg);
+		ofVertex((this->triangle_list[i].getVertex(2) - avg) * len + avg);
 
-		ofEndShape();
+		ofEndShape(true);
 
 		ofNoFill();
 		ofSetColor(239);
@@ -58,11 +59,11 @@ void ofApp::draw() {
 
 		ofNextContour(true);
 
-		ofVertex((this->triangle_list[i].getVertex(0) - avg) * 0.6 + avg);
-		ofVertex((this->triangle_list[i].getVertex(1) - avg) * 0.6 + avg);
-		ofVertex((this->triangle_list[i].getVertex(2) - avg) * 0.6 + avg);
+		ofVertex((this->triangle_list[i].getVertex(0) - avg) * len + avg);
+		ofVertex((this->triangle_list[i].getVertex(1) - avg) * len + avg);
+		ofVertex((this->triangle_list[i].getVertex(2) - avg) * len + avg);
 
-		ofEndShape();
+		ofEndShape(true);
 	}
 
 	this->cam.end();
