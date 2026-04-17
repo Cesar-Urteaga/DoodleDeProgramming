@@ -6,64 +6,44 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(39);
+	ofBackground(239);
+	ofSetLineWidth(2);
 	ofEnableDepthTest();
-
-	auto ico_sphere = ofIcoSpherePrimitive(300, 3);
-	this->triangle_list.insert(this->triangle_list.end(), ico_sphere.getMesh().getUniqueFaces().begin(), ico_sphere.getMesh().getUniqueFaces().end());
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
-
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
 	this->cam.begin();
-	ofRotateY(ofGetFrameNum() * 0.36);
+	ofRotateX(90);
+	ofRotateZ(ofGetFrameNum() * 1.44);
 
 	auto radius = 300;
 
-	for (int i = 0; i < this->triangle_list.size(); i++) {
+	for (auto deg = 0; deg < 360; deg += 10) {
 
-		glm::vec3 avg = (this->triangle_list[i].getVertex(0) + this->triangle_list[i].getVertex(1) + this->triangle_list[i].getVertex(2)) / 3;
-		auto noise_value = ofNoise(avg.x * 0.005, avg.z * 0.005, avg.y * 0.005 + ofGetFrameNum() * 0.025);
-		noise_value = noise_value > 0.6 ? 1 : ofMap(noise_value, 0.6, 0, 1, 0);
-		auto len = ofMap(abs(noise_value - 0.5), 0, 0.5, 1, 0);
+		auto location = glm::vec3(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD), 0);
+		auto depth = ofMap(ofNoise(glm::vec4(location * 0.005, ofGetFrameNum() * 0.005)), 0, 1, 30, 500);
+
+		ofPushMatrix();
+		ofTranslate(location);
+		ofRotateZ(deg);
+
+		ofRotateY(deg + ofGetFrameNum());
 
 		ofFill();
-		ofSetColor(39);
-
-		ofBeginShape();
-		ofVertex(this->triangle_list[i].getVertex(0));
-		ofVertex(this->triangle_list[i].getVertex(1));
-		ofVertex(this->triangle_list[i].getVertex(2));
-
-		ofNextContour(true);
-
-		ofVertex((this->triangle_list[i].getVertex(0) - avg) * len + avg);
-		ofVertex((this->triangle_list[i].getVertex(1) - avg) * len + avg);
-		ofVertex((this->triangle_list[i].getVertex(2) - avg) * len + avg);
-
-		ofEndShape(true);
+		ofSetColor(239);
+		ofDrawBox(30, 30, depth);
 
 		ofNoFill();
-		ofSetColor(239);
+		ofSetColor(39);
+		ofDrawBox(30, 30, depth);
 
-		ofBeginShape();
-		ofVertex(this->triangle_list[i].getVertex(0));
-		ofVertex(this->triangle_list[i].getVertex(1));
-		ofVertex(this->triangle_list[i].getVertex(2));
-
-		ofNextContour(true);
-
-		ofVertex((this->triangle_list[i].getVertex(0) - avg) * len + avg);
-		ofVertex((this->triangle_list[i].getVertex(1) - avg) * len + avg);
-		ofVertex((this->triangle_list[i].getVertex(2) - avg) * len + avg);
-
-		ofEndShape(true);
+		ofPopMatrix();
 	}
 
 	this->cam.end();
@@ -88,7 +68,6 @@ void ofApp::draw() {
 
 //--------------------------------------------------------------
 int main() {
-
 	ofSetupOpenGL(720, 720, OF_WINDOW);
 	ofRunApp(new ofApp());
 }
