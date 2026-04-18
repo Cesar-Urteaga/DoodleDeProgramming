@@ -6,8 +6,8 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
-	ofSetLineWidth(2);
+	ofBackground(39);
+	ofSetLineWidth(1);
 	ofEnableDepthTest();
 }
 
@@ -20,28 +20,26 @@ void ofApp::draw() {
 
 	this->cam.begin();
 	ofRotateX(90);
-	ofRotateZ(ofGetFrameNum() * 1.44);
 
 	auto radius = 300;
 
-	for (auto deg = 0; deg < 360; deg += 10) {
+	for (auto deg = 0; deg < 360; deg += 4) {
 
 		auto location = glm::vec3(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD), 0);
-		auto depth = ofMap(ofNoise(glm::vec4(location * 0.005, ofGetFrameNum() * 0.005)), 0, 1, 30, 500);
+		auto depth = 300;
 
 		ofPushMatrix();
 		ofTranslate(location);
 		ofRotateZ(deg);
-
-		ofRotateY(deg + ofGetFrameNum());
+		ofRotateY(deg * 4 + ofGetFrameNum() * 4);
 
 		ofFill();
-		ofSetColor(239);
-		ofDrawBox(30, 30, depth);
+		ofSetColor(0);
+		ofDrawBox(45, 2, depth);
 
 		ofNoFill();
-		ofSetColor(39);
-		ofDrawBox(30, 30, depth);
+		ofSetColor(239);
+		ofDrawBox(45, 2, depth);
 
 		ofPopMatrix();
 	}
