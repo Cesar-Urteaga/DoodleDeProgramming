@@ -18,7 +18,8 @@ public:
 	void dragEvent(ofDragInfo dragInfo) {};
 	void gotMessage(ofMessage msg) {};
 
-	glm::vec3 make_point(float R, float r, float u, float v);
+	void draw_arrow(glm::vec2 location, glm::vec2 next_location, float size, ofColor color);
 
-	ofEasyCam cam;
+	vector<glm::vec3> location_list;
+	vector<bool> flag_list;
 };

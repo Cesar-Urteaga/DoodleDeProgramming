@@ -1,85 +1,65 @@
-#include "ofApp.h"
+#include "ofApp.h"	
 
 //--------------------------------------------------------------
 void ofApp::setup() {
 
 	ofSetFrameRate(25);
-	ofSetWindowTitle("openframeworks");
+	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(39);
-	ofEnableDepthTest();
+	ofBackground(239);
+	ofSetLineWidth(2);
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	ofSeedRandom(39);
+	this->location_list.clear();
+	this->flag_list.clear();
+
+	ofFbo fbo;
+	ofPixels pixels;
+	fbo.allocate(ofGetWidth(), ofGetHeight());
+	fbo.begin();
+	ofClear(0);
+
+	ofTranslate(ofGetWindowWidth() * 0.5, ofGetWindowHeight() * 0.5);
+	ofRotate(ofGetFrameNum() * 1.44);
+	this->draw_arrow(glm::vec2(0, 0), glm::vec2(0, -1), 330, ofColor(255));
+
+	fbo.end();
+	fbo.readToPixels(pixels);
+
+	ofColor pix_color;
+	int span = 24;
+	for (float x = 0 + span * 0.5; x < ofGetWidth(); x += span) {
+
+		for (float y = 0 + span * 0.5; y <= ofGetHeight(); y += span) {
+
+			pix_color = pixels.getColor(x, y);
+			this->location_list.push_back(glm::vec3(x - ofGetWidth() * 0.5, y - ofGetHeight() * 0.5, 0));
+			this->flag_list.push_back(pix_color != ofColor(0, 0));
+		}
+	}
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-	this->cam.begin();
+	ofTranslate(ofGetWindowSize() * 0.5);
 
-	int v_span = 60;
-	int u_span = 1;
-	int R = 200;
+	for (int i = 0; i < this->location_list.size(); i++) {
 
-	ofMesh face, line;
-	line.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
+		auto deg = 270;
 
-	ofColor face_color;
+		if (this->flag_list[i]) {
 
-	float noise_seed = ofRandom(1000);
-	for (int v = 0; v <= 360; v += v_span) {
-
-		int u_start = ofMap(ofNoise(noise_seed, cos(v * DEG_TO_RAD) * 0.25, sin(v * DEG_TO_RAD) * 0.25, ofGetFrameNum() * 0.01), 0, 1, -720, 720);
-		int next_u = ofMap(ofNoise(noise_seed, cos((v + v_span * 0.9) * DEG_TO_RAD) * 0.25, sin((v + v_span * 0.9) * DEG_TO_RAD) * 0.25, ofGetFrameNum() * 0.01), 0, 1, -720, 720);
-		int r = ofMap(ofNoise(glm::vec4(this->make_point(R, 30, u_start, v) * 0.01, ofGetFrameNum() * 0.005)), 0, 1, 0, 150);
-
-		for (int u = u_start; u < u_start + 360; u += u_span) {
-
-			face.addVertex(this->make_point(R, r, u, v));
-			face.addVertex(this->make_point(R, r, u + u_span, v));
-			face.addVertex(this->make_point(R, r, next_u + u_span, v + v_span * 0.8));
-			face.addVertex(this->make_point(R, r, next_u, v + v_span * 0.8));
-
-			line.addVertex(this->make_point(R, r, u, v));
-			line.addVertex(this->make_point(R, r, u + u_span, v));
-			line.addVertex(this->make_point(R, r, next_u + u_span, v + v_span * 0.8));
-			line.addVertex(this->make_point(R, r, next_u, v + v_span * 0.8));
-
-			face_color.setHsb(ofMap(u, u_start, u_start + 360, 0, 255), 180, 255, 200);
-			ofColor line_color = ofColor(255);
-
-			face.addColor(face_color);
-			face.addColor(face_color);
-			face.addColor(face_color);
-			face.addColor(face_color);
-
-			line.addColor(line_color);
-			line.addColor(line_color);
-			line.addColor(line_color);
-			line.addColor(line_color);
-
-			face.addIndex(face.getNumVertices() - 1); face.addIndex(face.getNumVertices() - 2); face.addIndex(face.getNumVertices() - 3);
-			face.addIndex(face.getNumVertices() - 1); face.addIndex(face.getNumVertices() - 3); face.addIndex(face.getNumVertices() - 4);
-
-			//line.addIndex(line.getNumVertices() - 1); line.addIndex(line.getNumVertices() - 4);
-			//line.addIndex(line.getNumVertices() - 2); line.addIndex(line.getNumVertices() - 3);
-
-			line.addIndex(line.getNumVertices() - 1); line.addIndex(line.getNumVertices() - 2);
-			line.addIndex(line.getNumVertices() - 3); line.addIndex(line.getNumVertices() - 4);
-
-			next_u += u_span;
-
+			deg = ofGetFrameNum() * 32;
 		}
+		
+		auto target = glm::vec3(cos(deg * DEG_TO_RAD), sin(deg * DEG_TO_RAD), 0);
+		
+		this->draw_arrow(location_list[i], location_list[i] + target, 15, ofColor(255));
 	}
-
-	face.drawFaces();
-	line.drawWireframe();
-
-	this->cam.end();
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
@@ -100,18 +80,41 @@ void ofApp::draw() {
 }
 
 //--------------------------------------------------------------
-glm::vec3 ofApp::make_point(float R, float r, float u, float v) {
+void ofApp::draw_arrow(glm::vec2 location, glm::vec2 next_location, float size, ofColor color) {
 
-	// 数学デッサン教室 描いて楽しむ数学たち　P.31
+	auto angle = std::atan2(next_location.y - location.y, next_location.x - location.x);
 
-	u *= DEG_TO_RAD;
-	v *= DEG_TO_RAD;
+	ofSetColor(239);
+	ofFill();
+	ofBeginShape();
+	ofVertex(glm::vec2(size * 0.8 * cos(angle), size * 0.8 * sin(angle)) + location);
+	ofVertex(glm::vec2(size * 0.5 * cos(angle + PI * 0.5), size * 0.5 * sin(angle + PI * 0.5)) + location);
+	ofVertex(glm::vec2(size * 0.5 * cos(angle - PI * 0.5), size * 0.5 * sin(angle - PI * 0.5)) + location);
+	ofEndShape(true);
 
-	auto x = (R + r * cos(u)) * cos(v);
-	auto y = (R + r * cos(u)) * sin(v);
-	auto z = r * sin(u);
+	ofBeginShape();
+	ofVertex(glm::vec2(size * 0.5 * cos(angle + PI * 0.5), size * 0.5 * sin(angle + PI * 0.5)) * 0.25 + location);
+	ofVertex(glm::vec2(size * 0.5 * cos(angle + PI * 0.5), size * 0.5 * sin(angle + PI * 0.5)) * 0.25 - glm::vec2(size * cos(angle), size * sin(angle)) * 0.5 + location);
+	ofVertex(glm::vec2(size * 0.5 * cos(angle - PI * 0.5), size * 0.5 * sin(angle - PI * 0.5)) * 0.25 - glm::vec2(size * cos(angle), size * sin(angle)) * 0.5 + location);
+	ofVertex(glm::vec2(size * 0.5 * cos(angle - PI * 0.5), size * 0.5 * sin(angle - PI * 0.5)) * 0.25 + location);
+	ofEndShape(true);
 
-	return glm::vec3(x, y, z);
+	ofSetColor(0);
+	ofNoFill();
+	ofBeginShape();
+	ofVertex(glm::vec2(size * 0.5 * cos(angle + PI * 0.5), size * 0.5 * sin(angle + PI * 0.5)) * 0.25 + location);
+	ofVertex(glm::vec2(size * 0.5 * cos(angle + PI * 0.5), size * 0.5 * sin(angle + PI * 0.5)) + location);
+	ofVertex(glm::vec2(size * 0.8 * cos(angle), size * 0.8 * sin(angle)) + location);
+	ofVertex(glm::vec2(size * 0.5 * cos(angle - PI * 0.5), size * 0.5 * sin(angle - PI * 0.5)) + location);
+	ofVertex(glm::vec2(size * 0.5 * cos(angle - PI * 0.5), size * 0.5 * sin(angle - PI * 0.5)) * 0.25 + location);
+	ofEndShape();
+
+	ofBeginShape();
+	ofVertex(glm::vec2(size * 0.5 * cos(angle + PI * 0.5), size * 0.5 * sin(angle + PI * 0.5)) * 0.25 + location);
+	ofVertex(glm::vec2(size * 0.5 * cos(angle + PI * 0.5), size * 0.5 * sin(angle + PI * 0.5)) * 0.25 - glm::vec2(size * cos(angle), size * sin(angle)) * 0.5 + location);
+	ofVertex(glm::vec2(size * 0.5 * cos(angle - PI * 0.5), size * 0.5 * sin(angle - PI * 0.5)) * 0.25 - glm::vec2(size * cos(angle), size * sin(angle)) * 0.5 + location);
+	ofVertex(glm::vec2(size * 0.5 * cos(angle - PI * 0.5), size * 0.5 * sin(angle - PI * 0.5)) * 0.25 + location);
+	ofEndShape();
 }
 
 //--------------------------------------------------------------
