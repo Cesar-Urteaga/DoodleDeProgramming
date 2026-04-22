@@ -21,5 +21,4 @@ public:
 	void draw_arrow(glm::vec2 location, glm::vec2 next_location, float size, ofColor color);
 
 	vector<glm::vec3> location_list;
-	vector<bool> flag_list;
 };

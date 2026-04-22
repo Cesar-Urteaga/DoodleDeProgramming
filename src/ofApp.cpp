@@ -6,38 +6,20 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
-	ofSetLineWidth(2);
+	ofBackground(39);
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
 	this->location_list.clear();
-	this->flag_list.clear();
 
-	ofFbo fbo;
-	ofPixels pixels;
-	fbo.allocate(ofGetWidth(), ofGetHeight());
-	fbo.begin();
-	ofClear(0);
-
-	ofTranslate(ofGetWindowWidth() * 0.5, ofGetWindowHeight() * 0.5);
-	ofRotate(ofGetFrameNum() * 1.44);
-	this->draw_arrow(glm::vec2(0, 0), glm::vec2(0, -1), 330, ofColor(255));
-
-	fbo.end();
-	fbo.readToPixels(pixels);
-
-	ofColor pix_color;
 	int span = 24;
-	for (float x = 0 + span * 0.5; x < ofGetWidth(); x += span) {
+	for (float x = span * 0.5; x <= ofGetWidth(); x += span) {
 
-		for (float y = 0 + span * 0.5; y <= ofGetHeight(); y += span) {
+		for (float y = span * 0.5; y <= ofGetHeight(); y += span) {
 
-			pix_color = pixels.getColor(x, y);
 			this->location_list.push_back(glm::vec3(x - ofGetWidth() * 0.5, y - ofGetHeight() * 0.5, 0));
-			this->flag_list.push_back(pix_color != ofColor(0, 0));
 		}
 	}
 }
@@ -50,20 +32,31 @@ void ofApp::draw() {
 	for (int i = 0; i < this->location_list.size(); i++) {
 
 		auto deg = 270;
+		auto noise_value = ofNoise(glm::vec4(this->location_list[i] * 0.005, ofGetFrameNum() * 0.005));
 
-		if (this->flag_list[i]) {
+		if (noise_value > 0.42 && noise_value < 0.58) {
 
-			deg = ofGetFrameNum() * 32;
+			deg += ofMap(noise_value, 0.40, 0.6, -360, 360);
+			auto target = glm::vec3(cos(deg * DEG_TO_RAD), sin(deg * DEG_TO_RAD), 0);
+			
+			this->draw_arrow(location_list[i], location_list[i] + target, 15, ofColor(255));
 		}
-		
-		auto target = glm::vec3(cos(deg * DEG_TO_RAD), sin(deg * DEG_TO_RAD), 0);
-		
-		this->draw_arrow(location_list[i], location_list[i] + target, 15, ofColor(255));
+		else if(noise_value > 0.4 && noise_value < 0.6) {
+
+			auto gap = abs(0.5 - noise_value);
+			auto size = ofMap(gap, 0.08, 0.1, 15, 0);
+			
+			deg += ofMap(noise_value, 0.40, 0.6, -360, 360);
+			
+			auto target = glm::vec3(cos(deg * DEG_TO_RAD), sin(deg * DEG_TO_RAD), 0);
+
+			this->draw_arrow(location_list[i], location_list[i] + target, size, ofColor(255));
+		}
 	}
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 500;
+	int start = 50;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
@@ -84,7 +77,7 @@ void ofApp::draw_arrow(glm::vec2 location, glm::vec2 next_location, float size, 
 
 	auto angle = std::atan2(next_location.y - location.y, next_location.x - location.x);
 
-	ofSetColor(239);
+	ofSetColor(0);
 	ofFill();
 	ofBeginShape();
 	ofVertex(glm::vec2(size * 0.8 * cos(angle), size * 0.8 * sin(angle)) + location);
@@ -99,7 +92,7 @@ void ofApp::draw_arrow(glm::vec2 location, glm::vec2 next_location, float size, 
 	ofVertex(glm::vec2(size * 0.5 * cos(angle - PI * 0.5), size * 0.5 * sin(angle - PI * 0.5)) * 0.25 + location);
 	ofEndShape(true);
 
-	ofSetColor(0);
+	ofSetColor(255);
 	ofNoFill();
 	ofBeginShape();
 	ofVertex(glm::vec2(size * 0.5 * cos(angle + PI * 0.5), size * 0.5 * sin(angle + PI * 0.5)) * 0.25 + location);
