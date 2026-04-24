@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofEnableDepthTest();
 }
 
@@ -19,10 +19,9 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
-	ofRotateY(ofGetFrameNum() * 1.44);
+	ofRotateX(115);
 
 	int R = 235;
-	int r = 60;
 	int v_span = 3;
 	int u_span = 10;
 
@@ -30,70 +29,75 @@ void ofApp::draw() {
 	line.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
 
 	ofColor face_color = ofColor(0);
-	ofColor line_color = ofColor(255);
+	ofColor line_color = ofColor(239);
 
-	for (int v = 0; v < 360; v += v_span) {
+	for (int r = 50; r <= 60; r += 2) {
 
-		for (int u = 0; u < 360; u += u_span) {
+		face_color.setHsb(ofMap(r, 50, 60, 0, 255), 200, 255);
 
-			auto noise_value = ofNoise(glm::vec4(this->make_point(R, 150, u, v) * 0.005, ofGetFrameNum() * 0.025));
-			auto param = noise_value > 0.5 ? noise_value < 0.63 ? ofMap(noise_value, 0.5, 0.63, 1, 0) : 0 : 1;
-			auto v_size = v_span * param;
-			auto u_size = u_span * param;
+		for (int v = 0; v < 360; v += v_span) {
 
-			face.addVertex(this->make_point(R, r, u - u_size * 0.5, v - v_size * 0.5));
-			face.addVertex(this->make_point(R, r, u + u_size * 0.5, v - v_size * 0.5));
-			face.addVertex(this->make_point(R, r, u + u_size * 0.5, v + v_size * 0.5));
-			face.addVertex(this->make_point(R, r, u - u_size * 0.5, v + v_size * 0.5));
+			for (int u = 0; u < 360; u += u_span) {
 
-			line.addVertex(this->make_point(R, r, u - u_size * 0.5, v - v_size * 0.5));
-			line.addVertex(this->make_point(R, r, u + u_size * 0.5, v - v_size * 0.5));
-			line.addVertex(this->make_point(R, r, u + u_size * 0.5, v + v_size * 0.5));
-			line.addVertex(this->make_point(R, r, u - u_size * 0.5, v + v_size * 0.5));
+				auto noise_value = ofNoise(glm::vec4(this->make_point(R, r * 30, u, v) * 0.005, ofGetFrameNum() * 0.025));
+				auto param = noise_value > 0.45 ? noise_value < 0.5 ? ofMap(noise_value, 0.45, 0.5, 1, 0) : 0 : 1;
+				auto v_size = v_span * param;
+				auto u_size = u_span * param;
 
-			face.addColor(face_color);
-			face.addColor(face_color);
-			face.addColor(face_color);
-			face.addColor(face_color);
+				face.addVertex(this->make_point(R, r, u - u_size * 0.5, v - v_size * 0.5));
+				face.addVertex(this->make_point(R, r, u + u_size * 0.5, v - v_size * 0.5));
+				face.addVertex(this->make_point(R, r, u + u_size * 0.5, v + v_size * 0.5));
+				face.addVertex(this->make_point(R, r, u - u_size * 0.5, v + v_size * 0.5));
 
-			face.addIndex(face.getNumVertices() - 1); face.addIndex(face.getNumVertices() - 2); face.addIndex(face.getNumVertices() - 3);
-			face.addIndex(face.getNumVertices() - 1); face.addIndex(face.getNumVertices() - 3); face.addIndex(face.getNumVertices() - 4);
+				line.addVertex(this->make_point(R, r, u - u_size * 0.5, v - v_size * 0.5));
+				line.addVertex(this->make_point(R, r, u + u_size * 0.5, v - v_size * 0.5));
+				line.addVertex(this->make_point(R, r, u + u_size * 0.5, v + v_size * 0.5));
+				line.addVertex(this->make_point(R, r, u - u_size * 0.5, v + v_size * 0.5));
 
-			line.addColor(line_color);
-			line.addColor(line_color);
-			line.addColor(line_color);
-			line.addColor(line_color);
+				face.addColor(face_color);
+				face.addColor(face_color);
+				face.addColor(face_color);
+				face.addColor(face_color);
 
-			auto noise_value_1 = ofNoise(glm::vec4(this->make_point(R, 150, u - u_span, v) * 0.005, ofGetFrameNum() * 0.025));
-			auto noise_value_2 = ofNoise(glm::vec4(this->make_point(R, 150, u, v + v_span) * 0.005, ofGetFrameNum() * 0.025));
-			auto noise_value_3 = ofNoise(glm::vec4(this->make_point(R, 150, u, v - v_span) * 0.005, ofGetFrameNum() * 0.025));
-			auto noise_value_4 = ofNoise(glm::vec4(this->make_point(R, 150, u + u_span, v) * 0.005, ofGetFrameNum() * 0.025));
+				face.addIndex(face.getNumVertices() - 1); face.addIndex(face.getNumVertices() - 2); face.addIndex(face.getNumVertices() - 3);
+				face.addIndex(face.getNumVertices() - 1); face.addIndex(face.getNumVertices() - 3); face.addIndex(face.getNumVertices() - 4);
 
-			auto param_1 = noise_value_1 > 0.5 ? noise_value_1 < 0.63 ? ofMap(noise_value_1, 0.5, 0.63, 1, 0) : 0 : 1;
-			auto param_2 = noise_value_2 > 0.5 ? noise_value_2 < 0.63 ? ofMap(noise_value_2, 0.5, 0.63, 1, 0) : 0 : 1;
-			auto param_3 = noise_value_3 > 0.5 ? noise_value_3 < 0.63 ? ofMap(noise_value_3, 0.5, 0.63, 1, 0) : 0 : 1;
-			auto param_4 = noise_value_4 > 0.5 ? noise_value_4 < 0.63 ? ofMap(noise_value_3, 0.5, 0.63, 1, 0) : 0 : 1;
+				line.addColor(line_color);
+				line.addColor(line_color);
+				line.addColor(line_color);
+				line.addColor(line_color);
 
-			if (param_1 < 1 || param < 1) {
+				auto noise_value_1 = ofNoise(glm::vec4(this->make_point(R, r * 30, u - u_span, v) * 0.005, ofGetFrameNum() * 0.025));
+				auto noise_value_2 = ofNoise(glm::vec4(this->make_point(R, r * 30, u, v + v_span) * 0.005, ofGetFrameNum() * 0.025));
+				auto noise_value_3 = ofNoise(glm::vec4(this->make_point(R, r * 30, u, v - v_span) * 0.005, ofGetFrameNum() * 0.025));
+				auto noise_value_4 = ofNoise(glm::vec4(this->make_point(R, r * 30, u + u_span, v) * 0.005, ofGetFrameNum() * 0.025));
 
-				line.addIndex(line.getNumVertices() - 1); line.addIndex(line.getNumVertices() - 4);
-			}
+				auto param_1 = noise_value_1 > 0.45 ? noise_value_1 < 0.5 ? ofMap(noise_value_1, 0.45, 0.5, 1, 0) : 0 : 1;
+				auto param_2 = noise_value_2 > 0.45 ? noise_value_2 < 0.5 ? ofMap(noise_value_2, 0.45, 0.5, 1, 0) : 0 : 1;
+				auto param_3 = noise_value_3 > 0.45 ? noise_value_3 < 0.5 ? ofMap(noise_value_3, 0.45, 0.5, 1, 0) : 0 : 1;
+				auto param_4 = noise_value_4 > 0.45 ? noise_value_4 < 0.5 ? ofMap(noise_value_3, 0.45, 0.5, 1, 0) : 0 : 1;
 
-			if (param_2 < 1 || param < 1) {
+				if (param_1 < 1 || param < 1) {
 
+					line.addIndex(line.getNumVertices() - 1); line.addIndex(line.getNumVertices() - 4);
+				}
 
-				line.addIndex(line.getNumVertices() - 1); line.addIndex(line.getNumVertices() - 2);
-			}
-
-			if (param_3 < 1 || param < 1) {
+				if (param_2 < 1 || param < 1) {
 
 
-				line.addIndex(line.getNumVertices() - 3); line.addIndex(line.getNumVertices() - 4);
-			}
+					line.addIndex(line.getNumVertices() - 1); line.addIndex(line.getNumVertices() - 2);
+				}
 
-			if (param_4 < 1 || param < 1) {
+				if (param_3 < 1 || param < 1) {
 
-				line.addIndex(line.getNumVertices() - 2); line.addIndex(line.getNumVertices() - 3);
+
+					line.addIndex(line.getNumVertices() - 3); line.addIndex(line.getNumVertices() - 4);
+				}
+
+				if (param_4 < 1 || param < 1) {
+
+					line.addIndex(line.getNumVertices() - 2); line.addIndex(line.getNumVertices() - 3);
+				}
 			}
 		}
 	}
@@ -105,7 +109,7 @@ void ofApp::draw() {
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 250;
+	int start = 500;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
