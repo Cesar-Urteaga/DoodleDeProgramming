@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofEnableDepthTest();
 }
 
@@ -19,6 +19,8 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
+	ofRotateX(90);
+	ofRotateZ(ofGetFrameNum() * 2.88);
 
 	ofMesh face, line;
 	line.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
@@ -27,15 +29,15 @@ void ofApp::draw() {
 	int deg_len = 30;
 	int z_span = 1;
 
-	for (int radius = 300; radius <= 360; radius += 10) {
+	for (int radius = 300; radius <= 360; radius += 20) {
 
-		for (int base_deg = 0; base_deg < 360; base_deg += 120) {
+		for (int base_deg = 0; base_deg < 360; base_deg += 180) {
 
-			for (int z = -6000; z < 600; z += z_span) {
+			for (int z = -1200; z < 1200; z += z_span) {
 
-				auto deg_1 = base_deg + ofMap(ofNoise(z * 0.0003 - radius * 0.001 + ofGetFrameNum() * 0.005), 0, 1, -720, 720);
+				auto deg_1 = base_deg + ofMap(ofNoise(z * 0.0005 - radius * 0.001 + ofGetFrameNum() * 0.01), 0, 1, -720, 720);
 				auto deg_2 = deg_1 + deg_len;
-				auto deg_3 = base_deg + ofMap(ofNoise((z + z_span) * 0.0003 - radius * 0.001 + ofGetFrameNum() * 0.005), 0, 1, -720, 720);
+				auto deg_3 = base_deg + ofMap(ofNoise((z + z_span) * 0.0005 - radius * 0.001 + ofGetFrameNum() * 0.01), 0, 1, -720, 720);
 				auto deg_4 = deg_3 + deg_len;
 
 				vector<glm::vec3> vertices;
@@ -53,12 +55,12 @@ void ofApp::draw() {
 				line.addIndex(line.getNumVertices() - 1); line.addIndex(line.getNumVertices() - 4);
 				line.addIndex(line.getNumVertices() - 2); line.addIndex(line.getNumVertices() - 3);
 
-				if (z == -6000) {
+				if (z == -1200) {
 
 					line.addIndex(line.getNumVertices() - 3); line.addIndex(line.getNumVertices() - 4);
 				}
 
-				if (z == 600 - z_span) {
+				if (z == 1200 - z_span) {
 
 					line.addIndex(line.getNumVertices() - 1); line.addIndex(line.getNumVertices() - 2);
 				}
