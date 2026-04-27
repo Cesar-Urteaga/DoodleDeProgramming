@@ -6,7 +6,8 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(39);
+	ofBackground(239);
+	ofSetLineWidth(2);
 	ofEnableDepthTest();
 }
 
@@ -19,60 +20,56 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
-	ofRotateX(90);
-	ofRotateZ(ofGetFrameNum() * 2.88);
+	
+	int len = 300;
+	bool color_flag = true;
+	for (int z = len * -5; z < len * 1.5; z += 120) {
 
-	ofMesh face, line;
-	line.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
+		int n = ofMap(ofNoise(z * 0.0005 + ofGetFrameNum() * 0.01), 0, 1, 0, 100);
 
-	int radius = 300;
-	int deg_len = 30;
-	int z_span = 1;
+		for (int param_start = n; param_start < n + 100; param_start += 5) {
 
-	for (int radius = 300; radius <= 360; radius += 20) {
+			ofMesh mesh, frame;
+			frame.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
 
-		for (int base_deg = 0; base_deg < 360; base_deg += 180) {
+			for (int param = param_start; param <= param_start + 5; param++) {
 
-			for (int z = -1200; z < 1200; z += z_span) {
+				auto side_1 = glm::vec3(this->make_point(len, param), z + 30);
+				auto side_2 = glm::vec3(this->make_point(len, param), z - 30);
 
-				auto deg_1 = base_deg + ofMap(ofNoise(z * 0.0005 - radius * 0.001 + ofGetFrameNum() * 0.01), 0, 1, -720, 720);
-				auto deg_2 = deg_1 + deg_len;
-				auto deg_3 = base_deg + ofMap(ofNoise((z + z_span) * 0.0005 - radius * 0.001 + ofGetFrameNum() * 0.01), 0, 1, -720, 720);
-				auto deg_4 = deg_3 + deg_len;
+				mesh.addVertex(side_1);
+				mesh.addVertex(side_2);
 
-				vector<glm::vec3> vertices;
-				vertices.push_back(glm::vec3(radius * cos(deg_1 * DEG_TO_RAD), radius * sin(deg_1 * DEG_TO_RAD), z));
-				vertices.push_back(glm::vec3(radius * cos(deg_2 * DEG_TO_RAD), radius * sin(deg_2 * DEG_TO_RAD), z));
-				vertices.push_back(glm::vec3(radius * cos(deg_4 * DEG_TO_RAD), radius * sin(deg_4 * DEG_TO_RAD), z + z_span));
-				vertices.push_back(glm::vec3(radius * cos(deg_3 * DEG_TO_RAD), radius * sin(deg_3 * DEG_TO_RAD), z + z_span));
+				mesh.addColor(color_flag ? ofColor(79, 172, 135) : ofColor(39));
+				mesh.addColor(color_flag ? ofColor(79, 172, 135) : ofColor(39));
 
-				face.addVertices(vertices);
-				line.addVertices(vertices);
+				frame.addVertex(side_1);
+				frame.addVertex(side_2);
 
-				face.addIndex(face.getNumVertices() - 2); face.addIndex(face.getNumVertices() - 3); face.addIndex(face.getNumVertices() - 4);
-				face.addIndex(face.getNumVertices() - 1); face.addIndex(face.getNumVertices() - 2); face.addIndex(face.getNumVertices() - 4);
+				frame.addColor(ofColor(239));
+				frame.addColor(ofColor(239));
 
-				line.addIndex(line.getNumVertices() - 1); line.addIndex(line.getNumVertices() - 4);
-				line.addIndex(line.getNumVertices() - 2); line.addIndex(line.getNumVertices() - 3);
+				int index = mesh.getNumVertices() - 1;
+				if (param > param_start) {
 
-				if (z == -1200) {
+					mesh.addIndex(index); mesh.addIndex(index - 2); mesh.addIndex(index - 3);
+					mesh.addIndex(index); mesh.addIndex(index - 1); mesh.addIndex(index - 3);
 
-					line.addIndex(line.getNumVertices() - 3); line.addIndex(line.getNumVertices() - 4);
-				}
-
-				if (z == 1200 - z_span) {
-
-					line.addIndex(line.getNumVertices() - 1); line.addIndex(line.getNumVertices() - 2);
+					frame.addIndex(index); frame.addIndex(index - 2);
+					frame.addIndex(index - 1); frame.addIndex(index - 3);
 				}
 			}
+
+			mesh.draw();
+
+			frame.addIndex(0); frame.addIndex(1);
+			frame.addIndex(frame.getNumVertices() - 1); frame.addIndex(frame.getNumVertices() - 2);
+			frame.drawWireframe();
+
+			color_flag = !color_flag;
+
 		}
 	}
-
-	ofSetColor(0);
-	face.draw();
-
-	ofSetColor(239);
-	line.drawWireframe();
 
 	this->cam.end();
 
@@ -92,6 +89,28 @@ void ofApp::draw() {
 		}
 	}
 	*/
+}
+
+//--------------------------------------------------------------
+glm::vec2 ofApp::make_point(int len, int param) {
+
+	param = param % 100;
+	if (param < 25) {
+
+		return glm::vec2(ofMap(param, 0, 25, -len * 0.5, len * 0.5), -len * 0.5);
+	}
+	else if (param < 50) {
+
+		return glm::vec2(len * 0.5, ofMap(param, 25, 50, -len * 0.5, len * 0.5));
+	}
+	else if (param < 75) {
+
+		return glm::vec2(ofMap(param, 50, 75, len * 0.5, -len * 0.5), len * 0.5);
+	}
+	else {
+
+		return glm::vec2(-len * 0.5, ofMap(param, 75, 100, len * 0.5, -len * 0.5));
+	}
 }
 
 //--------------------------------------------------------------

@@ -18,5 +18,7 @@ public:
 	void dragEvent(ofDragInfo dragInfo) {};
 	void gotMessage(ofMessage msg) {};
 
+	glm::vec2 make_point(int len, int param);
+
 	ofEasyCam cam;
 };
