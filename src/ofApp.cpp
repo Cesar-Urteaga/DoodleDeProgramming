@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofSetLineWidth(2);
 	ofEnableDepthTest();
 }
@@ -23,16 +23,16 @@ void ofApp::draw() {
 	
 	int len = 300;
 	bool color_flag = true;
-	for (int z = len * -5; z < len * 1.5; z += 120) {
+	for (int z = len * -5; z < len * 1.5; z += 60) {
 
-		int n = ofMap(ofNoise(z * 0.0005 + ofGetFrameNum() * 0.01), 0, 1, 0, 100);
+		int n = ofMap(ofNoise(z * 0.0005 + ofGetFrameNum() * 0.01), 0, 1, 0, 720);
 
-		for (int param_start = n; param_start < n + 100; param_start += 5) {
+		for (int param_start = n; param_start < n + 100; param_start += 100) {
 
 			ofMesh mesh, frame;
 			frame.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
 
-			for (int param = param_start; param <= param_start + 5; param++) {
+			for (int param = param_start; param <= param_start + 50; param++) {
 
 				auto side_1 = glm::vec3(this->make_point(len, param), z + 30);
 				auto side_2 = glm::vec3(this->make_point(len, param), z - 30);
@@ -40,8 +40,8 @@ void ofApp::draw() {
 				mesh.addVertex(side_1);
 				mesh.addVertex(side_2);
 
-				mesh.addColor(color_flag ? ofColor(79, 172, 135) : ofColor(39));
-				mesh.addColor(color_flag ? ofColor(79, 172, 135) : ofColor(39));
+				mesh.addColor(color_flag ? ofColor(239, 139, 139) : ofColor(139, 139, 239));
+				mesh.addColor(color_flag ? ofColor(239, 139, 139) : ofColor(139, 139, 239));
 
 				frame.addVertex(side_1);
 				frame.addVertex(side_2);
@@ -67,7 +67,6 @@ void ofApp::draw() {
 			frame.drawWireframe();
 
 			color_flag = !color_flag;
-
 		}
 	}
 
