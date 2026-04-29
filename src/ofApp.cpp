@@ -4,73 +4,40 @@
 void ofApp::setup() {
 
 	ofSetFrameRate(25);
-	ofSetWindowTitle("openframeworks");
+	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(39);
-	ofSetLineWidth(2);
+	ofBackground(239);
 	ofEnableDepthTest();
+
+	this->frame.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
-}
+	this->face.clear();
+	this->frame.clear();
 
-//--------------------------------------------------------------
-void ofApp::draw() {
+	auto span = 25;
+	ofColor face_color, frame_color;
+	for (int x = -300; x <= 300; x += span) {
 
-	this->cam.begin();
-	
-	int len = 300;
-	bool color_flag = true;
-	for (int z = len * -5; z < len * 1.5; z += 60) {
+		for (int y = -300; y <= 300; y += span) {
 
-		int n = ofMap(ofNoise(z * 0.0005 + ofGetFrameNum() * 0.01), 0, 1, 0, 720);
+			for (int z = -300; z <= 300; z += span) {
 
-		for (int param_start = n; param_start < n + 100; param_start += 100) {
+				auto max = std::max({ abs(x), abs(y), abs(z) });
+				auto noise_value = ofNoise(glm::vec3(x * 0.0005, y * 0.01 + ofGetFrameNum() * 0.03, z * 0.0005));
 
-			ofMesh mesh, frame;
-			frame.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
+				if (noise_value > ofMap(max, 180, 300, 0.1, 0.55)) {
 
-			for (int param = param_start; param <= param_start + 50; param++) {
-
-				auto side_1 = glm::vec3(this->make_point(len, param), z + 30);
-				auto side_2 = glm::vec3(this->make_point(len, param), z - 30);
-
-				mesh.addVertex(side_1);
-				mesh.addVertex(side_2);
-
-				mesh.addColor(color_flag ? ofColor(239, 139, 139) : ofColor(139, 139, 239));
-				mesh.addColor(color_flag ? ofColor(239, 139, 139) : ofColor(139, 139, 239));
-
-				frame.addVertex(side_1);
-				frame.addVertex(side_2);
-
-				frame.addColor(ofColor(239));
-				frame.addColor(ofColor(239));
-
-				int index = mesh.getNumVertices() - 1;
-				if (param > param_start) {
-
-					mesh.addIndex(index); mesh.addIndex(index - 2); mesh.addIndex(index - 3);
-					mesh.addIndex(index); mesh.addIndex(index - 1); mesh.addIndex(index - 3);
-
-					frame.addIndex(index); frame.addIndex(index - 2);
-					frame.addIndex(index - 1); frame.addIndex(index - 3);
+					face_color = ofColor(ofMap(max, 180, 300, 239, 39));
+					frame_color = ofColor(239);
+					this->setBoxToMesh(this->face, this->frame, glm::vec3(x, y, z), span, face_color, frame_color);
 				}
 			}
-
-			mesh.draw();
-
-			frame.addIndex(0); frame.addIndex(1);
-			frame.addIndex(frame.getNumVertices() - 1); frame.addIndex(frame.getNumVertices() - 2);
-			frame.drawWireframe();
-
-			color_flag = !color_flag;
 		}
 	}
-
-	this->cam.end();
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
@@ -91,24 +58,87 @@ void ofApp::draw() {
 }
 
 //--------------------------------------------------------------
-glm::vec2 ofApp::make_point(int len, int param) {
+void ofApp::draw() {
 
-	param = param % 100;
-	if (param < 25) {
+	this->cam.begin();
+	ofRotateY(ofGetFrameNum() * 1.44);
 
-		return glm::vec2(ofMap(param, 0, 25, -len * 0.5, len * 0.5), -len * 0.5);
-	}
-	else if (param < 50) {
+	this->face.draw();
+	this->frame.drawWireframe();
 
-		return glm::vec2(len * 0.5, ofMap(param, 25, 50, -len * 0.5, len * 0.5));
-	}
-	else if (param < 75) {
+	this->cam.end();
 
-		return glm::vec2(ofMap(param, 50, 75, len * 0.5, -len * 0.5), len * 0.5);
-	}
-	else {
 
-		return glm::vec2(-len * 0.5, ofMap(param, 75, 100, len * 0.5, -len * 0.5));
+}
+
+//--------------------------------------------------------------
+void ofApp::setBoxToMesh(ofMesh& face_target, ofMesh& frame_target, glm::vec3 location, float size, ofColor face_color, ofColor frame_color) {
+
+	this->setBoxToMesh(face_target, frame_target, location, size, size, size, face_color, frame_color);
+}
+
+//--------------------------------------------------------------
+void ofApp::setBoxToMesh(ofMesh& face_target, ofMesh& frame_target, glm::vec3 location, float height, float width, float depth, ofColor face_color, ofColor frame_color) {
+
+	int index = face_target.getVertices().size();
+
+	face_target.addVertex(location + glm::vec3(width * -0.5 * 0.99, height * 0.5 * 0.99, depth * -0.5 * 0.99));
+	face_target.addVertex(location + glm::vec3(width * 0.5 * 0.99, height * 0.5 * 0.99, depth * -0.5 * 0.99));
+	face_target.addVertex(location + glm::vec3(width * 0.5 * 0.99, height * 0.5 * 0.99, depth * 0.5 * 0.99));
+	face_target.addVertex(location + glm::vec3(width * -0.5 * 0.99, height * 0.5 * 0.99, depth * 0.5 * 0.99));
+
+	face_target.addVertex(location + glm::vec3(width * -0.5 * 0.99, height * -0.5 * 0.99, depth * -0.5 * 0.99));
+	face_target.addVertex(location + glm::vec3(width * 0.5 * 0.99, height * -0.5 * 0.99, depth * -0.5 * 0.99));
+	face_target.addVertex(location + glm::vec3(width * 0.5 * 0.99, height * -0.5 * 0.99, depth * 0.5 * 0.99));
+	face_target.addVertex(location + glm::vec3(width * -0.5 * 0.99, height * -0.5 * 0.99, depth * 0.5 * 0.99));
+
+	face_target.addIndex(index + 0); face_target.addIndex(index + 1); face_target.addIndex(index + 2);
+	face_target.addIndex(index + 0); face_target.addIndex(index + 2); face_target.addIndex(index + 3);
+
+	face_target.addIndex(index + 4); face_target.addIndex(index + 5); face_target.addIndex(index + 6);
+	face_target.addIndex(index + 4); face_target.addIndex(index + 6); face_target.addIndex(index + 7);
+
+	face_target.addIndex(index + 0); face_target.addIndex(index + 4); face_target.addIndex(index + 1);
+	face_target.addIndex(index + 4); face_target.addIndex(index + 5); face_target.addIndex(index + 1);
+
+	face_target.addIndex(index + 1); face_target.addIndex(index + 5); face_target.addIndex(index + 6);
+	face_target.addIndex(index + 6); face_target.addIndex(index + 2); face_target.addIndex(index + 1);
+
+	face_target.addIndex(index + 2); face_target.addIndex(index + 6); face_target.addIndex(index + 7);
+	face_target.addIndex(index + 7); face_target.addIndex(index + 3); face_target.addIndex(index + 2);
+
+	face_target.addIndex(index + 3); face_target.addIndex(index + 7); face_target.addIndex(index + 4);
+	face_target.addIndex(index + 4); face_target.addIndex(index + 0); face_target.addIndex(index + 3);
+
+	frame_target.addVertex(location + glm::vec3(width * -0.5, height * 0.5, depth * -0.5));
+	frame_target.addVertex(location + glm::vec3(width * 0.5, height * 0.5, depth * -0.5));
+	frame_target.addVertex(location + glm::vec3(width * 0.5, height * 0.5, depth * 0.5));
+	frame_target.addVertex(location + glm::vec3(width * -0.5, height * 0.5, depth * 0.5));
+
+	frame_target.addVertex(location + glm::vec3(width * -0.5, height * -0.5, depth * -0.5));
+	frame_target.addVertex(location + glm::vec3(width * 0.5, height * -0.5, depth * -0.5));
+	frame_target.addVertex(location + glm::vec3(width * 0.5, height * -0.5, depth * 0.5));
+	frame_target.addVertex(location + glm::vec3(width * -0.5, height * -0.5, depth * 0.5));
+
+	frame_target.addIndex(index + 0); frame_target.addIndex(index + 1);
+	frame_target.addIndex(index + 1); frame_target.addIndex(index + 2);
+	frame_target.addIndex(index + 2); frame_target.addIndex(index + 3);
+	frame_target.addIndex(index + 3); frame_target.addIndex(index + 0);
+
+	frame_target.addIndex(index + 4); frame_target.addIndex(index + 5);
+	frame_target.addIndex(index + 5); frame_target.addIndex(index + 6);
+	frame_target.addIndex(index + 6); frame_target.addIndex(index + 7);
+	frame_target.addIndex(index + 7); frame_target.addIndex(index + 4);
+
+	frame_target.addIndex(index + 0); frame_target.addIndex(index + 4);
+	frame_target.addIndex(index + 1); frame_target.addIndex(index + 5);
+	frame_target.addIndex(index + 2); frame_target.addIndex(index + 6);
+	frame_target.addIndex(index + 3); frame_target.addIndex(index + 7);
+
+	for (int i = 0; i < 8; i++) {
+
+		this->face.addColor(face_color);
+		this->frame.addColor(frame_color);
 	}
 }
 
