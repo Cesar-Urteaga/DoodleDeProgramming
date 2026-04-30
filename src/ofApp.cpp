@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofEnableDepthTest();
 
 	this->frame.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
@@ -22,12 +22,12 @@ void ofApp::update() {
 	ofColor face_color, frame_color;
 	for (int x = -300; x <= 300; x += span) {
 
-		for (int y = -300; y <= 300; y += span) {
+		for (int y = -600; y <= 600; y += span) {
 
 			for (int z = -300; z <= 300; z += span) {
 
-				auto max = std::max({ abs(x), abs(y), abs(z) });
-				auto noise_value = ofNoise(glm::vec3(x * 0.0005, y * 0.01 + ofGetFrameNum() * 0.03, z * 0.0005));
+				auto max = std::max({ abs(x), 0, abs(z) });
+				auto noise_value = ofNoise(glm::vec3(x * 0.008, y * 0.004 + ofGetFrameNum() * 0.08, z * 0.008));
 
 				if (noise_value > ofMap(max, 180, 300, 0.1, 0.55)) {
 
@@ -67,8 +67,6 @@ void ofApp::draw() {
 	this->frame.drawWireframe();
 
 	this->cam.end();
-
-
 }
 
 //--------------------------------------------------------------
