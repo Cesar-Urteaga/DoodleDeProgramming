@@ -6,19 +6,25 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
-	ofSetColor(0);
+	ofBackground(39);
+	ofSetColor(255);
+	
 	ofSetRectMode(ofRectMode::OF_RECTMODE_CENTER);
+	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
 
 	this->noise_param = ofRandom(1000);
 }
 //--------------------------------------------------------------
 void ofApp::update() {
 
+	ofSeedRandom(39);
+
 	if (ofGetFrameNum() % 50 < 25) {
 
-		this->noise_param += ofMap(ofGetFrameNum() % 50, 0, 25, 0.1, 0.005);
+		//this->noise_param += ofMap(ofGetFrameNum() % 50, 0, 25, 0.1, 0.005);
 	}
+
+	this->noise_param += 0.01;
 }
 
 //--------------------------------------------------------------
@@ -26,17 +32,19 @@ void ofApp::draw() {
 
 	ofTranslate(ofGetWindowSize() * 0.5);
 
+	auto noise_seed = glm::vec3(ofRandom(1000), ofRandom(1000), ofRandom(1000));
+
 	for (int deg = 0; deg < 360; deg += 2) {
 
 		float  radius = 200;
-		auto target_radius = ofMap(ofNoise(cos(deg * DEG_TO_RAD) * 5, sin(deg * DEG_TO_RAD) * 5, this->noise_param), 0, 1, radius - 120, radius + 120);	
+		auto target_radius = ofMap(ofNoise(deg % 4 == 0 ? noise_seed.x : noise_seed.y, cos(deg * DEG_TO_RAD) * 0.8, sin(deg * DEG_TO_RAD) * 0.8, this->noise_param), 0, 1, radius - 80, radius + 80);	
 		auto target_location = glm::vec2(target_radius * cos(deg * DEG_TO_RAD), target_radius * sin(deg * DEG_TO_RAD));
 
 		ofPushMatrix();
 		ofTranslate(target_location);
 		ofRotate(deg);
 
-		ofDrawRectangle(glm::vec2(), 150, 8);
+		ofDrawRectangle(glm::vec2(), 120, 2);
 
 		ofPopMatrix();
 	}
