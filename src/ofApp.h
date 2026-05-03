@@ -18,5 +18,10 @@ public:
 	void dragEvent(ofDragInfo dragInfo) {};
 	void gotMessage(ofMessage msg) {};
 
-	float noise_param;
+	ofEasyCam cam;
+
+	vector<glm::vec3> base_location_list;
+
+	vector<vector<glm::vec3>> log_list;
+	vector<float> life_list;
 };

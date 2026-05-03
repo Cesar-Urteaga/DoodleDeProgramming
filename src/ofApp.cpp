@@ -1,4 +1,4 @@
-#include "ofApp.h"
+#include "ofApp.h"	
 
 //--------------------------------------------------------------
 void ofApp::setup() {
@@ -6,48 +6,78 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(39);
-	ofSetColor(255);
-	
-	ofSetRectMode(ofRectMode::OF_RECTMODE_CENTER);
-	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
+	ofBackground(239);
+	ofSetColor(0);
+	ofNoFill();
+	ofEnableDepthTest();
 
-	this->noise_param = ofRandom(1000);
+	auto ico_sphere = ofIcoSpherePrimitive(250, 4);
+	for (auto& vertex : ico_sphere.getMeshPtr()->getVertices()) {
+
+		this->base_location_list.push_back(vertex);
+	}
+
 }
+
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	ofSeedRandom(39);
+	int radius = 5;
+	while (this->log_list.size() < 5000) {
 
-	if (ofGetFrameNum() % 50 < 25) {
-
-		//this->noise_param += ofMap(ofGetFrameNum() % 50, 0, 25, 0.1, 0.005);
+		int font_location_index = ofRandom(this->base_location_list.size());
+		vector<glm::vec3> log;
+		log.push_back(this->base_location_list[font_location_index]);
+		this->log_list.push_back(log);
+		this->life_list.push_back(ofRandom(10, 100));
 	}
 
-	this->noise_param += 0.01;
+	for (int i = this->log_list.size() - 1; i >= 0; i--) {
+
+		this->life_list[i] -= 1;
+		if (this->life_list[i] < 0) {
+
+			this->log_list.erase(this->log_list.begin() + i);
+			this->life_list.erase(this->life_list.begin() + i);
+
+			continue;
+		}
+
+		auto deg = ofMap(ofNoise(glm::vec4(this->log_list[i].back() * 0.005, ofGetFrameNum() * 0.00003)), 0, 1, -360, 360);
+		auto theta = ofMap(ofNoise(glm::vec4(this->log_list[i].back() * 0.005, (ofGetFrameNum() + 10000) * 0.00003)), 0, 1, -360, 360);
+		auto location = this->log_list[i].back() + glm::vec3(radius * cos(deg * DEG_TO_RAD) * sin(theta * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD) * sin(theta * DEG_TO_RAD), radius * cos(theta * DEG_TO_RAD));
+		this->log_list[i].push_back(location);
+		while (this->log_list[i].size() > 100) {
+
+			this->log_list[i].erase(this->log_list[i].begin());
+		}
+	}
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-	ofTranslate(ofGetWindowSize() * 0.5);
+	this->cam.begin();
+	ofRotateX(90);
+	ofRotateZ(ofGetFrameNum() * 0.72);
 
-	auto noise_seed = glm::vec3(ofRandom(1000), ofRandom(1000), ofRandom(1000));
+	for (int i = 0; i < this->log_list.size(); i++) {
 
-	for (int deg = 0; deg < 360; deg += 2) {
+		if (this->life_list[i] > 10) {
 
-		float  radius = 200;
-		auto target_radius = ofMap(ofNoise(deg % 4 == 0 ? noise_seed.x : noise_seed.y, cos(deg * DEG_TO_RAD) * 0.8, sin(deg * DEG_TO_RAD) * 0.8, this->noise_param), 0, 1, radius - 80, radius + 80);	
-		auto target_location = glm::vec2(target_radius * cos(deg * DEG_TO_RAD), target_radius * sin(deg * DEG_TO_RAD));
+			ofSetLineWidth(1);
+		}
+		else {
 
-		ofPushMatrix();
-		ofTranslate(target_location);
-		ofRotate(deg);
+			ofSetLineWidth(ofMap(this->life_list[i], 0, 10, 0, 1));
+		}
 
-		ofDrawRectangle(glm::vec2(), 120, 2);
-
-		ofPopMatrix();
+		ofBeginShape();
+		ofVertices(this->log_list[i]);
+		ofEndShape();
 	}
+
+	this->cam.end();
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
