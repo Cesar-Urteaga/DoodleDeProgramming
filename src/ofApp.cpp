@@ -6,12 +6,13 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
-	ofSetColor(0);
+	ofBackground(39);
+	ofSetColor(29, 19, 69);
 	ofNoFill();
+	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
 	ofEnableDepthTest();
 
-	auto ico_sphere = ofIcoSpherePrimitive(250, 4);
+	auto ico_sphere = ofIcoSpherePrimitive(230, 4);
 	for (auto& vertex : ico_sphere.getMeshPtr()->getVertices()) {
 
 		this->base_location_list.push_back(vertex);
@@ -23,7 +24,7 @@ void ofApp::setup() {
 void ofApp::update() {
 
 	int radius = 5;
-	while (this->log_list.size() < 5000) {
+	while (this->log_list.size() < 30000) {
 
 		int font_location_index = ofRandom(this->base_location_list.size());
 		vector<glm::vec3> log;
@@ -43,9 +44,10 @@ void ofApp::update() {
 			continue;
 		}
 
-		auto deg = ofMap(ofNoise(glm::vec4(this->log_list[i].back() * 0.005, ofGetFrameNum() * 0.00003)), 0, 1, -360, 360);
-		auto theta = ofMap(ofNoise(glm::vec4(this->log_list[i].back() * 0.005, (ofGetFrameNum() + 10000) * 0.00003)), 0, 1, -360, 360);
+		auto deg = ofMap(ofNoise(glm::vec4(this->log_list[i].back() * 0.008, ofGetFrameNum() * 0.00003)), 0, 1, -360, 360);
+		auto theta = ofMap(ofNoise(glm::vec4(this->log_list[i].back() * 0.008, (ofGetFrameNum() + 10000) * 0.00003)), 0, 1, -360, 360);
 		auto location = this->log_list[i].back() + glm::vec3(radius * cos(deg * DEG_TO_RAD) * sin(theta * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD) * sin(theta * DEG_TO_RAD), radius * cos(theta * DEG_TO_RAD));
+		location = glm::normalize(location) * 230;
 		this->log_list[i].push_back(location);
 		while (this->log_list[i].size() > 100) {
 
@@ -58,8 +60,8 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
-	ofRotateX(90);
-	ofRotateZ(ofGetFrameNum() * 0.72);
+	ofRotateX(ofGetFrameNum() * 0.72);
+	ofRotateZ(ofGetFrameNum() * 0.36);
 
 	for (int i = 0; i < this->log_list.size(); i++) {
 
