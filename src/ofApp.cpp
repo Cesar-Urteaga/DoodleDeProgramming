@@ -1,4 +1,4 @@
-#include "ofApp.h"
+#include "ofApp.h"	
 
 //--------------------------------------------------------------
 void ofApp::setup() {
@@ -7,53 +7,83 @@ void ofApp::setup() {
 	ofSetWindowTitle("openFrameworks");
 
 	ofBackground(39);
+	ofSetColor(29, 19, 69);
+	ofNoFill();
 	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
+	ofEnableDepthTest();
 
-	this->noise_param = ofRandom(1000);
+	auto ico_sphere = ofIcoSpherePrimitive(230, 4);
+	for (auto& vertex : ico_sphere.getMeshPtr()->getVertices()) {
+
+		this->base_location_list.push_back(vertex);
+	}
+
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	ofSeedRandom(39);
+	int radius = 5;
+	while (this->log_list.size() < 30000) {
 
-	this->mesh.clear();
-
-	int width = 10;
-	int deg_span = 30;
-
-	ofColor color;
-
-	for (int x = 180; x < ofGetWidth(); x += 360) {
-
-		for (int y = 180; y < ofGetHeight(); y += 360) {
-
-			for (int i = 0; i < 8; i++) {
-
-				color.setHsb(ofMap(i, 0, 8, 0, 255), 200, 255, 128);
-
-				for (int deg = 0; deg < 360; deg += deg_span) {
-
-					auto noise_param = ofRandom(1000);
-					int radius = ofMap(ofNoise(noise_param, cos(deg * DEG_TO_RAD) * 15, sin(deg * DEG_TO_RAD) * 15, this->noise_param), 0, 1, 30, 180);
-
-					this->setRingToMesh(this->mesh, glm::vec3(x, y, 0), radius, width, deg, deg + deg_span, color);
-				}
-			}
-		}
+		int font_location_index = ofRandom(this->base_location_list.size());
+		vector<glm::vec3> log;
+		log.push_back(this->base_location_list[font_location_index]);
+		this->log_list.push_back(log);
+		this->life_list.push_back(ofRandom(10, 100));
 	}
 
-	this->noise_param += 0.02;
+	for (int i = this->log_list.size() - 1; i >= 0; i--) {
+
+		this->life_list[i] -= 1;
+		if (this->life_list[i] < 0) {
+
+			this->log_list.erase(this->log_list.begin() + i);
+			this->life_list.erase(this->life_list.begin() + i);
+
+			continue;
+		}
+
+		auto deg = ofMap(ofNoise(glm::vec4(this->log_list[i].back() * 0.008, ofGetFrameNum() * 0.00003)), 0, 1, -360, 360);
+		auto theta = ofMap(ofNoise(glm::vec4(this->log_list[i].back() * 0.008, (ofGetFrameNum() + 10000) * 0.00003)), 0, 1, -360, 360);
+		auto location = this->log_list[i].back() + glm::vec3(radius * cos(deg * DEG_TO_RAD) * sin(theta * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD) * sin(theta * DEG_TO_RAD), radius * cos(theta * DEG_TO_RAD));
+		location = glm::normalize(location) * 230;
+		this->log_list[i].push_back(location);
+		while (this->log_list[i].size() > 100) {
+
+			this->log_list[i].erase(this->log_list[i].begin());
+		}
+	}
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-	this->mesh.draw();
+	this->cam.begin();
+	ofRotateX(ofGetFrameNum() * 0.72);
+	ofRotateZ(ofGetFrameNum() * 0.36);
+
+	for (int i = 0; i < this->log_list.size(); i++) {
+
+		if (this->life_list[i] > 10) {
+
+			ofSetLineWidth(1);
+		}
+		else {
+
+			ofSetLineWidth(ofMap(this->life_list[i], 0, 10, 0, 1));
+		}
+
+		ofBeginShape();
+		ofVertices(this->log_list[i]);
+		ofEndShape();
+	}
+
+	this->cam.end();
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 50;
+	int start = 500;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
@@ -67,34 +97,6 @@ void ofApp::draw() {
 		}
 	}
 	*/
-}
-
-//--------------------------------------------------------------
-void ofApp::setRingToMesh(ofMesh& mesh, glm::vec3 location, float radius, float width, int deg_start, int deg_end, ofColor color) {
-
-	if (deg_start == deg_end) { return; }
-
-	int deg_span = 5;
-	for (int deg = deg_start; deg < deg_end; deg += deg_span) {
-
-		auto index = mesh.getNumVertices();
-
-		vector<glm::vec3> vertices;
-		vertices.push_back(location + glm::vec3((radius + width * 0.5) * cos(deg * DEG_TO_RAD), (radius + width * 0.5) * sin(deg * DEG_TO_RAD), 0));
-		vertices.push_back(location + glm::vec3((radius + width * 0.5) * cos((deg + deg_span) * DEG_TO_RAD), (radius + width * 0.5) * sin((deg + deg_span) * DEG_TO_RAD), 0));
-		vertices.push_back(location + glm::vec3((radius - width * 0.5) * cos((deg + deg_span) * DEG_TO_RAD), (radius - width * 0.5) * sin((deg + deg_span) * DEG_TO_RAD), 0));
-		vertices.push_back(location + glm::vec3((radius - width * 0.5) * cos(deg * DEG_TO_RAD), (radius - width * 0.5) * sin(deg * DEG_TO_RAD), 0));
-
-		mesh.addVertices(vertices);
-
-		mesh.addIndex(index + 0); mesh.addIndex(index + 1); mesh.addIndex(index + 2);
-		mesh.addIndex(index + 0); mesh.addIndex(index + 2); mesh.addIndex(index + 3);
-
-		mesh.addColor(color);
-		mesh.addColor(color);
-		mesh.addColor(color);
-		mesh.addColor(color);
-	}
 }
 
 //--------------------------------------------------------------
