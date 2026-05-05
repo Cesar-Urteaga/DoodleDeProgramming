@@ -1,4 +1,4 @@
-#include "ofApp.h"	
+#include "ofApp.h"
 
 //--------------------------------------------------------------
 void ofApp::setup() {
@@ -6,53 +6,57 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(39);
-	ofSetColor(29, 19, 69);
-	ofNoFill();
-	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
+	ofBackground(239);
+	ofSetLineWidth(2);
 	ofEnableDepthTest();
 
-	auto ico_sphere = ofIcoSpherePrimitive(230, 4);
-	for (auto& vertex : ico_sphere.getMeshPtr()->getVertices()) {
-
-		this->base_location_list.push_back(vertex);
-	}
-
+	this->frame.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	int radius = 5;
-	while (this->log_list.size() < 30000) {
+	ofSeedRandom(39);
+	glm::vec3 noise_param_1 = glm::vec3(ofRandom(360), ofRandom(360), ofRandom(360));
+	glm::vec3 noise_param_2 = glm::vec3(ofRandom(360), ofRandom(360), ofRandom(360));
 
-		int font_location_index = ofRandom(this->base_location_list.size());
-		vector<glm::vec3> log;
-		log.push_back(this->base_location_list[font_location_index]);
-		this->log_list.push_back(log);
-		this->life_list.push_back(ofRandom(10, 100));
+	if (ofGetFrameNum() % 2 == 0) {
+
+		this->radius_list.push_back(0);
+		this->rotation_list.push_back(glm::vec3(
+			ofMap(ofNoise(noise_param_1.x, ofGetFrameNum() * 0.0025), 0, 1, -720, 720),
+			ofMap(ofNoise(noise_param_1.y, ofGetFrameNum() * 0.0025), 0, 1, -720, 720),
+			ofMap(ofNoise(noise_param_1.z, ofGetFrameNum() * 0.0025), 0, 1, -720, 720)));
+		this->color_list.push_back(ofColor(239, 39, 39));
+	}
+	else {
+
+		this->radius_list.push_back(0);
+		this->rotation_list.push_back(glm::vec3(
+			ofMap(ofNoise(noise_param_2.x, ofGetFrameNum() * 0.0025), 0, 1, -720, 720),
+			ofMap(ofNoise(noise_param_2.y, ofGetFrameNum() * 0.0025), 0, 1, -720, 720),
+			ofMap(ofNoise(noise_param_2.z, ofGetFrameNum() * 0.0025), 0, 1, -720, 720)));
+		this->color_list.push_back(ofColor(39, 39, 239));
 	}
 
-	for (int i = this->log_list.size() - 1; i >= 0; i--) {
+	for (int i = this->radius_list.size() - 1; i > -1; i--) {
 
-		this->life_list[i] -= 1;
-		if (this->life_list[i] < 0) {
+		this->radius_list[i] += 5;
 
-			this->log_list.erase(this->log_list.begin() + i);
-			this->life_list.erase(this->life_list.begin() + i);
+		if (this->radius_list[i] > 250) {
 
-			continue;
+			this->radius_list.erase(this->radius_list.begin() + i);
+			this->rotation_list.erase(this->rotation_list.begin() + i);
+			this->color_list.erase(this->color_list.begin() + i);
 		}
+	}
 
-		auto deg = ofMap(ofNoise(glm::vec4(this->log_list[i].back() * 0.008, ofGetFrameNum() * 0.00003)), 0, 1, -360, 360);
-		auto theta = ofMap(ofNoise(glm::vec4(this->log_list[i].back() * 0.008, (ofGetFrameNum() + 10000) * 0.00003)), 0, 1, -360, 360);
-		auto location = this->log_list[i].back() + glm::vec3(radius * cos(deg * DEG_TO_RAD) * sin(theta * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD) * sin(theta * DEG_TO_RAD), radius * cos(theta * DEG_TO_RAD));
-		location = glm::normalize(location) * 230;
-		this->log_list[i].push_back(location);
-		while (this->log_list[i].size() > 100) {
+	this->face.clear();
+	this->frame.clear();
 
-			this->log_list[i].erase(this->log_list[i].begin());
-		}
+	for (int i = 0; i < this->radius_list.size(); i++) {
+
+		this->setRingToMesh(this->face, this->frame, glm::vec3(), this->rotation_list[i], this->radius_list[i], this->radius_list[i] * 0.1, ofColor(0), this->color_list[i]);
 	}
 }
 
@@ -60,30 +64,15 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
-	ofRotateX(ofGetFrameNum() * 0.72);
-	ofRotateZ(ofGetFrameNum() * 0.36);
 
-	for (int i = 0; i < this->log_list.size(); i++) {
-
-		if (this->life_list[i] > 10) {
-
-			ofSetLineWidth(1);
-		}
-		else {
-
-			ofSetLineWidth(ofMap(this->life_list[i], 0, 10, 0, 1));
-		}
-
-		ofBeginShape();
-		ofVertices(this->log_list[i]);
-		ofEndShape();
-	}
+	this->face.draw();
+	this->frame.drawWireframe();
 
 	this->cam.end();
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 500;
+	int start = 300;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
@@ -97,6 +86,48 @@ void ofApp::draw() {
 		}
 	}
 	*/
+}
+
+//--------------------------------------------------------------
+void ofApp::setRingToMesh(ofMesh& face_target, ofMesh& frame_target, glm::vec3 location, glm::vec3 rotation, float radius, float height, ofColor face_color, ofColor frame_color) {
+
+	int index = face_target.getNumVertices();
+
+	for (int deg = 0; deg < 360; deg += 5) {
+
+		vector<glm::vec3> vertices;
+		vertices.push_back(glm::vec3(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD), height * -0.5));
+		vertices.push_back(glm::vec3(radius * cos((deg + 5) * DEG_TO_RAD), radius * sin((deg + 5) * DEG_TO_RAD), height * -0.5));
+		vertices.push_back(glm::vec3(radius * cos((deg + 5) * DEG_TO_RAD), radius * sin((deg + 5) * DEG_TO_RAD), height * 0.5));
+		vertices.push_back(glm::vec3(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD), height * 0.5));
+
+		for (auto& vertex : vertices) {
+
+			auto rotation_x = glm::rotate(glm::mat4(), rotation.x * (float)DEG_TO_RAD, glm::vec3(1, 0, 0));
+			auto rotation_y = glm::rotate(glm::mat4(), rotation.y * (float)DEG_TO_RAD, glm::vec3(0, 1, 0));
+			auto rotation_z = glm::rotate(glm::mat4(), rotation.z * (float)DEG_TO_RAD, glm::vec3(0, 0, 1));
+
+			vertex = glm::vec4(vertex, 0) * rotation_y * rotation_x + glm::vec4(location, 0);
+		}
+
+		auto face_index = face_target.getNumVertices();
+		face_target.addVertices(vertices);
+
+		face_target.addIndex(face_index + 0); face_target.addIndex(face_index + 1); face_target.addIndex(face_index + 2);
+		face_target.addIndex(face_index + 0); face_target.addIndex(face_index + 2); face_target.addIndex(face_index + 3);
+
+		auto frame_index = frame_target.getNumVertices();
+		frame_target.addVertices(vertices);
+
+		frame_target.addIndex(frame_index + 0); frame_target.addIndex(frame_index + 1);
+		frame_target.addIndex(frame_index + 2); frame_target.addIndex(frame_index + 3);
+
+		for (int i = 0; i < vertices.size(); i++) {
+
+			face_target.addColor(face_color);
+			frame_target.addColor(frame_color);
+		}
+	}
 }
 
 //--------------------------------------------------------------
