@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofSetLineWidth(2);
 	ofEnableDepthTest();
 
@@ -19,35 +19,42 @@ void ofApp::update() {
 	ofSeedRandom(39);
 	glm::vec3 noise_param_1 = glm::vec3(ofRandom(360), ofRandom(360), ofRandom(360));
 	glm::vec3 noise_param_2 = glm::vec3(ofRandom(360), ofRandom(360), ofRandom(360));
+	glm::vec3 noise_param_3 = glm::vec3(ofRandom(360), ofRandom(360), ofRandom(360));
 
-	if (ofGetFrameNum() % 2 == 0) {
+	this->radius_list.clear();
+	this->rotation_list.clear();
+	this->color_list.clear();
 
-		this->radius_list.push_back(0);
-		this->rotation_list.push_back(glm::vec3(
-			ofMap(ofNoise(noise_param_1.x, ofGetFrameNum() * 0.0025), 0, 1, -720, 720),
-			ofMap(ofNoise(noise_param_1.y, ofGetFrameNum() * 0.0025), 0, 1, -720, 720),
-			ofMap(ofNoise(noise_param_1.z, ofGetFrameNum() * 0.0025), 0, 1, -720, 720)));
-		this->color_list.push_back(ofColor(239, 39, 39));
-	}
-	else {
+	for (int radius = 0; radius < 280; radius++) {
 
-		this->radius_list.push_back(0);
-		this->rotation_list.push_back(glm::vec3(
-			ofMap(ofNoise(noise_param_2.x, ofGetFrameNum() * 0.0025), 0, 1, -720, 720),
-			ofMap(ofNoise(noise_param_2.y, ofGetFrameNum() * 0.0025), 0, 1, -720, 720),
-			ofMap(ofNoise(noise_param_2.z, ofGetFrameNum() * 0.0025), 0, 1, -720, 720)));
-		this->color_list.push_back(ofColor(39, 39, 239));
-	}
+		if (radius % 9 == 0) {
 
-	for (int i = this->radius_list.size() - 1; i > -1; i--) {
+			this->radius_list.push_back(radius);
+			this->rotation_list.push_back(glm::vec3(
+				ofMap(ofNoise(noise_param_1.x, (radius + ofGetFrameNum()) * 0.0005), 0, 1, -720, 720),
+				ofMap(ofNoise(noise_param_1.y, (radius + ofGetFrameNum()) * 0.0005), 0, 1, -720, 720),
+				ofMap(ofNoise(noise_param_1.z, (radius + ofGetFrameNum()) * 0.0005), 0, 1, -720, 720)));
+			this->color_list.push_back(ofColor(239, 39, 39));
+		}
 
-		this->radius_list[i] += 5;
+		if (radius % 9 == 3) {
 
-		if (this->radius_list[i] > 250) {
+			this->radius_list.push_back(radius);
+			this->rotation_list.push_back(glm::vec3(
+				ofMap(ofNoise(noise_param_2.x, (radius + ofGetFrameNum()) * 0.0005), 0, 1, -720, 720),
+				ofMap(ofNoise(noise_param_2.y, (radius + ofGetFrameNum()) * 0.0005), 0, 1, -720, 720),
+				ofMap(ofNoise(noise_param_2.z, (radius + ofGetFrameNum()) * 0.0005), 0, 1, -720, 720)));
+			this->color_list.push_back(ofColor(39, 239, 39));
+		}
 
-			this->radius_list.erase(this->radius_list.begin() + i);
-			this->rotation_list.erase(this->rotation_list.begin() + i);
-			this->color_list.erase(this->color_list.begin() + i);
+		if (radius % 9 == 6) {
+
+			this->radius_list.push_back(radius);
+			this->rotation_list.push_back(glm::vec3(
+				ofMap(ofNoise(noise_param_3.x, (radius + ofGetFrameNum()) * 0.0005), 0, 1, -720, 720),
+				ofMap(ofNoise(noise_param_3.y, (radius + ofGetFrameNum()) * 0.0005), 0, 1, -720, 720),
+				ofMap(ofNoise(noise_param_3.z, (radius + ofGetFrameNum()) * 0.0005), 0, 1, -720, 720)));
+			this->color_list.push_back(ofColor(39, 39, 239));
 		}
 	}
 
@@ -64,6 +71,7 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
+	ofRotateY(ofGetFrameNum() * 1.44);
 
 	this->face.draw();
 	this->frame.drawWireframe();
