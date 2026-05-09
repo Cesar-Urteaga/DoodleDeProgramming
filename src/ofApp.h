@@ -18,8 +18,8 @@ public:
 	void dragEvent(ofDragInfo dragInfo) {};
 	void gotMessage(ofMessage msg) {};
 
-	ofEasyCam cam;
+	void setRingToMesh(ofMesh& face_target, ofMesh& frame_target, glm::vec3 location, float radius, float height);
 
-	vector<ofMeshFace> triangle_list;
-	ofMesh mesh, frame;
+	ofEasyCam cam;
+	ofMesh face, frame;
 };
