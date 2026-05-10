@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofSetLineWidth(1.5);
 	ofEnableDepthTest();
 
@@ -28,13 +28,11 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
-	ofRotateX(90);
-	ofRotateZ(ofGetFrameNum() * 1.44);
 
 	ofSetColor(0);
 	this->face.draw();
 
-	ofSetColor(255);
+	ofSetColor(239, 39, 39);
 	this->frame.drawWireframe();
 
 	this->cam.end();
@@ -62,24 +60,20 @@ void ofApp::setRingToMesh(ofMesh& face_target, ofMesh& frame_target, glm::vec3 l
 
 	int index = face_target.getNumVertices();
 
-	for (int deg = 0; deg < 360; deg += 1) {
+	int deg_span = 60;
+	for (int deg = 0; deg < 360; deg += deg_span) {
 
 		vector<glm::vec3> vertices;
 		vertices.push_back(glm::vec3(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD), height * -0.5));
-		vertices.push_back(glm::vec3(radius * cos((deg + 1) * DEG_TO_RAD), radius * sin((deg + 1) * DEG_TO_RAD), height * -0.5));
-		vertices.push_back(glm::vec3(radius * cos((deg + 1) * DEG_TO_RAD), radius * sin((deg + 1) * DEG_TO_RAD), height * 0.5));
+		vertices.push_back(glm::vec3(radius * cos((deg + deg_span) * DEG_TO_RAD), radius * sin((deg + deg_span) * DEG_TO_RAD), height * -0.5));
+		vertices.push_back(glm::vec3(radius * cos((deg + deg_span) * DEG_TO_RAD), radius * sin((deg + deg_span) * DEG_TO_RAD), height * 0.5));
 		vertices.push_back(glm::vec3(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD), height * 0.5));
 
 		for (auto& vertex : vertices) {
 
-			auto noise_value = ofNoise(
-				(abs)(vertex.x) * 0.0015,
-				(abs)(vertex.y) * 0.0015 + ofGetFrameNum() * 0.02);
-			float param = 0.5;
-			if (noise_value < 0.3) { param = ofMap(noise_value, 0, 0.3, 0, 0.5); }
-			if (noise_value > 0.7) { param = ofMap(noise_value, 0.7, 1, 0.5, 1); }
+			auto noise_value = ofNoise(radius * 0.0025 - ofGetFrameNum() * 0.025);
 
-			auto rotation = glm::rotate(glm::mat4(), ofMap(param, 0, 1, -PI * 1.5, PI * 1.5), glm::vec3(0, 1, 0));
+			auto rotation = glm::rotate(glm::mat4(), ofMap(noise_value, 0, 1, -PI * 1.5, PI * 1.5), glm::vec3(0, 1, 0));
 			vertex = glm::vec4(vertex, 0) * rotation + glm::vec4(location, 0);
 		}
 
