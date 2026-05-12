@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofEnableDepthTest();
 	ofSetLineWidth(3);
 
@@ -27,7 +27,7 @@ void ofApp::update() {
 	float noise_gap = 0.005;
 	float noise_step = 0.035;
 
-	auto radius = ofGetFrameNum() % 60 < 30 ? ofMap(ofGetFrameNum() % 60, 0, 30, 150, 300) : ofMap(ofGetFrameNum() % 60, 30, 60, 300, 150);
+	auto radius = 280;
 
 	for (float phi_deg = 0; phi_deg < 360; phi_deg += phi_deg_step) {
 
@@ -36,7 +36,7 @@ void ofApp::update() {
 			auto noise_value = ofNoise(
 				noise_radius * cos(phi_deg * DEG_TO_RAD) * noise_gap,
 				noise_radius * sin(phi_deg * DEG_TO_RAD) * noise_gap,
-				noise_radius * cos(theta_deg * DEG_TO_RAD) * noise_gap,
+				noise_radius * cos(theta_deg * DEG_TO_RAD) * noise_gap +
 				ofGetFrameNum() * noise_step);
 			
 			if (noise_value > 0.45 && noise_value < 0.55) { continue; }
@@ -44,22 +44,22 @@ void ofApp::update() {
 			auto noise_value_1 = ofNoise(
 				noise_radius * cos(phi_deg * DEG_TO_RAD) * noise_gap,
 				noise_radius * sin(phi_deg * DEG_TO_RAD) * noise_gap,
-				noise_radius * cos((theta_deg - theta_deg_step) * DEG_TO_RAD) * noise_gap,
+				noise_radius * cos((theta_deg - theta_deg_step) * DEG_TO_RAD) * noise_gap +
 				ofGetFrameNum() * noise_step);
 			auto noise_value_2 = ofNoise(
 				noise_radius * cos((phi_deg + phi_deg_step) * DEG_TO_RAD) * noise_gap,
 				noise_radius * sin((phi_deg + phi_deg_step) * DEG_TO_RAD) * noise_gap,
-				noise_radius * cos(theta_deg * DEG_TO_RAD) * noise_gap,
+				noise_radius * cos(theta_deg * DEG_TO_RAD) * noise_gap +
 				ofGetFrameNum() * noise_step);
 			auto noise_value_3 = ofNoise(
 				noise_radius * cos((phi_deg - phi_deg_step) * DEG_TO_RAD) * noise_gap,
 				noise_radius * sin((phi_deg - phi_deg_step) * DEG_TO_RAD) * noise_gap,
-				noise_radius * cos(theta_deg * DEG_TO_RAD) * noise_gap,
+				noise_radius * cos(theta_deg * DEG_TO_RAD) * noise_gap +
 				ofGetFrameNum() * noise_step);
 			auto noise_value_4 = ofNoise(
 				noise_radius * cos(phi_deg * DEG_TO_RAD) * noise_gap,
 				noise_radius * sin(phi_deg * DEG_TO_RAD) * noise_gap,
-				noise_radius * cos((theta_deg + theta_deg_step) * DEG_TO_RAD) * noise_gap,
+				noise_radius * cos((theta_deg + theta_deg_step) * DEG_TO_RAD) * noise_gap +
 				ofGetFrameNum() * noise_step);
 
 			auto index = this->face.getNumVertices();
@@ -113,7 +113,7 @@ void ofApp::update() {
 		}
 	}
 
-	radius = ofGetFrameNum() % 60 < 30 ? ofMap(ofGetFrameNum() % 60, 0, 30, 300, 150) : ofMap(ofGetFrameNum() % 60, 30, 60, 150, 300);
+	radius = 300;
 
 	for (float phi_deg = 0; phi_deg < 360; phi_deg += phi_deg_step) {
 
@@ -122,7 +122,7 @@ void ofApp::update() {
 			auto noise_value = ofNoise(
 				noise_radius * cos(phi_deg * DEG_TO_RAD) * noise_gap,
 				noise_radius * sin(phi_deg * DEG_TO_RAD) * noise_gap,
-				noise_radius * cos(theta_deg * DEG_TO_RAD) * noise_gap,
+				noise_radius * cos(theta_deg * DEG_TO_RAD) * noise_gap +
 				ofGetFrameNum() * noise_step);
 
 			if (noise_value < 0.45 || noise_value > 0.55) { continue; }
@@ -130,22 +130,22 @@ void ofApp::update() {
 			auto noise_value_1 = ofNoise(
 				noise_radius * cos(phi_deg * DEG_TO_RAD) * noise_gap,
 				noise_radius * sin(phi_deg * DEG_TO_RAD) * noise_gap,
-				noise_radius * cos((theta_deg - theta_deg_step) * DEG_TO_RAD) * noise_gap,
+				noise_radius * cos((theta_deg - theta_deg_step) * DEG_TO_RAD) * noise_gap +
 				ofGetFrameNum() * noise_step);
 			auto noise_value_2 = ofNoise(
 				noise_radius * cos((phi_deg + phi_deg_step) * DEG_TO_RAD) * noise_gap,
 				noise_radius * sin((phi_deg + phi_deg_step) * DEG_TO_RAD) * noise_gap,
-				noise_radius * cos(theta_deg * DEG_TO_RAD) * noise_gap,
+				noise_radius * cos(theta_deg * DEG_TO_RAD) * noise_gap +
 				ofGetFrameNum() * noise_step);
 			auto noise_value_3 = ofNoise(
 				noise_radius * cos((phi_deg - phi_deg_step) * DEG_TO_RAD) * noise_gap,
 				noise_radius * sin((phi_deg - phi_deg_step) * DEG_TO_RAD) * noise_gap,
-				noise_radius * cos(theta_deg * DEG_TO_RAD) * noise_gap,
+				noise_radius * cos(theta_deg * DEG_TO_RAD) * noise_gap +
 				ofGetFrameNum() * noise_step);
 			auto noise_value_4 = ofNoise(
 				noise_radius * cos(phi_deg * DEG_TO_RAD) * noise_gap,
 				noise_radius * sin(phi_deg * DEG_TO_RAD) * noise_gap,
-				noise_radius * cos((theta_deg + theta_deg_step) * DEG_TO_RAD) * noise_gap,
+				noise_radius * cos((theta_deg + theta_deg_step) * DEG_TO_RAD) * noise_gap +
 				ofGetFrameNum() * noise_step);
 
 			auto index = this->face.getNumVertices();
