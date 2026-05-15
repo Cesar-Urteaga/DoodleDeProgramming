@@ -6,81 +6,86 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(39);
-
-	this->noise_seed = ofRandom(1000);
+	ofBackground(239);
+	ofEnableDepthTest();
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	if (ofGetFrameNum() % 25 < 15) {
-
-		this->noise_seed += ofMap(ofGetFrameNum() % 25, 0, 15, 0.3, 0);
-	}
+	ofSeedRandom(39);
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-	ofTranslate(ofGetWidth() * 0.5, ofGetHeight() * 0.5);
+	this->cam.begin();
 
-	int base_radius = 30;
+	int v_span = 4;
+	int u_span = 90;
+	int R = 200;
 
-	{
-		vector<glm::vec2> vertices;
-		for (int deg = 0; deg < 360; deg += 1) {
+	ofMesh face, line;
+	line.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
 
-			vertices.push_back(glm::vec2(base_radius * cos(deg * DEG_TO_RAD), base_radius * sin(deg * DEG_TO_RAD)));
+	ofColor line_color;
+
+	for (int i = 0; i < 2; i++) {
+
+		int v_start = i * v_span * 0.5;
+		line_color.setHsb(ofMap(i, 0, 2, 0, 255), 200, 255);
+
+		float noise_seed = ofRandom(1000);
+		for (int v = v_start; v <= v_start + 360; v += v_span) {
+
+			int u_start = ofMap(ofNoise(noise_seed, cos(v * DEG_TO_RAD) * 0.35, sin(v * DEG_TO_RAD) * 0.35, ofGetFrameNum() * 0.015), 0, 1, -360, 360);
+			int next_u = u_start;
+
+			int r = ofMap(ofNoise(noise_seed, cos(v * DEG_TO_RAD) * 0.5, sin(v * DEG_TO_RAD) * 0.5, ofGetFrameNum() * 0.05), 0, 1, 0, 100);
+
+			for (int u = u_start; u < u_start + 360; u += u_span) {
+
+				face.addVertex(this->make_point(R, r, u, v));
+				face.addVertex(this->make_point(R, r, u + u_span, v));
+				face.addVertex(this->make_point(R, r, next_u + u_span, v + v_span * 0.5));
+				face.addVertex(this->make_point(R, r, next_u, v + v_span * 0.5));
+
+				line.addVertex(this->make_point(R, r, u, v));
+				line.addVertex(this->make_point(R, r, u + u_span, v));
+				line.addVertex(this->make_point(R, r, next_u + u_span, v + v_span * 0.5));
+				line.addVertex(this->make_point(R, r, next_u, v + v_span * 0.5));
+
+				ofColor face_color = ofColor(0);
+
+				face.addColor(face_color);
+				face.addColor(face_color);
+				face.addColor(face_color);
+				face.addColor(face_color);
+
+				line.addColor(line_color);
+				line.addColor(line_color);
+				line.addColor(line_color);
+				line.addColor(line_color);
+
+				face.addIndex(face.getNumVertices() - 1); face.addIndex(face.getNumVertices() - 2); face.addIndex(face.getNumVertices() - 3);
+				face.addIndex(face.getNumVertices() - 1); face.addIndex(face.getNumVertices() - 3); face.addIndex(face.getNumVertices() - 4);
+
+				line.addIndex(line.getNumVertices() - 1); line.addIndex(line.getNumVertices() - 4);
+				line.addIndex(line.getNumVertices() - 2); line.addIndex(line.getNumVertices() - 3);
+
+				line.addIndex(line.getNumVertices() - 1); line.addIndex(line.getNumVertices() - 2);
+				line.addIndex(line.getNumVertices() - 3); line.addIndex(line.getNumVertices() - 4);
+
+				next_u += u_span;
+
+			}
 		}
-
-		ofFill();
-		ofSetColor(0);
-		ofBeginShape();
-		ofVertices(vertices);
-		ofEndShape(true);
-
-		ofNoFill();
-		ofSetColor(255);
-		ofBeginShape();
-		ofVertices(vertices);
-		ofEndShape(true);
 	}
 
-	for (int deg = 0; deg < 360; deg += 15) {
+	face.drawFaces();
+	line.drawWireframe();
 
-		auto base_location = glm::vec2(base_radius * cos(deg * DEG_TO_RAD), base_radius * sin(deg * DEG_TO_RAD));
-
-		auto out_radius = ofMap(ofNoise(base_location.x * 0.05, base_location.y * 0.05, this->noise_seed), 0, 1, base_radius, base_radius * 15);
-		auto out_location = glm::vec2(out_radius * cos(deg * DEG_TO_RAD), out_radius * sin(deg * DEG_TO_RAD));
-
-		ofDrawLine(base_location, out_location);
-
-		auto small_radius = (out_radius * 2 * PI) / 360 * 15 * 0.5;
-
-		ofPushMatrix();
-		ofTranslate(out_location);
-
-		vector<glm::vec2> vertices;
-		for (int d = 0; d < 360; d += 5) {
-
-			vertices.push_back(glm::vec2(small_radius * cos(d * DEG_TO_RAD), small_radius * sin(d * DEG_TO_RAD)));
-		}
-
-		ofFill();
-		ofSetColor(0);
-		ofBeginShape();
-		ofVertices(vertices);
-		ofEndShape(true);
-
-		ofNoFill();
-		ofSetColor(255);
-		ofBeginShape();
-		ofVertices(vertices);
-		ofEndShape(true);
-
-		ofPopMatrix();
-	}
+	this->cam.end();
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
@@ -98,6 +103,21 @@ void ofApp::draw() {
 		}
 	}
 	*/
+}
+
+//--------------------------------------------------------------
+glm::vec3 ofApp::make_point(float R, float r, float u, float v) {
+
+	// 数学デッサン教室 描いて楽しむ数学たち　P.31
+
+	u *= DEG_TO_RAD;
+	v *= DEG_TO_RAD;
+
+	auto x = (R + r * cos(u)) * cos(v);
+	auto y = (R + r * cos(u)) * sin(v);
+	auto z = r * sin(u);
+
+	return glm::vec3(x, y, z);
 }
 
 //--------------------------------------------------------------
