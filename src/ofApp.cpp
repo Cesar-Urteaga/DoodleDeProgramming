@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofEnableDepthTest();
 }
 
@@ -21,7 +21,7 @@ void ofApp::draw() {
 
 	this->cam.begin();
 
-	int v_span = 4;
+	int v_span = 2;
 	int u_span = 90;
 	int R = 200;
 
@@ -30,30 +30,30 @@ void ofApp::draw() {
 
 	ofColor line_color;
 
-	for (int i = 0; i < 2; i++) {
+	for (int i = 0; i < 4; i++) {
 
-		int v_start = i * v_span * 0.5;
-		line_color.setHsb(ofMap(i, 0, 2, 0, 255), 200, 255);
+		int v_start = i * v_span * 1;
+		line_color.setHsb(ofMap(i, 0, 4, 0, 255), 200, 255);
 
 		float noise_seed = ofRandom(1000);
 		for (int v = v_start; v <= v_start + 360; v += v_span) {
 
-			int u_start = ofMap(ofNoise(noise_seed, cos(v * DEG_TO_RAD) * 0.35, sin(v * DEG_TO_RAD) * 0.35, ofGetFrameNum() * 0.015), 0, 1, -360, 360);
+			int u_start = ofMap(ofNoise(noise_seed, cos(v * DEG_TO_RAD) * 0.15, sin(v * DEG_TO_RAD) * 0.15, ofGetFrameNum() * 0.0015), 0, 1, -360, 360);
 			int next_u = u_start;
 
-			int r = ofMap(ofNoise(noise_seed, cos(v * DEG_TO_RAD) * 0.5, sin(v * DEG_TO_RAD) * 0.5, ofGetFrameNum() * 0.05), 0, 1, 0, 100);
+			int r = ofMap(ofNoise(noise_seed, cos(v * DEG_TO_RAD) * 0.05, sin(v * DEG_TO_RAD) * 0.05, ofGetFrameNum() * 0.01), 0, 1, 0, 100);
 
 			for (int u = u_start; u < u_start + 360; u += u_span) {
 
 				face.addVertex(this->make_point(R, r, u, v));
 				face.addVertex(this->make_point(R, r, u + u_span, v));
-				face.addVertex(this->make_point(R, r, next_u + u_span, v + v_span * 0.5));
-				face.addVertex(this->make_point(R, r, next_u, v + v_span * 0.5));
+				face.addVertex(this->make_point(R, r, next_u + u_span, v + v_span * 0.9));
+				face.addVertex(this->make_point(R, r, next_u, v + v_span * 0.9));
 
 				line.addVertex(this->make_point(R, r, u, v));
 				line.addVertex(this->make_point(R, r, u + u_span, v));
-				line.addVertex(this->make_point(R, r, next_u + u_span, v + v_span * 0.5));
-				line.addVertex(this->make_point(R, r, next_u, v + v_span * 0.5));
+				line.addVertex(this->make_point(R, r, next_u + u_span, v + v_span * 0.9));
+				line.addVertex(this->make_point(R, r, next_u, v + v_span * 0.9));
 
 				ofColor face_color = ofColor(0);
 
