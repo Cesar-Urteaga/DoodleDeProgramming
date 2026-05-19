@@ -6,46 +6,76 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(39);
-	ofSetColor(255);
+	ofBackground(239);
 	ofEnableDepthTest();
-	ofSetRectMode(ofRectMode::OF_RECTMODE_CENTER);
+
+	this->frame.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
+	this->face.clear();
+	this->frame.clear();
+
+	int radius = 150;
+	int phi_deg_step = 2;
+
+	for (float theta_deg = 1; theta_deg < 180; theta_deg += 10) {
+
+		auto noise_z = radius * cos(theta_deg * DEG_TO_RAD);
+		auto noise_value = ofNoise(0, 0, noise_z * 0.005 + ofGetFrameNum() * 0.03);
+
+		auto param_x = ofMap(noise_value, 0, 1, radius * -1, radius * 1);
+
+		auto start_index = this->face.getNumVertices();
+		for (int phi_deg = 0; phi_deg < 360; phi_deg += phi_deg_step + 1) {
+
+			auto index = this->face.getNumVertices();
+
+			vector<glm::vec3> vertices;
+
+			vertices.push_back(glm::vec4(param_x + radius * sin((theta_deg - 5) * DEG_TO_RAD) * cos(phi_deg * DEG_TO_RAD), radius * sin((theta_deg - 5) * DEG_TO_RAD) * sin(phi_deg * DEG_TO_RAD), radius * cos((theta_deg - 5) * DEG_TO_RAD), 0));
+			vertices.push_back(glm::vec4(param_x + radius * sin((theta_deg + 5) * DEG_TO_RAD) * cos(phi_deg * DEG_TO_RAD), radius * sin((theta_deg + 5) * DEG_TO_RAD) * sin(phi_deg * DEG_TO_RAD), radius * cos((theta_deg + 5) * DEG_TO_RAD), 0));
+
+			this->face.addVertices(vertices);
+			this->frame.addVertices(vertices);
+
+			if (phi_deg > 0) {
+
+				this->face.addIndex(index + 0); this->face.addIndex(index - 2); this->face.addIndex(index - 1);
+				this->face.addIndex(index + 0); this->face.addIndex(index - 1); this->face.addIndex(index + 1);
+
+				this->face.addIndex(index + 0); this->face.addIndex(index - 2); this->face.addIndex(start_index + 0);
+				this->face.addIndex(index + 1); this->face.addIndex(index - 1); this->face.addIndex(start_index + 1);
+
+				this->frame.addIndex(index + 0); this->frame.addIndex(index - 2);
+				this->frame.addIndex(index + 1); this->frame.addIndex(index - 1);
+			}
+		}
+
+		auto index = this->face.getNumVertices() - 2;
+		this->face.addIndex(start_index + 0); this->face.addIndex(index + 0); this->face.addIndex(index + 1);
+		this->face.addIndex(start_index + 1); this->face.addIndex(index + 1); this->face.addIndex(start_index + 1);
+
+		this->frame.addIndex(start_index + 0); this->frame.addIndex(index + 0);
+		this->frame.addIndex(start_index + 1); this->frame.addIndex(index + 1);
+	}
 }
+
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-	ofTranslate(ofGetWindowSize() * 0.5);
+	this->cam.begin();
 
-	for (int x = -300; x <= 300; x += 30) {
+	ofSetColor(0);
+	this->face.draw();
 
-		for (int y = -300; y <= 300; y += 30) {
+	ofSetColor(255);
+	this->frame.drawWireframe();
 
-			ofPushMatrix();
-			ofTranslate(x, y);
-
-			ofNoFill();
-			ofDrawRectangle(0, 0, 30, 30);
-
-			auto distance = glm::distance(glm::vec2(), glm::vec2(x, y));
-
-			int deg_x = ofMap(ofNoise(distance * 0.005 + ofGetFrameNum() * 0.025), 0, 1, -360, 360);
-			int deg_y = ofMap(ofNoise(distance * 0.005 + ofGetFrameNum() * 0.025), 0, 1, -360, 360);
-
-			ofRotateY(deg_y);
-			ofRotateX(deg_x);
-
-			ofFill();
-			ofDrawCircle(0, 0, 10, 10);
-
-			ofPopMatrix();
-		}
-	}
+	this->cam.end();
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
