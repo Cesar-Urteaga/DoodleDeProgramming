@@ -6,7 +6,8 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
+	ofBackground(39);
+	ofSetLineWidth(1.5);
 	ofEnableDepthTest();
 
 	this->frame.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
@@ -19,14 +20,17 @@ void ofApp::update() {
 	this->frame.clear();
 
 	int radius = 150;
-	int phi_deg_step = 2;
+	int phi_deg_step = 5;
 
-	for (float theta_deg = 1; theta_deg < 180; theta_deg += 10) {
+	auto param = sin(ofGetFrameNum() * 0.05);
+
+	for (float theta_deg = 1; theta_deg < 180; theta_deg += 5) {
 
 		auto noise_z = radius * cos(theta_deg * DEG_TO_RAD);
-		auto noise_value = ofNoise(0, 0, noise_z * 0.005 + ofGetFrameNum() * 0.03);
+		auto noise_value = ofNoise(0, 0, noise_z * 0.5 + ofGetFrameNum() * 0.03);
 
-		auto param_x = ofMap(noise_value, 0, 1, radius * -1, radius * 1);
+		auto param_x = ofMap(noise_value, 0, 1, radius * -1.5, radius * 1.5);
+		param_x *= param;
 
 		auto start_index = this->face.getNumVertices();
 		for (int phi_deg = 0; phi_deg < 360; phi_deg += phi_deg_step + 1) {
@@ -35,8 +39,8 @@ void ofApp::update() {
 
 			vector<glm::vec3> vertices;
 
-			vertices.push_back(glm::vec4(param_x + radius * sin((theta_deg - 5) * DEG_TO_RAD) * cos(phi_deg * DEG_TO_RAD), radius * sin((theta_deg - 5) * DEG_TO_RAD) * sin(phi_deg * DEG_TO_RAD), radius * cos((theta_deg - 5) * DEG_TO_RAD), 0));
-			vertices.push_back(glm::vec4(param_x + radius * sin((theta_deg + 5) * DEG_TO_RAD) * cos(phi_deg * DEG_TO_RAD), radius * sin((theta_deg + 5) * DEG_TO_RAD) * sin(phi_deg * DEG_TO_RAD), radius * cos((theta_deg + 5) * DEG_TO_RAD), 0));
+			vertices.push_back(glm::vec4(param_x + radius * sin((theta_deg - 2) * DEG_TO_RAD) * cos(phi_deg * DEG_TO_RAD), radius * sin((theta_deg - 2) * DEG_TO_RAD) * sin(phi_deg * DEG_TO_RAD), radius * cos((theta_deg - 2) * DEG_TO_RAD), 0));
+			vertices.push_back(glm::vec4(param_x + radius * sin((theta_deg + 2) * DEG_TO_RAD) * cos(phi_deg * DEG_TO_RAD), radius * sin((theta_deg + 2) * DEG_TO_RAD) * sin(phi_deg * DEG_TO_RAD), radius * cos((theta_deg + 2) * DEG_TO_RAD), 0));
 
 			this->face.addVertices(vertices);
 			this->frame.addVertices(vertices);
@@ -68,6 +72,7 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
+	ofRotateX(270);
 
 	ofSetColor(0);
 	this->face.draw();
@@ -79,7 +84,7 @@ void ofApp::draw() {
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 500;
+	int start = 2;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
