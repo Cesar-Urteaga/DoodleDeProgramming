@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofEnableDepthTest();
 }
 
@@ -23,7 +23,7 @@ void ofApp::draw() {
 	ofRotateZ(ofGetFrameNum() * 0.72);
 
 	int v_span = 1;
-	int u_span = 180;
+	int u_span = 5;
 
 	float z = 360 * -2;
 	float z_span = 1;
@@ -32,9 +32,9 @@ void ofApp::draw() {
 	for (int v = 0; v <= 360 * 4; v += v_span) {
 
 		bool flag = true;
-		int u_start = ofMap(ofNoise(z * 0.005 + ofGetFrameNum() * 0.015), 0, 1, -720, 720);
-		int next_u = ofMap(ofNoise((z + z_span) * 0.005 + ofGetFrameNum() * 0.015), 0, 1, -720, 720);
-		for (int u = u_start; u < u_start + 360; u += u_span) {
+		int u_start = ofMap(ofNoise(z * 0.01 + ofGetFrameNum() * 0.015), 0, 1, -720, 720);
+		int next_u = ofMap(ofNoise((z + z_span) * 0.01 + ofGetFrameNum() * 0.015), 0, 1, -720, 720);
+		for (int u = u_start; u < u_start + 360; u += u_span * 8) {
 
 			if (flag) {
 
@@ -62,7 +62,7 @@ void ofApp::draw() {
 				line.addIndex(line.getNumVertices() - 2); line.addIndex(line.getNumVertices() - 3);
 			}
 
-			next_u += u_span;
+			next_u += u_span * 8;
 			flag = !flag;
 		}
 
