@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofSetLineWidth(2);
 	ofEnableDepthTest();
 
@@ -21,9 +21,9 @@ void ofApp::update() {
 	this->frame.clear();
 
 	auto noise_location = glm::vec3(ofRandom(1000), ofRandom(1000), ofRandom(1000));
-	for (int radius = 310; radius <= 350; radius += 5) {
+	for (int radius = 150; radius <= 350; radius += 30) {
 
-		this->setRingToMesh(this->face, this->frame, glm::vec3(), noise_location, radius, 25, ofColor(0), ofColor(255));
+		this->setRingToMesh(this->face, this->frame, glm::vec3(), noise_location, radius, 10, ofColor(0), ofColor(239));
 	}
 }
 
@@ -31,8 +31,7 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
-
-	ofDrawSphere(glm::vec3(), 300);
+	ofRotateY(ofGetFrameNum() * 1.44);
 
 	this->face.draw();
 	this->frame.drawWireframe();
@@ -62,22 +61,23 @@ void ofApp::setRingToMesh(ofMesh& face_target, ofMesh& frame_target, glm::vec3 l
 
 	int index = face_target.getNumVertices();
 
-	for (int deg = 0; deg < 360; deg += 3) {
+	int deg_span = 90;
+	for (int deg = 0; deg < 360; deg += deg_span) {
 
 		vector<glm::vec3> vertices;
 		vertices.push_back(glm::vec3(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD), height * -0.5));
-		vertices.push_back(glm::vec3(radius * cos((deg + 3) * DEG_TO_RAD), radius * sin((deg + 3) * DEG_TO_RAD), height * -0.5));
-		vertices.push_back(glm::vec3(radius * cos((deg + 3) * DEG_TO_RAD), radius * sin((deg + 3) * DEG_TO_RAD), height * 0.5));
+		vertices.push_back(glm::vec3(radius * cos((deg + deg_span) * DEG_TO_RAD), radius * sin((deg + deg_span) * DEG_TO_RAD), height * -0.5));
+		vertices.push_back(glm::vec3(radius * cos((deg + deg_span) * DEG_TO_RAD), radius * sin((deg + deg_span) * DEG_TO_RAD), height * 0.5));
 		vertices.push_back(glm::vec3(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD), height * 0.5));
 
 		for (auto& vertex : vertices) {
 
 			auto noise_value_x = ofNoise(
-				noise_location.x, radius * 0.00125 + ofGetFrameNum() * 0.005);
+				noise_location.x, radius * 0.0005 - ofGetFrameNum() * 0.0015);
 			auto noise_value_y = ofNoise(
-				noise_location.y, radius * 0.00125 + ofGetFrameNum() * 0.005);
+				noise_location.y, radius * 0.0005 - ofGetFrameNum() * 0.0015);
 			auto noise_value_z = ofNoise(
-				noise_location.z, radius * 0.00125 + ofGetFrameNum() * 0.005);
+				noise_location.z, radius * 0.0005 - ofGetFrameNum() * 0.0015);
 
 			auto rotation_x = glm::rotate(glm::mat4(), ofMap(noise_value_x, 0, 1, -PI * 2.5, PI * 2.5), glm::vec3(1, 0, 0));
 			auto rotation_y = glm::rotate(glm::mat4(), ofMap(noise_value_y, 0, 1, -PI * 2.5, PI * 2.5), glm::vec3(0, 1, 0));
