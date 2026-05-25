@@ -17,9 +17,4 @@ public:
 	void windowResized(int w, int h) {};
 	void dragEvent(ofDragInfo dragInfo) {};
 	void gotMessage(ofMessage msg) {};
-
-	void setRingToMesh(ofMesh& face_target, ofMesh& frame_target, glm::vec3 location, glm::vec3 noise_location, float radius, float height, ofColor face_color, ofColor frame_color);
-
-	ofEasyCam cam;
-	ofMesh face, frame;
 };
