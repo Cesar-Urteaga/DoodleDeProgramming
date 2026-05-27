@@ -6,9 +6,10 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(39);
-	ofSetLineWidth(2);
-	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
+	ofBackground(239);
+
+	ofEnableDepthTest();
+	ofSetLineWidth(3);
 }
 
 //--------------------------------------------------------------
@@ -19,37 +20,71 @@ void ofApp::update() {
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-	ofTranslate(ofGetWidth() * 0.5, ofGetHeight() * 0.5);
+	this->cam.begin();
 
-	int radius = 100;
+	int width = 45;
+	int height = 45;
+	int len = 5;
 
-	ofColor color;
-	for (int i = 0; i < 5; i++) {
+	for (int x = -300; x <= 300; x += 50) {
 
-		vector<glm::vec2> vertices;
-		for (float deg = 0; deg < 360; deg += 0.3) {
+		for (int y = -300; y <= 300; y += 50) {
 
-			auto location = glm::vec2(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD));
-			auto noise_value = ofNoise(glm::vec4(i * 0.2, location * 0.1, ofGetFrameNum() * 0.005));
-			location *= noise_value > 0.5 ? ofMap(noise_value, 0.5, 1, 0.5, 4) : 0.5;
+			for (int z = 0; z <= 280; z += 15) {
 
-			vertices.push_back(location);
+				auto noise_param = ofNoise(x * 0.001, y * 0.001, z * 0.001 + ofGetFrameNum() * 0.015);
+
+				if (noise_param > 0.4 && noise_param < 0.6) { continue; }
+
+				ofPushMatrix();
+				ofTranslate(x, y, z);
+
+				auto alpha = ofMap(z, 0, 280, 0, 255);
+
+				ofFill();
+				ofSetColor(ofColor(0, alpha));
+
+				ofBeginShape();
+
+				ofVertex(glm::vec2(width * -0.5, height * -0.5));
+				ofVertex(glm::vec2(width * 0.5, height * -0.5));
+				ofVertex(glm::vec2(width * 0.5, height * 0.5));
+				ofVertex(glm::vec2(width * -0.5, height * 0.5));
+
+				ofNextContour(true);
+
+				ofVertex(glm::vec2(width * -0.5 + len, height * -0.5 + len));
+				ofVertex(glm::vec2(width * 0.5 - len, height * -0.5 + len));
+				ofVertex(glm::vec2(width * 0.5 - len, height * 0.5 - len));
+				ofVertex(glm::vec2(width * -0.5 + len, height * 0.5 - len));
+
+				ofEndShape(true);
+
+				ofNoFill();
+				ofSetColor(ofColor(255, alpha));
+
+				ofBeginShape();
+
+				ofVertex(glm::vec2(width * -0.5, height * -0.5));
+				ofVertex(glm::vec2(width * 0.5, height * -0.5));
+				ofVertex(glm::vec2(width * 0.5, height * 0.5));
+				ofVertex(glm::vec2(width * -0.5, height * 0.5));
+
+				ofNextContour(true);
+
+				ofVertex(glm::vec2(width * -0.5 + len, height * -0.5 + len));
+				ofVertex(glm::vec2(width * 0.5 - len, height * -0.5 + len));
+				ofVertex(glm::vec2(width * 0.5 - len, height * 0.5 - len));
+				ofVertex(glm::vec2(width * -0.5 + len, height * 0.5 - len));
+
+				ofEndShape(true);
+
+				ofPopMatrix();
+			}
 		}
-
-		color.setHsb(ofMap(i, 0, 5, 0, 255), 255, 255);
-
-		ofFill();
-		ofSetColor(color, 64);
-		ofBeginShape();
-		ofVertices(vertices);
-		ofEndShape(true);
-
-		ofNoFill();
-		ofSetColor(color);
-		ofBeginShape();
-		ofVertices(vertices);
-		ofEndShape(true);
 	}
+
+	this->cam.end();
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
@@ -68,7 +103,6 @@ void ofApp::draw() {
 	}
 	*/
 }
-
 
 //--------------------------------------------------------------
 int main() {
