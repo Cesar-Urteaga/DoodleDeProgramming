@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(239);
+	ofBackground(39);
 
 	ofEnableDepthTest();
 	ofSetLineWidth(3);
@@ -21,46 +21,28 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
+	ofRotateZ(ofGetFrameNum() * 1.44);
 
-	int width = 45;
-	int height = 45;
+	int width = 42;
+	int height = 42;
 	int len = 5;
 
 	for (int x = -300; x <= 300; x += 50) {
 
 		for (int y = -300; y <= 300; y += 50) {
 
-			for (int z = 0; z <= 280; z += 15) {
+			for (int z = 0; z <= 300; z += 15) {
 
-				auto noise_param = ofNoise(x * 0.001, y * 0.001, z * 0.001 + ofGetFrameNum() * 0.015);
+				auto noise_param = ofNoise(x * 0.003, y * 0.003, z * 0.0005 + ofGetFrameNum() * 0.015);
 
 				if (noise_param > 0.4 && noise_param < 0.6) { continue; }
 
 				ofPushMatrix();
 				ofTranslate(x, y, z);
 
-				auto alpha = ofMap(z, 0, 280, 0, 255);
+				auto alpha = ofMap(z, 0, 300, 255, 255);
 
 				ofFill();
-				ofSetColor(ofColor(0, alpha));
-
-				ofBeginShape();
-
-				ofVertex(glm::vec2(width * -0.5, height * -0.5));
-				ofVertex(glm::vec2(width * 0.5, height * -0.5));
-				ofVertex(glm::vec2(width * 0.5, height * 0.5));
-				ofVertex(glm::vec2(width * -0.5, height * 0.5));
-
-				ofNextContour(true);
-
-				ofVertex(glm::vec2(width * -0.5 + len, height * -0.5 + len));
-				ofVertex(glm::vec2(width * 0.5 - len, height * -0.5 + len));
-				ofVertex(glm::vec2(width * 0.5 - len, height * 0.5 - len));
-				ofVertex(glm::vec2(width * -0.5 + len, height * 0.5 - len));
-
-				ofEndShape(true);
-
-				ofNoFill();
 				ofSetColor(ofColor(255, alpha));
 
 				ofBeginShape();
@@ -70,12 +52,17 @@ void ofApp::draw() {
 				ofVertex(glm::vec2(width * 0.5, height * 0.5));
 				ofVertex(glm::vec2(width * -0.5, height * 0.5));
 
-				ofNextContour(true);
+				ofEndShape(true);
 
-				ofVertex(glm::vec2(width * -0.5 + len, height * -0.5 + len));
-				ofVertex(glm::vec2(width * 0.5 - len, height * -0.5 + len));
-				ofVertex(glm::vec2(width * 0.5 - len, height * 0.5 - len));
-				ofVertex(glm::vec2(width * -0.5 + len, height * 0.5 - len));
+				ofNoFill();
+				ofSetColor(ofColor(0, alpha));
+
+				ofBeginShape();
+
+				ofVertex(glm::vec2(width * -0.5, height * -0.5));
+				ofVertex(glm::vec2(width * 0.5, height * -0.5));
+				ofVertex(glm::vec2(width * 0.5, height * 0.5));
+				ofVertex(glm::vec2(width * -0.5, height * 0.5));
 
 				ofEndShape(true);
 
