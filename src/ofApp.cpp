@@ -6,8 +6,10 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
-	ofSetLineWidth(1.5);
+	ofBackground(39);
+	ofSetLineWidth(1);
+
+	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
 }
 
 //--------------------------------------------------------------
@@ -19,6 +21,8 @@ void ofApp::update() {
 //--------------------------------------------------------------
 void ofApp::draw() {
 
+	ofColor color;
+	int hue = 0;
 	for (int x = 90; x < ofGetWindowWidth(); x += 180) {
 
 		for (int y = 90; y < ofGetWindowHeight(); y += 180) {
@@ -26,18 +30,20 @@ void ofApp::draw() {
 			ofPushMatrix();
 			ofTranslate(x, y);
 
-			for (int radius = 5; radius < 80; radius += 3) {
+			for (int radius = 5; radius < 80; radius += 1) {
+
+				color.setHsb(((int)ofMap(radius, 5, 80, 0, 255) + hue) % 255, 180, 255);
 
 				ofMesh line;
 				line.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
 
-				int start_deg = ofMap(ofNoise(ofRandom(1000), ofGetFrameNum() * 0.01), 0, 1, 0, 360);
-				int deg_len = ofMap(ofNoise(ofRandom(1000), ofGetFrameNum() * 0.01), 0, 1, 0, 240);
+				int start_deg = ofMap(ofNoise(ofRandom(1000), ofGetFrameNum() * 0.015), 0, 1, 0, 360);
+				int deg_len = ofMap(ofNoise(ofRandom(1000), ofGetFrameNum() * 0.015), 0, 1, 0, 240);
 
 				for (int deg = start_deg; deg < start_deg + deg_len; deg += 2) {
 
 					line.addVertex(glm::vec3() + glm::vec3(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD), 0));
-					line.addColor(0);
+					line.addColor(color);
 
 					if (deg != start_deg) {
 
@@ -50,6 +56,8 @@ void ofApp::draw() {
 			}
 
 			ofPopMatrix();
+
+			hue += 16;
 		}
 	}
 
