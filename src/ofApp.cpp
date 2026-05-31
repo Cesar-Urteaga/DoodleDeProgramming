@@ -6,10 +6,9 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(39);
-	ofSetLineWidth(1);
-
-	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
+	ofBackground(239);
+	ofSetLineWidth(2);
+	ofEnableDepthTest();
 }
 
 //--------------------------------------------------------------
@@ -21,45 +20,45 @@ void ofApp::update() {
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-	ofColor color;
-	int hue = 0;
-	for (int x = 90; x < ofGetWindowWidth(); x += 180) {
+	this->cam.begin();
 
-		for (int y = 90; y < ofGetWindowHeight(); y += 180) {
+	auto small_radius = 0.f;
+	auto noise_seed = glm::vec3(ofRandom(1000), ofRandom(1000), ofRandom(1000));
+	for (auto radius = 50; radius <= 360; radius += small_radius * 2) {
+
+		auto deg_span = 10;
+		small_radius = (radius * 2 * PI) / 360 * deg_span * 0.5;
+		auto size = (small_radius * 2) / sqrt(3);
+		auto deg_start = 0;
+
+		for (int deg = deg_start; deg < deg_start + 360; deg += deg_span) {
+
+			auto location = glm::vec3(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD), 0);
+
+			auto rotate_x = ofMap(ofNoise(noise_seed.x, radius + 0.001 - ofGetFrameNum() * 0.005), 0, 1, -360, 360);
+			auto rotate_y = ofMap(ofNoise(noise_seed.y, radius + 0.001 - ofGetFrameNum() * 0.005), 0, 1, -360, 360);
+			auto rotate_z = ofMap(ofNoise(noise_seed.z, radius + 0.001 - ofGetFrameNum() * 0.005), 0, 1, -360, 360);
 
 			ofPushMatrix();
-			ofTranslate(x, y);
+			ofTranslate(location);
 
-			for (int radius = 5; radius < 80; radius += 1) {
+			ofRotateZ(rotate_z);
+			ofRotateY(rotate_y);
+			ofRotateX(rotate_x);
 
-				color.setHsb(((int)ofMap(radius, 5, 80, 0, 255) + hue) % 255, 180, 255);
+			ofFill();
+			ofSetColor(239);
+			ofDrawBox(size);
 
-				ofMesh line;
-				line.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
-
-				int start_deg = ofMap(ofNoise(ofRandom(1000), ofGetFrameNum() * 0.015), 0, 1, 0, 360);
-				int deg_len = ofMap(ofNoise(ofRandom(1000), ofGetFrameNum() * 0.015), 0, 1, 0, 240);
-
-				for (int deg = start_deg; deg < start_deg + deg_len; deg += 2) {
-
-					line.addVertex(glm::vec3() + glm::vec3(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD), 0));
-					line.addColor(color);
-
-					if (deg != start_deg) {
-
-						line.addIndex(line.getNumVertices() - 1);
-						line.addIndex(line.getNumVertices() - 2);
-					}
-				}
-
-				line.draw();
-			}
+			ofNoFill();
+			ofSetColor(39);
+			ofDrawBox(size);
 
 			ofPopMatrix();
-
-			hue += 16;
 		}
 	}
+
+	this->cam.end();
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
