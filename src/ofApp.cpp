@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofSetLineWidth(2);
 	ofEnableDepthTest();
 }
@@ -35,9 +35,9 @@ void ofApp::draw() {
 
 			auto location = glm::vec3(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD), 0);
 
-			auto rotate_x = ofMap(ofNoise(noise_seed.x, radius + 0.001 - ofGetFrameNum() * 0.005), 0, 1, -360, 360);
-			auto rotate_y = ofMap(ofNoise(noise_seed.y, radius + 0.001 - ofGetFrameNum() * 0.005), 0, 1, -360, 360);
-			auto rotate_z = ofMap(ofNoise(noise_seed.z, radius + 0.001 - ofGetFrameNum() * 0.005), 0, 1, -360, 360);
+			auto rotate_x = ofMap(ofNoise(glm::vec4(noise_seed.x + ofGetFrameNum() * 0.025, location * 0.005)), 0, 1, -180, 180);
+			auto rotate_y = ofMap(ofNoise(glm::vec4(noise_seed.y + ofGetFrameNum() * 0.025, location * 0.005)), 0, 1, -180, 180);
+			auto rotate_z = ofMap(ofNoise(glm::vec4(noise_seed.z + ofGetFrameNum() * 0.025, location * 0.005)), 0, 1, -180, 180);
 
 			ofPushMatrix();
 			ofTranslate(location);
@@ -47,12 +47,12 @@ void ofApp::draw() {
 			ofRotateX(rotate_x);
 
 			ofFill();
-			ofSetColor(239);
-			ofDrawBox(size);
+			ofSetColor(0);
+			ofDrawCircle(glm::vec2(), small_radius);
 
 			ofNoFill();
-			ofSetColor(39);
-			ofDrawBox(size);
+			ofSetColor(255);
+			ofDrawCircle(glm::vec2(), small_radius);
 
 			ofPopMatrix();
 		}
