@@ -1,4 +1,4 @@
-#include "ofApp.h"	
+#include "ofApp.h"
 
 //--------------------------------------------------------------
 void ofApp::setup() {
@@ -6,61 +6,44 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(39);
-	ofSetLineWidth(2);
-	ofEnableDepthTest();
-}
+	ofBackground(239);
+	ofSetColor(0);
+	ofSetRectMode(ofRectMode::OF_RECTMODE_CENTER);
 
+	this->noise_param = ofRandom(1000);
+}
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	ofSeedRandom(39);
+	this->noise_param += 0.005;
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-	this->cam.begin();
+	ofTranslate(ofGetWindowSize() * 0.5);
 
-	auto small_radius = 0.f;
-	auto noise_seed = glm::vec3(ofRandom(1000), ofRandom(1000), ofRandom(1000));
-	for (auto radius = 50; radius <= 360; radius += small_radius * 2) {
+	for (int deg = 0; deg < 360; deg += 8) {
 
-		auto deg_span = 10;
-		small_radius = (radius * 2 * PI) / 360 * deg_span * 0.5;
-		auto size = (small_radius * 2) / sqrt(3);
-		auto deg_start = 0;
+		for (int len = 50; len <= 150; len += 50) {
 
-		for (int deg = deg_start; deg < deg_start + 360; deg += deg_span) {
-
-			auto location = glm::vec3(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD), 0);
-
-			auto rotate_x = ofMap(ofNoise(glm::vec4(noise_seed.x + ofGetFrameNum() * 0.025, location * 0.005)), 0, 1, -180, 180);
-			auto rotate_y = ofMap(ofNoise(glm::vec4(noise_seed.y + ofGetFrameNum() * 0.025, location * 0.005)), 0, 1, -180, 180);
-			auto rotate_z = ofMap(ofNoise(glm::vec4(noise_seed.z + ofGetFrameNum() * 0.025, location * 0.005)), 0, 1, -180, 180);
+			float  radius = 200;
+			int width = ofMap(len, 50, 150, 3, 10);
+			auto target_radius = ofMap(ofNoise(cos(deg * DEG_TO_RAD) * 3, sin(deg * DEG_TO_RAD) * 3, len * 0.015 + this->noise_param), 0, 1, radius - 80, radius + 80);
+			auto target_location = glm::vec2(target_radius * cos(deg * DEG_TO_RAD), target_radius * sin(deg * DEG_TO_RAD));
 
 			ofPushMatrix();
-			ofTranslate(location);
+			ofTranslate(target_location);
+			ofRotate(deg);
 
-			ofRotateZ(rotate_z);
-			ofRotateY(rotate_y);
-			ofRotateX(rotate_x);
+			len == 50 ? ofFill() : ofNoFill();
 
-			ofFill();
-			ofSetColor(0);
-			ofDrawCircle(glm::vec2(), small_radius);
-
-			ofNoFill();
-			ofSetColor(255);
-			ofDrawCircle(glm::vec2(), small_radius);
+			ofDrawRectangle(glm::vec2(), len, width);
 
 			ofPopMatrix();
 		}
 	}
 
-	this->cam.end();
-
-	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
 	int start = 500;
 	if (ofGetFrameNum() > start) {
@@ -75,7 +58,6 @@ void ofApp::draw() {
 			std::exit(1);
 		}
 	}
-	*/
 }
 
 //--------------------------------------------------------------
