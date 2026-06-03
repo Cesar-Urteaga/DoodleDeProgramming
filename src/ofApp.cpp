@@ -6,16 +6,17 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
-	ofSetColor(0);
+	ofBackground(39);
 	ofSetRectMode(ofRectMode::OF_RECTMODE_CENTER);
+
+	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
 
 	this->noise_param = ofRandom(1000);
 }
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	this->noise_param += 0.005;
+	this->noise_param += 0.0085;
 }
 
 //--------------------------------------------------------------
@@ -23,27 +24,30 @@ void ofApp::draw() {
 
 	ofTranslate(ofGetWindowSize() * 0.5);
 
+	ofColor color;
 	for (int deg = 0; deg < 360; deg += 8) {
 
-		for (int len = 50; len <= 150; len += 50) {
+		color.setHsb(ofMap(deg, 0, 360, 0, 255), 128, 128);
+		ofSetColor(color);
 
+		for (int len = 50; len <= 150; len += 25) {
+			
 			float  radius = 200;
 			int width = ofMap(len, 50, 150, 3, 10);
-			auto target_radius = ofMap(ofNoise(cos(deg * DEG_TO_RAD) * 3, sin(deg * DEG_TO_RAD) * 3, len * 0.015 + this->noise_param), 0, 1, radius - 80, radius + 80);
+			auto target_radius = ofMap(ofNoise(cos(deg * DEG_TO_RAD) * 5, sin(deg * DEG_TO_RAD) * 5, len * 0.015 + this->noise_param), 0, 1, radius - 80, radius + 80);
 			auto target_location = glm::vec2(target_radius * cos(deg * DEG_TO_RAD), target_radius * sin(deg * DEG_TO_RAD));
 
 			ofPushMatrix();
 			ofTranslate(target_location);
 			ofRotate(deg);
 
-			len == 50 ? ofFill() : ofNoFill();
-
-			ofDrawRectangle(glm::vec2(), len, width);
+			ofDrawRectangle(glm::vec2(), 150, width);
 
 			ofPopMatrix();
 		}
 	}
 
+	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
 	int start = 500;
 	if (ofGetFrameNum() > start) {
@@ -58,6 +62,7 @@ void ofApp::draw() {
 			std::exit(1);
 		}
 	}
+	*/
 }
 
 //--------------------------------------------------------------
