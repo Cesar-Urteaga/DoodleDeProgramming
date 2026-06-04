@@ -6,42 +6,64 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(39);
-	ofSetRectMode(ofRectMode::OF_RECTMODE_CENTER);
-
-	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
-
-	this->noise_param = ofRandom(1000);
+	ofBackground(239);
+	ofSetLineWidth(1);
 }
+
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	this->noise_param += 0.0085;
+	ofSeedRandom(39);
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-	ofTranslate(ofGetWindowSize() * 0.5);
+	int radius = 45;
+	float handle_len = radius;
+	int number_of_location = 4;
+	int deg_span = 360 / number_of_location;
 
-	ofColor color;
-	for (int deg = 0; deg < 360; deg += 8) {
+	for (int x = 120; x <= ofGetWidth() - 120; x += 160) {
 
-		color.setHsb(ofMap(deg, 0, 360, 0, 255), 128, 128);
-		ofSetColor(color);
-
-		for (int len = 50; len <= 150; len += 25) {
-			
-			float  radius = 200;
-			int width = ofMap(len, 50, 150, 3, 10);
-			auto target_radius = ofMap(ofNoise(cos(deg * DEG_TO_RAD) * 5, sin(deg * DEG_TO_RAD) * 5, len * 0.015 + this->noise_param), 0, 1, radius - 80, radius + 80);
-			auto target_location = glm::vec2(target_radius * cos(deg * DEG_TO_RAD), target_radius * sin(deg * DEG_TO_RAD));
+		for (int y = 120; y <= ofGetHeight() - 120; y += 160) {
 
 			ofPushMatrix();
-			ofTranslate(target_location);
-			ofRotate(deg);
+			ofTranslate(x, y);
 
-			ofDrawRectangle(glm::vec2(), 150, width);
+			auto noise_seed = glm::vec2(ofRandom(1000), ofRandom(1000));
+
+			for (int i = 0; i < 8; i++) {
+
+				vector<glm::vec2> location_list;
+				vector<float> deg_list;
+				for (int deg = 0; deg < 360; deg += deg_span) {
+
+					location_list.push_back(glm::vec2(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD)));
+					deg_list.push_back(deg + 90);
+				}
+
+				for (int k = 0; k < location_list.size(); k++) {
+
+					deg_list[k] += ofMap(ofNoise(noise_seed.x + location_list[k].x, noise_seed.y + location_list[k].y, i * 0.05 + ofGetFrameNum() * 0.01), 0, 1, -90, 90);
+				}
+
+				ofNoFill();
+				ofSetColor(ofMap(i, 0, 8, 239, 0));
+
+				ofBeginShape();
+				for (int i = 0; i < location_list.size(); i++) {
+
+					int n = (i + 1) % location_list.size();
+
+					ofVertex(location_list[i]);
+					ofBezierVertex(
+						location_list[i] + glm::vec2(handle_len * cos(deg_list[i] * DEG_TO_RAD), handle_len * sin(deg_list[i] * DEG_TO_RAD)),
+						location_list[n] + glm::vec2(handle_len * cos((deg_list[n] + 180) * DEG_TO_RAD), handle_len * sin((deg_list[n] + 180) * DEG_TO_RAD)),
+						location_list[n]);
+				}
+				ofEndShape();
+			}
 
 			ofPopMatrix();
 		}
@@ -49,7 +71,7 @@ void ofApp::draw() {
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 500;
+	int start = 2;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
