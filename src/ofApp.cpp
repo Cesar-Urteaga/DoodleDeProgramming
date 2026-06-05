@@ -6,8 +6,8 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
-	ofSetLineWidth(1);
+	ofBackground(39);
+	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
 }
 
 //--------------------------------------------------------------
@@ -19,14 +19,16 @@ void ofApp::update() {
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-	int radius = 45;
+	int radius = 100;
 	float handle_len = radius;
 	int number_of_location = 4;
 	int deg_span = 360 / number_of_location;
 
-	for (int x = 120; x <= ofGetWidth() - 120; x += 160) {
+	ofColor color;
+	int hue = 0;
+	for (int x = 180; x <= ofGetWidth() - 180; x += 360) {
 
-		for (int y = 120; y <= ofGetHeight() - 120; y += 160) {
+		for (int y = 180; y <= ofGetHeight() - 180; y += 360) {
 
 			ofPushMatrix();
 			ofTranslate(x, y);
@@ -34,6 +36,8 @@ void ofApp::draw() {
 			auto noise_seed = glm::vec2(ofRandom(1000), ofRandom(1000));
 
 			for (int i = 0; i < 8; i++) {
+
+				color.setHsb((hue + ofGetFrameNum() + i * 10) % 255, 255, 200);
 
 				vector<glm::vec2> location_list;
 				vector<float> deg_list;
@@ -45,11 +49,10 @@ void ofApp::draw() {
 
 				for (int k = 0; k < location_list.size(); k++) {
 
-					deg_list[k] += ofMap(ofNoise(noise_seed.x + location_list[k].x, noise_seed.y + location_list[k].y, i * 0.05 + ofGetFrameNum() * 0.01), 0, 1, -90, 90);
+					deg_list[k] += ofMap(ofNoise(noise_seed.x + location_list[k].x, noise_seed.y + location_list[k].y, i * 0.08 + ofGetFrameNum() * 0.01), 0, 1, -90, 90);
 				}
 
-				ofNoFill();
-				ofSetColor(ofMap(i, 0, 8, 239, 0));
+				ofSetColor(color, ofMap(i, 0, 8, 0, 200));
 
 				ofBeginShape();
 				for (int i = 0; i < location_list.size(); i++) {
@@ -64,6 +67,8 @@ void ofApp::draw() {
 				}
 				ofEndShape();
 			}
+
+			hue += 64;
 
 			ofPopMatrix();
 		}
