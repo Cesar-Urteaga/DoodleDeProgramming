@@ -6,8 +6,8 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(239);
-	ofSetLineWidth(2);
+	ofBackground(39);
+	ofSetLineWidth(1);
 	ofEnableDepthTest();
 }
 
@@ -30,44 +30,48 @@ void ofApp::draw() {
 	line.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
 
 	float v_span = 5;
-	for (float v_start = 0; v_start < 360; v_start += v_span) {
 
-		int v_end = v_start + v_span;
-		float span = 0.5;
+	for(int i = 0; i < 5; i++){
 
-		r = ofMap(ofNoise(cos(v_start * DEG_TO_RAD) * 0.35, sin(v_start * DEG_TO_RAD) * 0.35, ofGetFrameNum() * 0.02), 0, 1, R * -0.5, R * 0.5);
+		for (float v_start = 0; v_start < 360; v_start += v_span * 6) {
 
-		for (float v = v_start; v <= v_end; v += span) {
+			int v_end = v_start + v_span;
+			float span = 0.5;
 
-			for (int u = 0; u < 360; u += u_span) {
+			r = ofMap(ofNoise(cos(v_start * DEG_TO_RAD) * 1.5, sin(v_start * DEG_TO_RAD) * 1.5, i * 0.05 + ofGetFrameNum() * 0.02), 0, 1, R * -0.8, R * 0.8);
 
-				face.addVertex(this->make_point(R, r, u - u_span * 0.5, v - span * 0.5));
-				face.addVertex(this->make_point(R, r, u + u_span * 0.5, v - span * 0.5));
-				face.addVertex(this->make_point(R, r, u + u_span * 0.5, v + span * 0.5));
-				face.addVertex(this->make_point(R, r, u - u_span * 0.5, v + span * 0.5));
+			for (float v = v_start; v <= v_end; v += span) {
 
-				line.addVertex(this->make_point(R, r, u - u_span * 0.51, v - span * 0.51));
-				line.addVertex(this->make_point(R, r, u + u_span * 0.51, v - span * 0.51));
-				line.addVertex(this->make_point(R, r, u + u_span * 0.51, v + span * 0.51));
-				line.addVertex(this->make_point(R, r, u - u_span * 0.51, v + span * 0.51));
+				for (int u = 0; u < 360; u += u_span) {
 
-				for (int i = 0; i < 4; i++) {
+					face.addVertex(this->make_point(R, r, u - u_span * 0.5, v - span * 0.5));
+					face.addVertex(this->make_point(R, r, u + u_span * 0.5, v - span * 0.5));
+					face.addVertex(this->make_point(R, r, u + u_span * 0.5, v + span * 0.5));
+					face.addVertex(this->make_point(R, r, u - u_span * 0.5, v + span * 0.5));
 
-					face.addColor(ofColor(0));
-					line.addColor(ofColor(255));
-				}
+					line.addVertex(this->make_point(R, r, u - u_span * 0.51, v - span * 0.51));
+					line.addVertex(this->make_point(R, r, u + u_span * 0.51, v - span * 0.51));
+					line.addVertex(this->make_point(R, r, u + u_span * 0.51, v + span * 0.51));
+					line.addVertex(this->make_point(R, r, u - u_span * 0.51, v + span * 0.51));
 
-				face.addIndex(face.getNumVertices() - 1); face.addIndex(face.getNumVertices() - 2); face.addIndex(face.getNumVertices() - 3);
-				face.addIndex(face.getNumVertices() - 1); face.addIndex(face.getNumVertices() - 3); face.addIndex(face.getNumVertices() - 4);
+					for (int i = 0; i < 4; i++) {
 
-				if (v == v_start) {
+						face.addColor(ofColor(0));
+						line.addColor(ofColor(255));
+					}
 
-					line.addIndex(line.getNumVertices() - 3); line.addIndex(line.getNumVertices() - 4);
-				}
+					face.addIndex(face.getNumVertices() - 1); face.addIndex(face.getNumVertices() - 2); face.addIndex(face.getNumVertices() - 3);
+					face.addIndex(face.getNumVertices() - 1); face.addIndex(face.getNumVertices() - 3); face.addIndex(face.getNumVertices() - 4);
 
-				if (v == v_end) {
+					if (v == v_start) {
 
-					line.addIndex(line.getNumVertices() - 1); line.addIndex(line.getNumVertices() - 2);
+						line.addIndex(line.getNumVertices() - 3); line.addIndex(line.getNumVertices() - 4);
+					}
+
+					if (v == v_end) {
+
+						line.addIndex(line.getNumVertices() - 1); line.addIndex(line.getNumVertices() - 2);
+					}
 				}
 			}
 		}
