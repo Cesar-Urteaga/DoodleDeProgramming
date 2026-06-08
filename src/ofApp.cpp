@@ -4,81 +4,85 @@
 void ofApp::setup() {
 
 	ofSetFrameRate(25);
-	ofSetWindowTitle("openframeworks");
+	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(39);
+	ofBackground(239);
 	ofSetLineWidth(1);
 	ofEnableDepthTest();
+
+	auto ico_sphere = ofIcoSpherePrimitive(100, 4);
+	this->triangle_list.insert(this->triangle_list.end(), ico_sphere.getMesh().getUniqueFaces().begin(), ico_sphere.getMesh().getUniqueFaces().end());
+
+	this->frame.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
+	this->mesh.clear();
+	this->frame.clear();
+
+	for (int radius = 300; radius <= 400; radius += 10) {
+
+		for (int i = 0; i < this->triangle_list.size(); i++) {
+
+			glm::vec3 avg = (this->triangle_list[i].getVertex(0) + this->triangle_list[i].getVertex(1) + this->triangle_list[i].getVertex(2)) / 3;
+			auto noise_value = ofNoise(glm::vec4(avg * 0.01, (radius / 20 + ofGetFrameNum()) * 0.003));
+
+			if (noise_value > 0.45 && noise_value < 0.55) {
+
+				vector<glm::vec3> vertices;
+				vertices.push_back(glm::normalize(((this->triangle_list[i].getVertex(0) - avg) * 0.999) + avg) * (radius + 5));
+				vertices.push_back(glm::normalize(((this->triangle_list[i].getVertex(1) - avg) * 0.999) + avg) * (radius + 5));
+				vertices.push_back(glm::normalize(((this->triangle_list[i].getVertex(2) - avg) * 0.999) + avg) * (radius + 5));
+
+				vertices.push_back(glm::normalize(this->triangle_list[i].getVertex(0)) * (radius - 5));
+				vertices.push_back(glm::normalize(this->triangle_list[i].getVertex(1)) * (radius - 5));
+				vertices.push_back(glm::normalize(this->triangle_list[i].getVertex(2)) * (radius - 5));
+
+				this->mesh.addVertices(vertices);
+				this->frame.addVertices(vertices);
+
+				this->mesh.addTriangle(this->mesh.getNumVertices() - 1, this->mesh.getNumVertices() - 2, this->mesh.getNumVertices() - 3);
+				this->mesh.addTriangle(this->mesh.getNumVertices() - 4, this->mesh.getNumVertices() - 5, this->mesh.getNumVertices() - 6);
+
+				this->mesh.addTriangle(this->mesh.getNumVertices() - 1, this->mesh.getNumVertices() - 2, this->mesh.getNumVertices() - 5);
+				this->mesh.addTriangle(this->mesh.getNumVertices() - 1, this->mesh.getNumVertices() - 5, this->mesh.getNumVertices() - 4);
+
+				this->mesh.addTriangle(this->mesh.getNumVertices() - 1, this->mesh.getNumVertices() - 3, this->mesh.getNumVertices() - 6);
+				this->mesh.addTriangle(this->mesh.getNumVertices() - 1, this->mesh.getNumVertices() - 6, this->mesh.getNumVertices() - 4);
+
+				this->mesh.addTriangle(this->mesh.getNumVertices() - 2, this->mesh.getNumVertices() - 3, this->mesh.getNumVertices() - 6);
+				this->mesh.addTriangle(this->mesh.getNumVertices() - 2, this->mesh.getNumVertices() - 6, this->mesh.getNumVertices() - 5);
+
+				this->frame.addIndex(this->frame.getNumVertices() - 1); this->frame.addIndex(this->frame.getNumVertices() - 2);
+				this->frame.addIndex(this->frame.getNumVertices() - 2); this->frame.addIndex(this->frame.getNumVertices() - 3);
+				this->frame.addIndex(this->frame.getNumVertices() - 1); this->frame.addIndex(this->frame.getNumVertices() - 3);
+
+				this->frame.addIndex(this->frame.getNumVertices() - 4); this->frame.addIndex(this->frame.getNumVertices() - 5);
+				this->frame.addIndex(this->frame.getNumVertices() - 5); this->frame.addIndex(this->frame.getNumVertices() - 6);
+				this->frame.addIndex(this->frame.getNumVertices() - 4); this->frame.addIndex(this->frame.getNumVertices() - 6);
+
+				this->frame.addIndex(this->frame.getNumVertices() - 1); this->frame.addIndex(this->frame.getNumVertices() - 4);
+				this->frame.addIndex(this->frame.getNumVertices() - 2); this->frame.addIndex(this->frame.getNumVertices() - 5);
+				this->frame.addIndex(this->frame.getNumVertices() - 3); this->frame.addIndex(this->frame.getNumVertices() - 6);
+			}
+		}
+	}
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
 	this->cam.begin();
-	ofRotateZ(ofGetFrameNum() * 0.72);
+	ofRotateX(ofGetFrameNum() * 0.72);
+	ofRotateY(ofGetFrameNum() * 1.44);
 
-	float R = 230;
-	float r = 10;
-	float u_span = 5;
+	ofSetColor(0);
+	this->mesh.drawFaces();
 
-	ofMesh face, line;
-	line.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
-
-	float v_span = 5;
-
-	for(int i = 0; i < 5; i++){
-
-		for (float v_start = 0; v_start < 360; v_start += v_span * 6) {
-
-			int v_end = v_start + v_span;
-			float span = 0.5;
-
-			r = ofMap(ofNoise(cos(v_start * DEG_TO_RAD) * 1.5, sin(v_start * DEG_TO_RAD) * 1.5, i * 0.05 + ofGetFrameNum() * 0.02), 0, 1, R * -0.8, R * 0.8);
-
-			for (float v = v_start; v <= v_end; v += span) {
-
-				for (int u = 0; u < 360; u += u_span) {
-
-					face.addVertex(this->make_point(R, r, u - u_span * 0.5, v - span * 0.5));
-					face.addVertex(this->make_point(R, r, u + u_span * 0.5, v - span * 0.5));
-					face.addVertex(this->make_point(R, r, u + u_span * 0.5, v + span * 0.5));
-					face.addVertex(this->make_point(R, r, u - u_span * 0.5, v + span * 0.5));
-
-					line.addVertex(this->make_point(R, r, u - u_span * 0.51, v - span * 0.51));
-					line.addVertex(this->make_point(R, r, u + u_span * 0.51, v - span * 0.51));
-					line.addVertex(this->make_point(R, r, u + u_span * 0.51, v + span * 0.51));
-					line.addVertex(this->make_point(R, r, u - u_span * 0.51, v + span * 0.51));
-
-					for (int i = 0; i < 4; i++) {
-
-						face.addColor(ofColor(0));
-						line.addColor(ofColor(255));
-					}
-
-					face.addIndex(face.getNumVertices() - 1); face.addIndex(face.getNumVertices() - 2); face.addIndex(face.getNumVertices() - 3);
-					face.addIndex(face.getNumVertices() - 1); face.addIndex(face.getNumVertices() - 3); face.addIndex(face.getNumVertices() - 4);
-
-					if (v == v_start) {
-
-						line.addIndex(line.getNumVertices() - 3); line.addIndex(line.getNumVertices() - 4);
-					}
-
-					if (v == v_end) {
-
-						line.addIndex(line.getNumVertices() - 1); line.addIndex(line.getNumVertices() - 2);
-					}
-				}
-			}
-		}
-	}
-
-	face.draw();
-	line.drawWireframe();
+	ofSetColor(255);
+	this->frame.drawWireframe();
 
 	this->cam.end();
 
@@ -98,21 +102,6 @@ void ofApp::draw() {
 		}
 	}
 	*/
-}
-
-//--------------------------------------------------------------
-glm::vec3 ofApp::make_point(float R, float r, float u, float v) {
-
-	// 数学デッサン教室 描いて楽しむ数学たち　P.31
-
-	u *= DEG_TO_RAD;
-	v *= DEG_TO_RAD;
-
-	auto x = (R + r * cos(u)) * cos(v);
-	auto y = (R + r * cos(u)) * sin(v);
-	auto z = r * sin(u);
-
-	return glm::vec3(x, y, z);
 }
 
 //--------------------------------------------------------------
