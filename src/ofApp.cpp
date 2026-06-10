@@ -6,73 +6,40 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(39);
-	ofSetLineWidth(1);
-	ofEnableDepthTest();
-
-	auto ico_sphere = ofIcoSpherePrimitive(100, 5);
-	this->triangle_list.insert(this->triangle_list.end(), ico_sphere.getMesh().getUniqueFaces().begin(), ico_sphere.getMesh().getUniqueFaces().end());
-
-	this->frame.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
+	ofBackground(239);
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
 	this->mesh.clear();
-	this->frame.clear();
 
-	ofColor color;
-	for (int radius = 300; radius <= 400; radius += 10) {
+	float span = 0.5;
+	for (float x = 18; x < 702; x += span) {
 
-		color.setHsb(ofMap(radius, 300, 400, 0, 255), 130, 255);
-		for (int i = 0; i < this->triangle_list.size(); i++) {
+		for (float y = 18; y < 702; y += span) {
 
-			glm::vec3 avg = (this->triangle_list[i].getVertex(0) + this->triangle_list[i].getVertex(1) + this->triangle_list[i].getVertex(2)) / 3;
-			auto noise_value = ofNoise(glm::vec4(avg * 0.01, (radius * 1.5 + ofGetFrameNum()) * 0.01));
+			float noise_value = ofNoise(x * 0.02, y * 0.02,ofGetFrameNum() * 0.01);
+			if ((noise_value >= 0.35 && noise_value <= 0.45) || (noise_value >= 0.55 && noise_value <= 0.65)) {
 
-			if (noise_value > 0.47 && noise_value < 0.53) {
+				this->mesh.addVertex(glm::vec3(x, y, 0));
+				this->mesh.addVertex(glm::vec3(x + span, y, 0));
+				this->mesh.addVertex(glm::vec3(x + span, y + span, 0));
+				this->mesh.addVertex(glm::vec3(x, y + span, 0));
 
-				vector<glm::vec3> vertices;
-				vertices.push_back(glm::normalize(((this->triangle_list[i].getVertex(0) - avg) * 0.999) + avg) * (radius + 2));
-				vertices.push_back(glm::normalize(((this->triangle_list[i].getVertex(1) - avg) * 0.999) + avg) * (radius + 2));
-				vertices.push_back(glm::normalize(((this->triangle_list[i].getVertex(2) - avg) * 0.999) + avg) * (radius + 2));
+				this->mesh.addIndex(this->mesh.getNumVertices() - 1); this->mesh.addIndex(this->mesh.getNumVertices() - 4); this->mesh.addIndex(this->mesh.getNumVertices() - 3);
+				this->mesh.addIndex(this->mesh.getNumVertices() - 1); this->mesh.addIndex(this->mesh.getNumVertices() - 2); this->mesh.addIndex(this->mesh.getNumVertices() - 3);
 
-				vertices.push_back(glm::normalize(this->triangle_list[i].getVertex(0)) * (radius - 2));
-				vertices.push_back(glm::normalize(this->triangle_list[i].getVertex(1)) * (radius - 2));
-				vertices.push_back(glm::normalize(this->triangle_list[i].getVertex(2)) * (radius - 2));
+				for (int i = 0; i < 4; i++) {
 
-				this->mesh.addVertices(vertices);
-				this->frame.addVertices(vertices);
+					if (noise_value > 0.5) {
 
-				this->mesh.addTriangle(this->mesh.getNumVertices() - 1, this->mesh.getNumVertices() - 2, this->mesh.getNumVertices() - 3);
-				this->mesh.addTriangle(this->mesh.getNumVertices() - 4, this->mesh.getNumVertices() - 5, this->mesh.getNumVertices() - 6);
+						this->mesh.addColor(ofColor(239, 39, 39));
+					}
+					else {
 
-				this->mesh.addTriangle(this->mesh.getNumVertices() - 1, this->mesh.getNumVertices() - 2, this->mesh.getNumVertices() - 5);
-				this->mesh.addTriangle(this->mesh.getNumVertices() - 1, this->mesh.getNumVertices() - 5, this->mesh.getNumVertices() - 4);
-
-				this->mesh.addTriangle(this->mesh.getNumVertices() - 1, this->mesh.getNumVertices() - 3, this->mesh.getNumVertices() - 6);
-				this->mesh.addTriangle(this->mesh.getNumVertices() - 1, this->mesh.getNumVertices() - 6, this->mesh.getNumVertices() - 4);
-
-				this->mesh.addTriangle(this->mesh.getNumVertices() - 2, this->mesh.getNumVertices() - 3, this->mesh.getNumVertices() - 6);
-				this->mesh.addTriangle(this->mesh.getNumVertices() - 2, this->mesh.getNumVertices() - 6, this->mesh.getNumVertices() - 5);
-
-				this->frame.addIndex(this->frame.getNumVertices() - 1); this->frame.addIndex(this->frame.getNumVertices() - 2);
-				this->frame.addIndex(this->frame.getNumVertices() - 2); this->frame.addIndex(this->frame.getNumVertices() - 3);
-				this->frame.addIndex(this->frame.getNumVertices() - 1); this->frame.addIndex(this->frame.getNumVertices() - 3);
-
-				this->frame.addIndex(this->frame.getNumVertices() - 4); this->frame.addIndex(this->frame.getNumVertices() - 5);
-				this->frame.addIndex(this->frame.getNumVertices() - 5); this->frame.addIndex(this->frame.getNumVertices() - 6);
-				this->frame.addIndex(this->frame.getNumVertices() - 4); this->frame.addIndex(this->frame.getNumVertices() - 6);
-
-				this->frame.addIndex(this->frame.getNumVertices() - 1); this->frame.addIndex(this->frame.getNumVertices() - 4);
-				this->frame.addIndex(this->frame.getNumVertices() - 2); this->frame.addIndex(this->frame.getNumVertices() - 5);
-				this->frame.addIndex(this->frame.getNumVertices() - 3); this->frame.addIndex(this->frame.getNumVertices() - 6);
-
-				for (int i = 0; i < 6; i++) {
-
-					this->mesh.addColor(ofColor(0));
-					this->frame.addColor(color);
+						this->mesh.addColor(ofColor(39, 39, 239));
+					}
 				}
 			}
 		}
@@ -82,17 +49,11 @@ void ofApp::update() {
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-	this->cam.begin();
-	ofRotateY(ofGetFrameNum() * 1.44);
-
-	this->mesh.drawFaces();
-	this->frame.drawWireframe();
-
-	this->cam.end();
+	this->mesh.draw();
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 500;
+	int start = 5;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
