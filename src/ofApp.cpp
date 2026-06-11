@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
+	ofBackground(39);
 }
 
 //--------------------------------------------------------------
@@ -15,12 +15,18 @@ void ofApp::update() {
 	this->mesh.clear();
 
 	float span = 0.5;
-	for (float x = 18; x < 702; x += span) {
+	ofColor color_1, color_2;
+	for (float x = 0; x < 720; x += span) {
 
-		for (float y = 18; y < 702; y += span) {
+		for (float y = 0; y < 720; y += span) {
 
-			float noise_value = ofNoise(x * 0.02, y * 0.02,ofGetFrameNum() * 0.01);
-			if ((noise_value >= 0.35 && noise_value <= 0.45) || (noise_value >= 0.55 && noise_value <= 0.65)) {
+			float noise_value = ofNoise(x * 0.008, y * 0.008,ofGetFrameNum() * 0.01);
+
+			int hue_1 = (ofGetFrameNum() * 4) % 255;
+			int hue_2 = (hue_1 + 128) % 255;
+			noise_value > 0.5 ? color_1.setHsb(hue_1, 130, 255) : color_2.setHsb(hue_2, 130, 255);
+
+			if ((noise_value >= 0.35 && noise_value <= 0.65)) {
 
 				this->mesh.addVertex(glm::vec3(x, y, 0));
 				this->mesh.addVertex(glm::vec3(x + span, y, 0));
@@ -34,11 +40,11 @@ void ofApp::update() {
 
 					if (noise_value > 0.5) {
 
-						this->mesh.addColor(ofColor(239, 39, 39));
+						this->mesh.addColor(color_1);
 					}
 					else {
 
-						this->mesh.addColor(ofColor(39, 39, 239));
+						this->mesh.addColor(color_2);
 					}
 				}
 			}
