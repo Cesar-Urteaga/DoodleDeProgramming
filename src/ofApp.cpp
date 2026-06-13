@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofSetLineWidth(1);
 	ofEnableDepthTest();
 
@@ -21,7 +21,8 @@ void ofApp::update() {
 	this->face.clear();
 	this->frame.clear();
 
-	for (int z = -1024; z <= 1024; z += 12) {
+	int height = 60;
+	for (int z = -1024; z <= 1024; z += 64) {
 
 		auto radius = 360;
 		int deg_start = 0;
@@ -29,7 +30,7 @@ void ofApp::update() {
 		int tmp_deg = 0;
 		for (int deg = 0; deg < 360 + tmp_deg; deg += 1) {
 
-			auto noise_value = ofNoise(glm::vec4(radius * cos(deg * DEG_TO_RAD) * 0.0015, radius * sin(deg * DEG_TO_RAD) * 0.0015, z * 0.005, ofGetFrameNum() * 0.01));
+			auto noise_value = ofNoise(glm::vec3(radius * cos(deg * DEG_TO_RAD) * 0.001, radius * sin(deg * DEG_TO_RAD) * 0.001, z * 0.002 + ofGetFrameNum() * 0.02));
 
 			if (noise_value < 0.5) {
 
@@ -40,7 +41,7 @@ void ofApp::update() {
 					while (true) {
 
 						tmp_deg -= 1;
-						auto tmp_noise_value = ofNoise(glm::vec4(radius * cos(tmp_deg * DEG_TO_RAD) * 0.0015, radius * sin(tmp_deg * DEG_TO_RAD) * 0.0015, z * 0.005, ofGetFrameNum() * 0.01));
+						auto tmp_noise_value = ofNoise(glm::vec3(radius * cos(tmp_deg * DEG_TO_RAD) * 0.001, radius * sin(tmp_deg * DEG_TO_RAD) * 0.001, z * 0.002 + ofGetFrameNum() * 0.02));
 						if (tmp_noise_value > 0.5 || tmp_deg < -360) { break; }
 						deg_start = tmp_deg;
 					}
@@ -50,7 +51,7 @@ void ofApp::update() {
 
 				if (deg_start < deg_end) {
 
-					this->setRingToMesh(this->face, this->frame, glm::vec3(0, 0, z + 8), radius, 120, 8, deg_start, deg_end);
+					this->setRingToMesh(this->face, this->frame, glm::vec3(0, 0, z + 8), radius, 120, height, deg_start, deg_end);
 				}
 
 				deg_start = deg;
@@ -60,7 +61,7 @@ void ofApp::update() {
 
 		if (deg_start != deg_end) {
 
-			this->setRingToMesh(this->face, this->frame, glm::vec3(0, 0, z + 8), radius, 120, 8, deg_start, deg_end);
+			this->setRingToMesh(this->face, this->frame, glm::vec3(0, 0, z + 8), radius, 120, height, deg_start, deg_end);
 		}
 	}
 }
@@ -69,20 +70,18 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
-	ofRotateX(90);
-	ofRotateZ(ofGetFrameNum() * 1.44);
 
 	ofSetColor(0);
 	this->face.draw();
 
-	ofSetColor(255);
+	ofSetColor(255, 128, 255);
 	this->frame.drawWireframe();
 
 	this->cam.end();
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 500;
+	int start = 700;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
