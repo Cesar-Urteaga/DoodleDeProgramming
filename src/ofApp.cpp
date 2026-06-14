@@ -4,84 +4,53 @@
 void ofApp::setup() {
 
 	ofSetFrameRate(25);
-	ofSetWindowTitle("openFrameworks");
+	ofSetWindowTitle("openframeworks");
 
-	ofBackground(39);
-	ofSetLineWidth(1);
-	ofEnableDepthTest();
-
-	this->frame.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
+	ofBackground(239);
+	ofSetColor(0);
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	ofSeedRandom(39);
-
-	this->face.clear();
-	this->frame.clear();
-
-	int height = 60;
-	for (int z = -1024; z <= 1024; z += 64) {
-
-		auto radius = 360;
-		int deg_start = 0;
-		int deg_end = 0;
-		int tmp_deg = 0;
-		for (int deg = 0; deg < 360 + tmp_deg; deg += 1) {
-
-			auto noise_value = ofNoise(glm::vec3(radius * cos(deg * DEG_TO_RAD) * 0.001, radius * sin(deg * DEG_TO_RAD) * 0.001, z * 0.002 + ofGetFrameNum() * 0.02));
-
-			if (noise_value < 0.5) {
-
-				deg_end = deg;
-
-				if (deg == 0) {
-
-					while (true) {
-
-						tmp_deg -= 1;
-						auto tmp_noise_value = ofNoise(glm::vec3(radius * cos(tmp_deg * DEG_TO_RAD) * 0.001, radius * sin(tmp_deg * DEG_TO_RAD) * 0.001, z * 0.002 + ofGetFrameNum() * 0.02));
-						if (tmp_noise_value > 0.5 || tmp_deg < -360) { break; }
-						deg_start = tmp_deg;
-					}
-				}
-			}
-			else {
-
-				if (deg_start < deg_end) {
-
-					this->setRingToMesh(this->face, this->frame, glm::vec3(0, 0, z + 8), radius, 120, height, deg_start, deg_end);
-				}
-
-				deg_start = deg;
-				deg_end = deg;
-			}
-		}
-
-		if (deg_start != deg_end) {
-
-			this->setRingToMesh(this->face, this->frame, glm::vec3(0, 0, z + 8), radius, 120, height, deg_start, deg_end);
-		}
-	}
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-	this->cam.begin();
+	ofTranslate(ofGetWindowSize() * 0.5);
 
-	ofSetColor(0);
-	this->face.draw();
+	int deg_span = 60;
+	int radius_span = 120;
+	int len = 2;
+	for (int deg = 0; deg < 360; deg += deg_span) {
 
-	ofSetColor(255, 128, 255);
-	this->frame.drawWireframe();
+		for (int radius = 0; radius < 720; radius += radius_span) {
 
-	this->cam.end();
+			auto noise_deg = ofMap(ofNoise(radius * 0.0005 - ofGetFrameNum() * 0.005), 0, 1, 360, -360);
+			auto next_noise_deg = ofMap(ofNoise((radius + radius_span) * 0.0005 - ofGetFrameNum() * 0.005), 0, 1, 360, -360);
 
-	/*
+			ofBeginShape();
+			ofVertex(glm::vec2(radius * cos((deg + noise_deg - len) * DEG_TO_RAD), radius * sin((deg + noise_deg - len) * DEG_TO_RAD)));
+			ofVertex(glm::vec2(radius * cos((deg + noise_deg + len) * DEG_TO_RAD), radius * sin((deg + noise_deg + len) * DEG_TO_RAD)));
+			ofVertex(glm::vec2((radius + radius_span) * cos((deg + next_noise_deg + len) * DEG_TO_RAD), (radius + radius_span) * sin((deg + next_noise_deg + len) * DEG_TO_RAD)));
+			ofVertex(glm::vec2((radius + radius_span) * cos((deg + next_noise_deg - len) * DEG_TO_RAD), (radius + radius_span) * sin((deg + next_noise_deg - len) * DEG_TO_RAD)));
+			ofEndShape(true);
+
+			noise_deg = ofMap(ofNoise(radius * 0.0005 - ofGetFrameNum() * 0.005), 0, 1, -360, 360);
+			next_noise_deg = ofMap(ofNoise((radius + radius_span) * 0.0005 - ofGetFrameNum() * 0.005), 0, 1, -360, 360);
+
+			ofBeginShape();
+			ofVertex(glm::vec2(radius * cos((deg + noise_deg - len) * DEG_TO_RAD), radius * sin((deg + noise_deg - len) * DEG_TO_RAD)));
+			ofVertex(glm::vec2(radius * cos((deg + noise_deg + len) * DEG_TO_RAD), radius * sin((deg + noise_deg + len) * DEG_TO_RAD)));
+			ofVertex(glm::vec2((radius + radius_span) * cos((deg + next_noise_deg + len) * DEG_TO_RAD), (radius + radius_span) * sin((deg + next_noise_deg + len) * DEG_TO_RAD)));
+			ofVertex(glm::vec2((radius + radius_span) * cos((deg + next_noise_deg - len) * DEG_TO_RAD), (radius + radius_span) * sin((deg + next_noise_deg - len) * DEG_TO_RAD)));
+			ofEndShape(true);
+		}
+	}
+
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 700;
+	int start = 5;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
@@ -94,77 +63,6 @@ void ofApp::draw() {
 			std::exit(1);
 		}
 	}
-	*/
-}
-
-//--------------------------------------------------------------
-void ofApp::setRingToMesh(ofMesh& face_target, ofMesh& frame_target, glm::vec3 location, float radius, float width, float height, int deg_start, int deg_end) {
-
-	if (deg_start == deg_end) { return; }
-
-	int index = face_target.getNumVertices();
-
-	for (int deg = deg_start; deg <= deg_end; deg += 1) {
-
-		auto face_index = face_target.getNumVertices();
-
-		vector<glm::vec3> vertices;
-		vertices.push_back(glm::vec3((radius + width * 0.5) * cos(deg * DEG_TO_RAD), (radius + width * 0.5) * sin(deg * DEG_TO_RAD), height * -0.5));
-		vertices.push_back(glm::vec3((radius + width * 0.5) * cos((deg + 1) * DEG_TO_RAD), (radius + width * 0.5) * sin((deg + 1) * DEG_TO_RAD), height * -0.5));
-		vertices.push_back(glm::vec3((radius + width * 0.5) * cos((deg + 1) * DEG_TO_RAD), (radius + width * 0.5) * sin((deg + 1) * DEG_TO_RAD), height * 0.5));
-		vertices.push_back(glm::vec3((radius + width * 0.5) * cos(deg * DEG_TO_RAD), (radius + width * 0.5) * sin(deg * DEG_TO_RAD), height * 0.5));
-
-		vertices.push_back(glm::vec3((radius - width * 0.5) * cos(deg * DEG_TO_RAD), (radius - width * 0.5) * sin(deg * DEG_TO_RAD), height * -0.5));
-		vertices.push_back(glm::vec3((radius - width * 0.5) * cos((deg + 1) * DEG_TO_RAD), (radius - width * 0.5) * sin((deg + 1) * DEG_TO_RAD), height * -0.5));
-		vertices.push_back(glm::vec3((radius - width * 0.5) * cos((deg + 1) * DEG_TO_RAD), (radius - width * 0.5) * sin((deg + 1) * DEG_TO_RAD), height * 0.5));
-		vertices.push_back(glm::vec3((radius - width * 0.5) * cos(deg * DEG_TO_RAD), (radius - width * 0.5) * sin(deg * DEG_TO_RAD), height * 0.5));
-
-		for (auto& vertex : vertices) {
-
-			vertex += location;
-		}
-
-		face_target.addVertices(vertices);
-
-		face_target.addIndex(face_index + 0); face_target.addIndex(face_index + 1); face_target.addIndex(face_index + 2);
-		face_target.addIndex(face_index + 0); face_target.addIndex(face_index + 2); face_target.addIndex(face_index + 3);
-
-		face_target.addIndex(face_index + 4); face_target.addIndex(face_index + 5); face_target.addIndex(face_index + 6);
-		face_target.addIndex(face_index + 4); face_target.addIndex(face_index + 6); face_target.addIndex(face_index + 7);
-
-		face_target.addIndex(face_index + 0); face_target.addIndex(face_index + 4); face_target.addIndex(face_index + 5);
-		face_target.addIndex(face_index + 0); face_target.addIndex(face_index + 5); face_target.addIndex(face_index + 1);
-
-		face_target.addIndex(face_index + 3); face_target.addIndex(face_index + 7); face_target.addIndex(face_index + 6);
-		face_target.addIndex(face_index + 3); face_target.addIndex(face_index + 6); face_target.addIndex(face_index + 2);
-
-		auto frame_index = frame_target.getNumVertices();
-
-		frame_target.addVertices(vertices);
-
-		frame_target.addIndex(frame_index + 0); frame_target.addIndex(frame_index + 1);
-		frame_target.addIndex(frame_index + 2); frame_target.addIndex(frame_index + 3);
-		frame_target.addIndex(frame_index + 4); frame_target.addIndex(frame_index + 5);
-		frame_target.addIndex(frame_index + 6); frame_target.addIndex(frame_index + 7);
-	}
-
-	face_target.addIndex(index + 0); face_target.addIndex(index + 3); face_target.addIndex(index + 7);
-	face_target.addIndex(index + 0); face_target.addIndex(index + 7); face_target.addIndex(index + 4);
-
-	frame_target.addIndex(index + 0); frame_target.addIndex(index + 3);
-	frame_target.addIndex(index + 0); frame_target.addIndex(index + 4);
-	frame_target.addIndex(index + 7); frame_target.addIndex(index + 3);
-	frame_target.addIndex(index + 7); frame_target.addIndex(index + 4);
-
-	index = frame_target.getNumVertices() - 8;
-
-	face_target.addIndex(index + 1); face_target.addIndex(index + 2); face_target.addIndex(index + 6);
-	face_target.addIndex(index + 1); face_target.addIndex(index + 6); face_target.addIndex(index + 5);
-
-	frame_target.addIndex(index + 1); frame_target.addIndex(index + 2);
-	frame_target.addIndex(index + 1); frame_target.addIndex(index + 5);
-	frame_target.addIndex(index + 6); frame_target.addIndex(index + 2);
-	frame_target.addIndex(index + 6); frame_target.addIndex(index + 5);
 }
 
 //--------------------------------------------------------------
