@@ -6,8 +6,8 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(239);
-	ofSetColor(0);
+	ofBackground(39);
+	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
 }
 
 //--------------------------------------------------------------
@@ -20,15 +20,19 @@ void ofApp::draw() {
 
 	ofTranslate(ofGetWindowSize() * 0.5);
 
-	int deg_span = 60;
-	int radius_span = 120;
+	int deg_span = 30;
+	int radius_span = 1;
 	int len = 2;
+	ofColor color;
 	for (int deg = 0; deg < 360; deg += deg_span) {
 
 		for (int radius = 0; radius < 720; radius += radius_span) {
 
-			auto noise_deg = ofMap(ofNoise(radius * 0.0005 - ofGetFrameNum() * 0.005), 0, 1, 360, -360);
-			auto next_noise_deg = ofMap(ofNoise((radius + radius_span) * 0.0005 - ofGetFrameNum() * 0.005), 0, 1, 360, -360);
+			color.setHsb(ofGetFrameNum() % 255, 200, 255);
+			ofSetColor(color);
+
+			auto noise_deg = ofMap(ofNoise(radius * 0.00025 - ofGetFrameNum() * 0.0025), 0, 1, 180, -180);
+			auto next_noise_deg = ofMap(ofNoise((radius + radius_span) * 0.00025 - ofGetFrameNum() * 0.0025), 0, 1, 180, -180);
 
 			ofBeginShape();
 			ofVertex(glm::vec2(radius * cos((deg + noise_deg - len) * DEG_TO_RAD), radius * sin((deg + noise_deg - len) * DEG_TO_RAD)));
@@ -37,8 +41,11 @@ void ofApp::draw() {
 			ofVertex(glm::vec2((radius + radius_span) * cos((deg + next_noise_deg - len) * DEG_TO_RAD), (radius + radius_span) * sin((deg + next_noise_deg - len) * DEG_TO_RAD)));
 			ofEndShape(true);
 
-			noise_deg = ofMap(ofNoise(radius * 0.0005 - ofGetFrameNum() * 0.005), 0, 1, -360, 360);
-			next_noise_deg = ofMap(ofNoise((radius + radius_span) * 0.0005 - ofGetFrameNum() * 0.005), 0, 1, -360, 360);
+			color.setHsb((ofGetFrameNum() + 128) % 255, 200, 255);
+			ofSetColor(color);
+
+			noise_deg = ofMap(ofNoise(radius * 0.00025 - ofGetFrameNum() * 0.0025), 0, 1, -180, 180);
+			next_noise_deg = ofMap(ofNoise((radius + radius_span) * 0.00025 - ofGetFrameNum() * 0.0025), 0, 1, -180, 180);
 
 			ofBeginShape();
 			ofVertex(glm::vec2(radius * cos((deg + noise_deg - len) * DEG_TO_RAD), radius * sin((deg + noise_deg - len) * DEG_TO_RAD)));
@@ -49,8 +56,9 @@ void ofApp::draw() {
 		}
 	}
 
+	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 5;
+	int start = 10;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
@@ -63,6 +71,7 @@ void ofApp::draw() {
 			std::exit(1);
 		}
 	}
+	*/
 }
 
 //--------------------------------------------------------------
