@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofSetLineWidth(2);
 	ofEnableDepthTest();
 
@@ -16,7 +16,7 @@ void ofApp::setup() {
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	this->noise_param += 0.01;
+	this->noise_param += 0.05;
 
 	this->face.clear();
 	this->line.clear();
@@ -25,22 +25,25 @@ void ofApp::update() {
 	float threshold_2 = 0.6;
 	float deg_span = 5;
 	float z_span = 25;
-	float noise_span = 0.015;
+	float noise_span = 0.002;
 	float noise_span_z_scale = 1;
 	float radius = 320;
 
+	ofColor color;
 	for (float deg = 0; deg < 360; deg += deg_span) {
+
+		color.setHsb(ofMap(deg, 0, 360, 0, 255), 200, 255);
 
 		for (float z = -500 + z_span; z <= 500 - z_span; z += z_span) {
 
-			auto noise_value = ofNoise(glm::vec4(radius * cos(deg * DEG_TO_RAD) * noise_span, radius * sin(deg * DEG_TO_RAD) * noise_span, z * noise_span * noise_span_z_scale, noise_param));
+			auto noise_value = ofNoise(radius * cos(deg * DEG_TO_RAD) * noise_span, radius * sin(deg * DEG_TO_RAD) * noise_span, z * noise_span * noise_span_z_scale + noise_param);
 			noise_value = abs(z) > 470 ? 0.5 : noise_value;
 			if (noise_value <= threshold_1 || noise_value >= threshold_2) { continue; }
 
-			auto noise_1 = ofNoise(glm::vec4(radius * cos((deg - deg_span) * DEG_TO_RAD) * noise_span, radius * sin((deg - deg_span) * DEG_TO_RAD) * noise_span, z * noise_span * noise_span_z_scale, noise_param));
-			auto noise_2 = ofNoise(glm::vec4(radius * cos(deg * DEG_TO_RAD) * noise_span, radius * sin(deg * DEG_TO_RAD) * noise_span, (z + z_span) * noise_span * noise_span_z_scale, noise_param));
-			auto noise_3 = ofNoise(glm::vec4(radius * cos(deg * DEG_TO_RAD) * noise_span, radius * sin(deg * DEG_TO_RAD) * noise_span, (z - z_span) * noise_span * noise_span_z_scale, noise_param));
-			auto noise_4 = ofNoise(glm::vec4(radius * cos((deg + deg_span) * DEG_TO_RAD) * noise_span, radius * sin((deg + deg_span) * DEG_TO_RAD) * noise_span, z * noise_span * noise_span_z_scale, noise_param));
+			auto noise_1 = ofNoise(radius * cos((deg - deg_span) * DEG_TO_RAD) * noise_span, radius * sin((deg - deg_span) * DEG_TO_RAD) * noise_span, z * noise_span * noise_span_z_scale + noise_param);
+			auto noise_2 = ofNoise(radius * cos(deg * DEG_TO_RAD) * noise_span, radius * sin(deg * DEG_TO_RAD) * noise_span, (z + z_span) * noise_span * noise_span_z_scale + noise_param);
+			auto noise_3 = ofNoise(radius * cos(deg * DEG_TO_RAD) * noise_span, radius * sin(deg * DEG_TO_RAD) * noise_span, (z - z_span) * noise_span * noise_span_z_scale + noise_param);
+			auto noise_4 = ofNoise(radius * cos((deg + deg_span) * DEG_TO_RAD) * noise_span, radius * sin((deg + deg_span) * DEG_TO_RAD) * noise_span, z * noise_span * noise_span_z_scale + noise_param);
 
 			noise_1 = abs(z) > 470 ? 0.5 : noise_1;
 			noise_2 = abs(z + z_span) > 470 ? 0.5 : noise_2;
@@ -60,13 +63,13 @@ void ofApp::update() {
 			this->face.addIndex(index + 0); this->face.addIndex(index + 1); this->face.addIndex(index + 3);
 			this->face.addIndex(index + 0); this->face.addIndex(index + 2); this->face.addIndex(index + 3);
 
-			ofColor face_color(0);
+			ofColor face_color(color, 168);
 			for (int i = 0; i < 4; i++) {
 
 				this->face.addColor(face_color);
 			}
 
-			ofColor line_color(255);
+			ofColor line_color = color;
 			if (noise_1 <= threshold_1 || noise_1 >= threshold_2) {
 
 				this->line.addVertex(vertices[0]);
