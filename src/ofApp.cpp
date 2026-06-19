@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofSetLineWidth(2);
 	ofEnableDepthTest();
 
@@ -30,7 +30,7 @@ void ofApp::update() {
 	float threshold_2 = 0.6;
 
 	float R = 240;
-	for (int r = 10; r <= 60; r += 10) {
+	for (int r = 10; r <= 70; r += 30) {
 
 		for (float phi_deg = 0; phi_deg < 360; phi_deg += phi_deg_step) {
 
@@ -54,13 +54,11 @@ void ofApp::update() {
 
 				this->face.addVertices(vertices);
 
-				color = ofColor(0);
+				color.setHsb(ofMap(r, 10, 100, 0, 255), 130, 255);
 				for (int i = 0; i < 4; i++) {
 
-					this->face.addColor(color);
+					this->face.addColor(ofColor(color, 64));
 				}
-
-				color.setHsb(ofMap(r, 10, 60, 0, 255), 130, 255);
 
 				this->face.addIndex(index + 0); this->face.addIndex(index + 1); this->face.addIndex(index + 3);
 				this->face.addIndex(index + 0); this->face.addIndex(index + 3); this->face.addIndex(index + 2);
@@ -122,12 +120,14 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
+	ofRotateY(ofGetFrameNum() * 2.88);
 
 	this->line.draw();
 	this->face.draw();
 
 	this->cam.end();
 
+	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
 	int start = 500;
 	if (ofGetFrameNum() > start) {
@@ -142,6 +142,7 @@ void ofApp::draw() {
 			std::exit(1);
 		}
 	}
+	*/
 }
 
 //--------------------------------------------------------------
