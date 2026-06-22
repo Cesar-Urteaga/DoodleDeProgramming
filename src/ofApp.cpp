@@ -6,52 +6,55 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(39);
+	ofBackground(239);
+	ofSetLineWidth(1.5);
+	ofEnableDepthTest();
+
+	auto ico_sphere = ofIcoSpherePrimitive(280, 4);
+	this->mesh = ico_sphere.getMesh();
+
+	for (int i = 0; i < this->mesh.getNumVertices(); i++) {
+
+		this->param_list.push_back(0);
+	}
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	this->mesh.clear();
+	ofSeedRandom(39);
 
-	float span = 0.5;
-	ofColor color;
-	bool flag = true;
-	for (float x_start = 0; x_start < 720; x_start += 720)
-	{
-		for (float x = x_start; x < 720; x += span) {
+	this->draw_mesh = this->mesh;
+	this->line_mesh = this->mesh;
 
-			for (float y = 0; y < 720; y += span) {
+	for (int i = 0; i < this->draw_mesh.getNumVertices(); i++) {
 
-				float noise_step = flag ? 0.045 : 0.01;
-				float noise_value = ofMap(ofNoise(x * 0.02, y * 0.02, ofGetFrameNum() * 0.01), 0, 1, 0, 10);
-				if ((int)noise_value != 5) {
+		auto vertex = this->draw_mesh.getVertex(i);
+		auto noise_value = ofNoise(glm::vec4(vertex * 0.02, ofGetFrameNum() * 0.0005));
 
-					continue;
-				}
+		if (noise_value <= 0.43 || noise_value >= 0.57) {
 
-				this->mesh.addVertex(glm::vec3(x, y, 0));
-				this->mesh.addVertex(glm::vec3(x + span, y, 0));
-				this->mesh.addVertex(glm::vec3(x + span, y + span, 0));
-				this->mesh.addVertex(glm::vec3(x, y + span, 0));
-
-				this->mesh.addIndex(this->mesh.getNumVertices() - 1); this->mesh.addIndex(this->mesh.getNumVertices() - 4); this->mesh.addIndex(this->mesh.getNumVertices() - 3);
-				this->mesh.addIndex(this->mesh.getNumVertices() - 1); this->mesh.addIndex(this->mesh.getNumVertices() - 2); this->mesh.addIndex(this->mesh.getNumVertices() - 3);
-
-				color.setHsb(ofMap(x, 0, 720, 0, 255), 130, 255);
-				for (int i = 0; i < 4; i++) {
-
-					this->mesh.addColor(color);
-				}
-			}
+			vertex = glm::normalize(vertex) * 0;
 		}
+
+		this->draw_mesh.setVertex(i, vertex);
+		this->line_mesh.setVertex(i, vertex);
 	}
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-	this->mesh.draw();
+	this->cam.begin();
+	ofRotateY(ofGetFrameNum() * 0.72);
+
+	ofSetColor(39);
+	this->draw_mesh.draw();
+
+	ofSetColor(239);
+	this->line_mesh.drawWireframe();
+
+	this->cam.end();
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
