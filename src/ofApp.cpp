@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofSetLineWidth(1.5);
 	ofEnableDepthTest();
 
@@ -30,9 +30,9 @@ void ofApp::update() {
 	for (int i = 0; i < this->draw_mesh.getNumVertices(); i++) {
 
 		auto vertex = this->draw_mesh.getVertex(i);
-		auto noise_value = ofNoise(glm::vec4(vertex * 0.02, ofGetFrameNum() * 0.0005));
+		auto noise_value = ofNoise(glm::vec4(vertex * 0.0025, ofGetFrameNum() * 0.01));
 
-		if (noise_value <= 0.43 || noise_value >= 0.57) {
+		if (noise_value <= 0.48 || noise_value >= 0.52) {
 
 			vertex = glm::normalize(vertex) * 0;
 		}
@@ -46,12 +46,12 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
-	ofRotateY(ofGetFrameNum() * 0.72);
+	ofRotateY(ofGetFrameNum() * 2.88);
 
 	ofSetColor(39);
 	this->draw_mesh.draw();
 
-	ofSetColor(239);
+	ofSetColor(139, 139, 239);
 	this->line_mesh.drawWireframe();
 
 	this->cam.end();
