@@ -19,7 +19,8 @@ public:
 	void gotMessage(ofMessage msg) {};
 
 	ofEasyCam cam;
+	ofIcoSpherePrimitive ico_sphere;
+	ofMesh mesh;
 
-	ofMesh mesh, draw_mesh, line_mesh;
-	vector<float> param_list;
+	float noise_value;
 };

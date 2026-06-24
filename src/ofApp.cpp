@@ -4,61 +4,74 @@
 void ofApp::setup() {
 
 	ofSetFrameRate(25);
-	ofSetWindowTitle("openFrameworks");
+	ofSetWindowTitle("openframeworks");
 
-	ofBackground(39);
-	ofSetLineWidth(1.5);
+	ofBackground(239);
 	ofEnableDepthTest();
 
-	auto ico_sphere = ofIcoSpherePrimitive(280, 4);
-	this->mesh = ico_sphere.getMesh();
-
-	for (int i = 0; i < this->mesh.getNumVertices(); i++) {
-
-		this->param_list.push_back(0);
-	}
+	this->ico_sphere = ofIcoSpherePrimitive(150, 4);
+	this->noise_value = ofRandom(1000);
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	ofSeedRandom(39);
+	this->mesh.clear();
+	auto triangle_list = this->ico_sphere.getMesh().getUniqueFaces();
 
-	this->draw_mesh = this->mesh;
-	this->line_mesh = this->mesh;
+	for (auto& triangle : triangle_list) {
 
-	for (int i = 0; i < this->draw_mesh.getNumVertices(); i++) {
+		glm::vec3 avg = (triangle.getVertex(0) + triangle.getVertex(1) + triangle.getVertex(2)) / 3;
+		auto noise_value = ofNoise(avg.x * 0.03, avg.y * 0.03, avg.z * 0.03, this->noise_value);
 
-		auto vertex = this->draw_mesh.getVertex(i);
-		auto noise_value = ofNoise(glm::vec4(vertex * 0.0025, ofGetFrameNum() * 0.01));
+		float noise_radius = 150;
+		noise_radius = ofMap(noise_value, 0, 1, 50, 450);
 
-		if (noise_value <= 0.48 || noise_value >= 0.52) {
+		int index = this->mesh.getNumVertices();
 
-			vertex = glm::normalize(vertex) * 0;
-		}
+		this->mesh.addVertex(glm::normalize(avg) * (noise_radius + 100));
+		this->mesh.addVertex(glm::normalize(triangle.getVertex(0)) * noise_radius);
+		this->mesh.addVertex(glm::normalize(triangle.getVertex(1)) * noise_radius);
+		this->mesh.addVertex(glm::normalize(triangle.getVertex(2)) * noise_radius);
 
-		this->draw_mesh.setVertex(i, vertex);
-		this->line_mesh.setVertex(i, vertex);
+		this->mesh.addIndex(index + 0);
+		this->mesh.addIndex(index + 1);
+		this->mesh.addIndex(index + 2);
+
+		this->mesh.addIndex(index + 0);
+		this->mesh.addIndex(index + 2);
+		this->mesh.addIndex(index + 3);
+
+		this->mesh.addIndex(index + 0);
+		this->mesh.addIndex(index + 1);
+		this->mesh.addIndex(index + 3);
+
+		this->mesh.addIndex(index + 1);
+		this->mesh.addIndex(index + 2);
+		this->mesh.addIndex(index + 3);
 	}
+
+	this->noise_value += 0.03;
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
 	this->cam.begin();
-	ofRotateY(ofGetFrameNum() * 2.88);
+	ofRotateX(ofGetFrameNum() * 0.43);
+	ofRotateY(ofGetFrameNum() * 0.65);
 
 	ofSetColor(39);
-	this->draw_mesh.draw();
+	this->mesh.drawFaces();
 
-	ofSetColor(139, 139, 239);
-	this->line_mesh.drawWireframe();
+	ofSetColor(239);
+	this->mesh.drawWireframe();
 
 	this->cam.end();
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 5;
+	int start = 250;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
