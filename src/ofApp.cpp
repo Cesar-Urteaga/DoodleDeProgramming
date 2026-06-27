@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofEnableDepthTest();
 
 	this->frame.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
@@ -20,58 +20,63 @@ void ofApp::update() {
 	this->face.clear();
 	this->frame.clear();
 
-	for (int radius = 150; radius <= 300; radius += 150) {
+	int theta_span = 6;
+	ofColor color;
 
-		auto noise_param = ofRandom(1000);
-		for (int theta = 0; theta < 90; theta += 2) {
+	for (int radius = 150; radius <= 300; radius += 10) {
 
-			int phi_start = ofMap(ofNoise(noise_param, theta * 0.01 + ofGetFrameNum() * 0.025), 0, 1, -360, 360);
-			int phi_len = 120;
+		auto noise_param = radius * 0.01;
+		color.setHsb(ofMap(radius, 150, 300, 255, 0), 255, 255);
+
+		for (int theta = theta_span; theta <= 180 - theta_span; theta += theta_span) {
+
+			int phi_start = ofMap(ofNoise(noise_param, theta * 0.003 + ofGetFrameNum() * 0.005), 0, 1, -360, 360);
+			int phi_len = 45;
 			auto index = this->face.getNumVertices();
 			for (int phi = phi_start; phi <= phi_start + phi_len; phi += 3) {
-				
+
 				vector<glm::vec3> vertices;
 
 				vertices.push_back(glm::vec3(
-					radius * cos(phi * DEG_TO_RAD) * sin((theta + 1) * DEG_TO_RAD),
-					radius * sin(phi * DEG_TO_RAD) * sin((theta + 1) * DEG_TO_RAD),
-					radius * cos((theta + 1) * DEG_TO_RAD)
+					radius * cos(phi * DEG_TO_RAD) * sin((theta + theta_span * 0.5) * DEG_TO_RAD),
+					radius * sin(phi * DEG_TO_RAD) * sin((theta + theta_span * 0.5) * DEG_TO_RAD),
+					radius * cos((theta + theta_span * 0.5) * DEG_TO_RAD)
 				));
 				vertices.push_back(glm::vec3(
-					radius * cos((phi + 3) * DEG_TO_RAD) * sin((theta + 1) * DEG_TO_RAD),
-					radius * sin((phi + 3) * DEG_TO_RAD) * sin((theta + 1) * DEG_TO_RAD),
-					radius * cos((theta + 1) * DEG_TO_RAD)
+					radius * cos((phi + 3) * DEG_TO_RAD) * sin((theta + theta_span * 0.5) * DEG_TO_RAD),
+					radius * sin((phi + 3) * DEG_TO_RAD) * sin((theta + theta_span * 0.5) * DEG_TO_RAD),
+					radius * cos((theta + theta_span * 0.5) * DEG_TO_RAD)
 				));
 				vertices.push_back(glm::vec3(
-					radius * cos((phi + 3) * DEG_TO_RAD) * sin((theta - 1) * DEG_TO_RAD),
-					radius * sin((phi + 3) * DEG_TO_RAD) * sin((theta - 1) * DEG_TO_RAD),
-					radius * cos((theta - 1) * DEG_TO_RAD)
+					radius * cos((phi + 3) * DEG_TO_RAD) * sin((theta - theta_span * 0.5) * DEG_TO_RAD),
+					radius * sin((phi + 3) * DEG_TO_RAD) * sin((theta - theta_span * 0.5) * DEG_TO_RAD),
+					radius * cos((theta - theta_span * 0.5) * DEG_TO_RAD)
 				));
 				vertices.push_back(glm::vec3(
-					radius * cos(phi * DEG_TO_RAD) * sin((theta - 1) * DEG_TO_RAD),
-					radius * sin(phi * DEG_TO_RAD) * sin((theta - 1) * DEG_TO_RAD),
-					radius * cos((theta - 1) * DEG_TO_RAD)
+					radius * cos(phi * DEG_TO_RAD) * sin((theta - theta_span * 0.5) * DEG_TO_RAD),
+					radius * sin(phi * DEG_TO_RAD) * sin((theta - theta_span * 0.5) * DEG_TO_RAD),
+					radius * cos((theta - theta_span * 0.5) * DEG_TO_RAD)
 				));
 
 				vertices.push_back(glm::vec3(
-					(radius - 20) * cos(phi * DEG_TO_RAD) * sin((theta + 1) * DEG_TO_RAD),
-					(radius - 20) * sin(phi * DEG_TO_RAD) * sin((theta + 1) * DEG_TO_RAD),
-					radius * cos((theta + 1) * DEG_TO_RAD)
+					(radius - 5) * cos(phi * DEG_TO_RAD) * sin((theta + theta_span * 0.5) * DEG_TO_RAD),
+					(radius - 5) * sin(phi * DEG_TO_RAD) * sin((theta + theta_span * 0.5) * DEG_TO_RAD),
+					radius * cos((theta + theta_span * 0.5) * DEG_TO_RAD)
 				));
 				vertices.push_back(glm::vec3(
-					(radius - 20) * cos((phi + 3) * DEG_TO_RAD) * sin((theta + 1) * DEG_TO_RAD),
-					(radius - 20) * sin((phi + 3) * DEG_TO_RAD) * sin((theta + 1) * DEG_TO_RAD),
-					radius * cos((theta + 1) * DEG_TO_RAD)
+					(radius - 5) * cos((phi + 3) * DEG_TO_RAD) * sin((theta + theta_span * 0.5) * DEG_TO_RAD),
+					(radius - 5) * sin((phi + 3) * DEG_TO_RAD) * sin((theta + theta_span * 0.5) * DEG_TO_RAD),
+					radius * cos((theta + theta_span * 0.5) * DEG_TO_RAD)
 				));
 				vertices.push_back(glm::vec3(
-					(radius - 20) * cos((phi + 3) * DEG_TO_RAD) * sin((theta - 1) * DEG_TO_RAD),
-					(radius - 20) * sin((phi + 3) * DEG_TO_RAD) * sin((theta - 1) * DEG_TO_RAD),
-					radius * cos((theta - 1) * DEG_TO_RAD)
+					(radius - 5) * cos((phi + 3) * DEG_TO_RAD) * sin((theta - theta_span * 0.5) * DEG_TO_RAD),
+					(radius - 5) * sin((phi + 3) * DEG_TO_RAD) * sin((theta - theta_span * 0.5) * DEG_TO_RAD),
+					radius * cos((theta - theta_span * 0.5) * DEG_TO_RAD)
 				));
 				vertices.push_back(glm::vec3(
-					(radius - 20) * cos(phi * DEG_TO_RAD) * sin((theta - 1) * DEG_TO_RAD),
-					(radius - 20) * sin(phi * DEG_TO_RAD) * sin((theta - 1) * DEG_TO_RAD),
-					radius * cos((theta - 1) * DEG_TO_RAD)
+					(radius - 5) * cos(phi * DEG_TO_RAD) * sin((theta - theta_span * 0.5) * DEG_TO_RAD),
+					(radius - 5) * sin(phi * DEG_TO_RAD) * sin((theta - theta_span * 0.5) * DEG_TO_RAD),
+					radius * cos((theta - theta_span * 0.5) * DEG_TO_RAD)
 				));
 
 				this->face.addVertices(vertices);
@@ -114,6 +119,12 @@ void ofApp::update() {
 				}
 
 				index += vertices.size();
+
+				for (int i = 0; i < 8; i++) {
+
+					this->face.addColor(ofColor(39));
+					this->frame.addColor(color);
+				}
 			}
 		}
 	}
@@ -126,17 +137,13 @@ void ofApp::draw() {
 	this->cam.begin();
 	ofRotateX(270);
 
-	ofSetColor(39);
 	this->face.draw();
-
-	ofSetColor(239);
 	this->frame.drawWireframe();
 
 	this->cam.end();
 
-	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 650;
+	int start = 500;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
@@ -149,7 +156,6 @@ void ofApp::draw() {
 			std::exit(1);
 		}
 	}
-	*/
 }
 
 //--------------------------------------------------------------
