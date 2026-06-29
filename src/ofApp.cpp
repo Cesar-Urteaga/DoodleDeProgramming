@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofEnableDepthTest();
 
 	this->frame_mesh.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
@@ -16,28 +16,24 @@ void ofApp::setup() {
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	if (ofGetFrameNum() % 50 < 25) {
+	if (ofGetFrameNum() % 50 < 30) {
 
-		this->noise_param += ofMap(ofGetFrameNum() % 50, 0, 25, 0.15, 0.01);
+		this->noise_param += ofMap(ofGetFrameNum() % 50, 0, 30, 0.15, 0.01);
 	}
 
 	this->face_mesh.clear();
 	this->frame_mesh.clear();
 
 	auto span = 8;
-	auto max_height = 450;
-	auto radius = 200;
+	auto max_height = 300;
 	for (auto x = -300; x <= 300; x += span) {
 
-		for (auto y = -300; y <= 300; y += span) {
+		for (auto y = -150; y <= 150; y += span) {
 
 			auto distance = glm::length(glm::vec2(x, y));
-			if (distance > radius - 50 && distance < radius + 50) {
-
-				auto power = ofMap(abs(distance - radius), 0, 30, 1, 0.1);
-				auto len = ofMap(ofNoise(x * 0.0085, y * 0.0085, noise_param), 0, 1, -max_height * power, max_height * power);
-				this->setBoxToMesh(this->face_mesh, this->frame_mesh, glm::vec3(x, y, len * 0.5), span, span, len);
-			}
+			auto power = ofMap(abs(x - 300), 0, 300, 1, 0.01);
+			auto len = ofMap(ofNoise(abs(x) * 0.015 - noise_param * 2, y * 0.015, noise_param), 0, 1, -max_height * power, max_height * power);
+			this->setBoxToMesh(this->face_mesh, this->frame_mesh, glm::vec3(x, y, len * 0.5), span, span, len);
 		}
 	}
 }
@@ -56,7 +52,7 @@ void ofApp::draw() {
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 500;
+	int start = 313;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
