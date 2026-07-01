@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofEnableDepthTest();
 
 	this->frame.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
@@ -19,12 +19,12 @@ void ofApp::update() {
 	this->face.clear();
 	this->frame.clear();
 
-	for (auto z = -100; z <= 100; z += 10) {
+	for (auto z = -300; z <= 300; z += 10) {
 
 		for (auto radius = 300; radius <= 440; radius += 10) {
 
-			auto noise_value = ofNoise(z * 0.005, radius * 0.005, ofGetFrameNum() * 0.02);
-			auto len = noise_value > 0.9 ? 360 : ofMap(noise_value, 0, 0.9, 0, 360);
+			auto noise_value = ofNoise(z * 0.005, radius * 0.005, ofGetFrameNum() * 0.005);
+			auto len = noise_value > 0.9 ? 360 : ofMap(noise_value, 0, 0.9, -360, 360);
 			this->setRingToMesh(this->face, this->frame, glm::vec3(0, 0, z), 0, len, radius, 10, 10);
 		}
 	}
@@ -35,9 +35,10 @@ void ofApp::draw() {
 
 	this->cam.begin();
 	ofRotateX(180);
-	ofRotateY(ofGetFrameNum() * 1.44);
+	ofRotateY(90);
+	ofRotateZ(15);
 
-	ofSetColor(39);
+	ofSetColor(0);
 	this->face.draw();
 
 	ofSetColor(255);
@@ -65,6 +66,11 @@ void ofApp::draw() {
 
 //--------------------------------------------------------------
 void ofApp::setRingToMesh(ofMesh& face_target, ofMesh& frame_target, glm::vec3 location, int deg_start, int deg_len, float radius, float width, float height) {
+
+	if (deg_len < 1) {
+
+		return;
+	}
 
 	for (int deg = deg_start; deg < deg_start + deg_len; deg += 1) {
 
