@@ -6,8 +6,9 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofEnableDepthTest();
+	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
 }
 
 //--------------------------------------------------------------
@@ -19,14 +20,18 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
-	ofRotateX(300);
 
-	int radius = 150;
-	int size = (radius * 2 * PI) / 360 * 3;
-	for (int deg = 0; deg < 360; deg += 3) {
+	int radius = 200;
+	int deg_span = 2;
+	ofColor color;
+	for (int deg = 0; deg < 360; deg += deg_span) {
+
+		color.setHsb(ofMap(deg, 0, 360, 0, 255), 255, 255);
 
 		auto location = glm::vec3(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD), 0);
-		auto height = ofMap(ofNoise(location.x * 0.025, location.y * 0.025, ofGetFrameNum() * 0.01), 0, 1, 0, 180);
+		auto height = ofMap(ofNoise(location.x * 0.05, location.y * 0.05, ofGetFrameNum() * 0.01), 0, 1, -150, 150);
+
+		int size = ((radius + height) * 2 * PI) / 360 * deg_span * 0.95;
 
 		ofPushMatrix();
 		ofTranslate(location);
@@ -34,11 +39,11 @@ void ofApp::draw() {
 		ofTranslate(height * 0.5, 0, 0);
 
 		ofFill();
-		ofSetColor(0);
-		ofDrawBox(height - 1, size - 1, size - 1);
+		ofSetColor(ofColor(color, 168));
+		ofDrawBox(height, size, size);
 
 		ofNoFill();
-		ofSetColor(255);
+		ofSetColor(color);
 		ofDrawBox(height, size, size);
 
 		ofPopMatrix();
