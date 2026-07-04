@@ -1,4 +1,4 @@
-#include "ofApp.h"	
+#include "ofApp.h"
 
 //--------------------------------------------------------------
 void ofApp::setup() {
@@ -6,48 +6,43 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(39);
+	ofBackground(239);
 	ofEnableDepthTest();
-	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
+
+	this->frame.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
+	ofSeedRandom(39);
+
+	this->face.clear();
+	this->frame.clear();
+
+	int deg_span = 5;
+	for (int radius = 50; radius <= 350; radius += 30) {
+
+		for (int deg = 0; deg < 360; deg += deg_span) {
+
+			auto height = ofMap(ofNoise(radius * cos(deg * DEG_TO_RAD) * 0.01, radius * sin(deg * DEG_TO_RAD) * 0.01, ofGetFrameNum() * 0.015), 0, 1, 0, ofMap(radius, 50, 350, 100, 200));
+			this->setRingToMesh(this->face, this->frame, glm::vec3(0, 0, height * -0.5), radius, 14, height, deg, deg + deg_span - 2);
+		}
+	}
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
 	this->cam.begin();
+	ofRotateX(120);
+	ofRotateZ(ofGetFrameNum() * 0.36);
 
-	int radius = 200;
-	int deg_span = 2;
-	ofColor color;
-	for (int deg = 0; deg < 360; deg += deg_span) {
+	ofSetColor(0);
+	this->face.draw();
 
-		color.setHsb(ofMap(deg, 0, 360, 0, 255), 255, 255);
-
-		auto location = glm::vec3(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD), 0);
-		auto height = ofMap(ofNoise(location.x * 0.05, location.y * 0.05, ofGetFrameNum() * 0.01), 0, 1, -150, 150);
-
-		int size = ((radius + height) * 2 * PI) / 360 * deg_span * 0.95;
-
-		ofPushMatrix();
-		ofTranslate(location);
-		ofRotateZ(deg);
-		ofTranslate(height * 0.5, 0, 0);
-
-		ofFill();
-		ofSetColor(ofColor(color, 168));
-		ofDrawBox(height, size, size);
-
-		ofNoFill();
-		ofSetColor(color);
-		ofDrawBox(height, size, size);
-
-		ofPopMatrix();
-	}
+	ofSetColor(239);
+	this->frame.drawWireframe();
 
 	this->cam.end();
 
@@ -67,6 +62,76 @@ void ofApp::draw() {
 		}
 	}
 	*/
+}
+
+//--------------------------------------------------------------
+void ofApp::setRingToMesh(ofMesh& face_target, ofMesh& frame_target, glm::vec3 location, float radius, float width, float height, int deg_start, int deg_end) {
+
+	if (deg_start == deg_end) { return; }
+
+	int index = face_target.getNumVertices();
+
+	for (int deg = deg_start; deg <= deg_end; deg += 1) {
+
+		auto face_index = face_target.getNumVertices();
+
+		vector<glm::vec3> vertices;
+		vertices.push_back(glm::vec3((radius + width * 0.5) * cos(deg * DEG_TO_RAD), (radius + width * 0.5) * sin(deg * DEG_TO_RAD), height * -0.5));
+		vertices.push_back(glm::vec3((radius + width * 0.5) * cos((deg + 1) * DEG_TO_RAD), (radius + width * 0.5) * sin((deg + 1) * DEG_TO_RAD), height * -0.5));
+		vertices.push_back(glm::vec3((radius + width * 0.5) * cos((deg + 1) * DEG_TO_RAD), (radius + width * 0.5) * sin((deg + 1) * DEG_TO_RAD), height * 0.5));
+		vertices.push_back(glm::vec3((radius + width * 0.5) * cos(deg * DEG_TO_RAD), (radius + width * 0.5) * sin(deg * DEG_TO_RAD), height * 0.5));
+
+		vertices.push_back(glm::vec3((radius - width * 0.5) * cos(deg * DEG_TO_RAD), (radius - width * 0.5) * sin(deg * DEG_TO_RAD), height * -0.5));
+		vertices.push_back(glm::vec3((radius - width * 0.5) * cos((deg + 1) * DEG_TO_RAD), (radius - width * 0.5) * sin((deg + 1) * DEG_TO_RAD), height * -0.5));
+		vertices.push_back(glm::vec3((radius - width * 0.5) * cos((deg + 1) * DEG_TO_RAD), (radius - width * 0.5) * sin((deg + 1) * DEG_TO_RAD), height * 0.5));
+		vertices.push_back(glm::vec3((radius - width * 0.5) * cos(deg * DEG_TO_RAD), (radius - width * 0.5) * sin(deg * DEG_TO_RAD), height * 0.5));
+
+		for (auto& vertex : vertices) {
+
+			vertex += location;
+		}
+
+		face_target.addVertices(vertices);
+
+		face_target.addIndex(face_index + 0); face_target.addIndex(face_index + 1); face_target.addIndex(face_index + 2);
+		face_target.addIndex(face_index + 0); face_target.addIndex(face_index + 2); face_target.addIndex(face_index + 3);
+
+		face_target.addIndex(face_index + 4); face_target.addIndex(face_index + 5); face_target.addIndex(face_index + 6);
+		face_target.addIndex(face_index + 4); face_target.addIndex(face_index + 6); face_target.addIndex(face_index + 7);
+
+		face_target.addIndex(face_index + 0); face_target.addIndex(face_index + 4); face_target.addIndex(face_index + 5);
+		face_target.addIndex(face_index + 0); face_target.addIndex(face_index + 5); face_target.addIndex(face_index + 1);
+
+		face_target.addIndex(face_index + 3); face_target.addIndex(face_index + 7); face_target.addIndex(face_index + 6);
+		face_target.addIndex(face_index + 3); face_target.addIndex(face_index + 6); face_target.addIndex(face_index + 2);
+
+		auto frame_index = frame_target.getNumVertices();
+
+		frame_target.addVertices(vertices);
+
+		frame_target.addIndex(frame_index + 0); frame_target.addIndex(frame_index + 1);
+		frame_target.addIndex(frame_index + 2); frame_target.addIndex(frame_index + 3);
+		frame_target.addIndex(frame_index + 4); frame_target.addIndex(frame_index + 5);
+		frame_target.addIndex(frame_index + 6); frame_target.addIndex(frame_index + 7);
+	}
+
+	face_target.addIndex(index + 0); face_target.addIndex(index + 3); face_target.addIndex(index + 7);
+	face_target.addIndex(index + 0); face_target.addIndex(index + 7); face_target.addIndex(index + 4);
+
+	frame_target.addIndex(index + 0); frame_target.addIndex(index + 3);
+	frame_target.addIndex(index + 0); frame_target.addIndex(index + 4);
+	frame_target.addIndex(index + 7); frame_target.addIndex(index + 3);
+	frame_target.addIndex(index + 7); frame_target.addIndex(index + 4);
+
+	index = frame_target.getNumVertices() - 8;
+
+	face_target.addIndex(index + 1); face_target.addIndex(index + 2); face_target.addIndex(index + 6);
+	face_target.addIndex(index + 1); face_target.addIndex(index + 6); face_target.addIndex(index + 5);
+
+	frame_target.addIndex(index + 1); frame_target.addIndex(index + 2);
+	frame_target.addIndex(index + 1); frame_target.addIndex(index + 5);
+	frame_target.addIndex(index + 6); frame_target.addIndex(index + 2);
+	frame_target.addIndex(index + 6); frame_target.addIndex(index + 5);
 }
 
 //--------------------------------------------------------------
