@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofEnableDepthTest();
 
 	this->frame.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
@@ -20,13 +20,13 @@ void ofApp::update() {
 	this->face.clear();
 	this->frame.clear();
 
-	int deg_span = 5;
+	int deg_span = 60;
 	for (int radius = 50; radius <= 350; radius += 30) {
 
 		for (int deg = 0; deg < 360; deg += deg_span) {
 
-			auto height = ofMap(ofNoise(radius * cos(deg * DEG_TO_RAD) * 0.01, radius * sin(deg * DEG_TO_RAD) * 0.01, ofGetFrameNum() * 0.015), 0, 1, 0, ofMap(radius, 50, 350, 100, 200));
-			this->setRingToMesh(this->face, this->frame, glm::vec3(0, 0, height * -0.5), radius, 14, height, deg, deg + deg_span - 2);
+			auto height = ofMap(ofNoise(radius * cos(deg * DEG_TO_RAD) * 0.005, radius * sin(deg * DEG_TO_RAD) * 0.005, ofGetFrameNum() * 0.015), 0, 1, ofMap(radius, 50, 350, 100, 300), ofMap(radius, 50, 350, -100, -300));
+			this->setRingToMesh(this->face, this->frame, glm::vec3(0, 0, height * -0.5), radius, 14, height, deg, deg + deg_span - 5);
 		}
 	}
 }
@@ -36,7 +36,7 @@ void ofApp::draw() {
 
 	this->cam.begin();
 	ofRotateX(120);
-	ofRotateZ(ofGetFrameNum() * 0.36);
+	ofRotateZ(ofGetFrameNum() * 1.44);
 
 	ofSetColor(0);
 	this->face.draw();
