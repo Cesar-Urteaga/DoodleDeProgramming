@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofEnableDepthTest();
 
 	this->frame.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
@@ -22,11 +22,11 @@ void ofApp::update() {
 
 	int radius = 350;
 	float phi_deg_step = 3;
-	float theta_deg_step = 3;
+	float theta_deg_step = 2;
 
 	for (float phi_deg = 0; phi_deg < 360; phi_deg += phi_deg_step) {
 
-		for (float theta_deg = 10; theta_deg < 90; theta_deg += theta_deg_step) {
+		for (float theta_deg = 15; theta_deg < 90; theta_deg += theta_deg_step) {
 
 			auto index = this->face.getNumVertices();
 			vector<glm::vec3> vertices;
@@ -55,10 +55,10 @@ void ofApp::update() {
 					vertex.z = 0;
 					auto len = glm::length(vertex);
 					auto n = glm::normalize(vertex);
-					auto noise_value = ofNoise(n.x * 1, n.y * 1, len * 0.004 - ofGetFrameNum() * 0.03);
-					if (noise_value > 0.5) {
+					auto noise_value = ofNoise(n.x * 0.5, n.y * 0.5, len * 0.002 - ofGetFrameNum() * 0.03);
+					if (noise_value > 0.4) {
 
-						vertex.z = ofMap(noise_value, 0.5, 1, 0, -250) * ofMap(len, 0, radius, 1, 0.25);
+						vertex.z = ofMap(noise_value, 0.4, 1, 0, -300) * ofMap(len, 0, radius, 0.25, 1);
 					}
 				}
 			}
@@ -76,7 +76,7 @@ void ofApp::update() {
 
 			for (int i = index; i < this->face.getNumVertices(); i++) {
 
-				this->face.addColor(ofColor(0));
+				this->face.addColor(ofColor(255, 0, 0));
 				this->frame.addColor(ofColor(255));
 			}
 		}
@@ -89,7 +89,7 @@ void ofApp::draw() {
 	this->cam.begin();
 	ofTranslate(0, -45, 0);
 	ofRotateX(105);
-	ofRotateZ(ofGetFrameNum() * 0.36);
+	ofRotateZ(ofGetFrameNum() * 1.44);
 
 	this->face.draw();
 
