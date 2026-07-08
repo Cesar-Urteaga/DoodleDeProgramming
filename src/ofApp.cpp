@@ -4,12 +4,13 @@
 void ofApp::setup() {
 
 	ofSetFrameRate(25);
-	ofSetWindowTitle("openFrameworks");
+	ofSetWindowTitle("openframeworks");
 
-	ofBackground(39);
+	ofBackground(239);
+	ofSetLineWidth(2);
 	ofEnableDepthTest();
 
-	this->frame.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
+	this->line.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
 }
 
 //--------------------------------------------------------------
@@ -18,68 +19,110 @@ void ofApp::update() {
 	ofSeedRandom(39);
 
 	this->face.clear();
-	this->frame.clear();
+	this->line.clear();
 
-	int radius = 350;
-	float phi_deg_step = 3;
-	float theta_deg_step = 2;
+	auto x_span = 1;
+	auto z_span = 2;
+	for (auto z = -100; z <= 100; z += z_span) {
 
-	for (float phi_deg = 0; phi_deg < 360; phi_deg += phi_deg_step) {
+		auto hue = ofRandom(255);
+		ofColor color;
+		color.setHsb(hue, 180, 255);
 
-		for (float theta_deg = 15; theta_deg < 90; theta_deg += theta_deg_step) {
+		auto noise_seed = ofRandom(1000);
+		auto param_noise_seed = ofRandom(1000);
+		auto start_index = this->face.getNumVertices();
 
-			auto index = this->face.getNumVertices();
+		auto param_noise_value = ofNoise(z * 0.005, ofGetFrameNum() * 0.0001);
+
+		for (auto x = -500; x <= 500; x += x_span) {
+
 			vector<glm::vec3> vertices;
 
-			vertices.push_back(glm::vec3(
-				radius * sin((theta_deg - theta_deg_step * 0.5) * DEG_TO_RAD) * cos((phi_deg + phi_deg_step * 0.5) * DEG_TO_RAD),
-				radius * sin((theta_deg - theta_deg_step * 0.5) * DEG_TO_RAD) * sin((phi_deg + phi_deg_step * 0.5) * DEG_TO_RAD),
-				radius * cos((theta_deg - theta_deg_step * 0.5) * DEG_TO_RAD)));
-			vertices.push_back(glm::vec3(
-				radius * sin((theta_deg - theta_deg_step * 0.5) * DEG_TO_RAD) * cos((phi_deg - phi_deg_step * 0.5) * DEG_TO_RAD),
-				radius * sin((theta_deg - theta_deg_step * 0.5) * DEG_TO_RAD) * sin((phi_deg - phi_deg_step * 0.5) * DEG_TO_RAD),
-				radius * cos((theta_deg - theta_deg_step * 0.5) * DEG_TO_RAD)));
-			vertices.push_back(glm::vec3(
-				radius * sin((theta_deg + theta_deg_step * 0.5) * DEG_TO_RAD) * cos((phi_deg + phi_deg_step * 0.5) * DEG_TO_RAD),
-				radius * sin((theta_deg + theta_deg_step * 0.5) * DEG_TO_RAD) * sin((phi_deg + phi_deg_step * 0.5) * DEG_TO_RAD),
-				radius * cos((theta_deg + theta_deg_step * 0.5) * DEG_TO_RAD)));
-			vertices.push_back(glm::vec3(
-				radius * sin((theta_deg + theta_deg_step * 0.5) * DEG_TO_RAD) * cos((phi_deg - phi_deg_step * 0.5) * DEG_TO_RAD),
-				radius * sin((theta_deg + theta_deg_step * 0.5) * DEG_TO_RAD) * sin((phi_deg - phi_deg_step * 0.5) * DEG_TO_RAD),
-				radius * cos((theta_deg + theta_deg_step * 0.5) * DEG_TO_RAD)));
+			auto noise_value = ofNoise(z * 0.05, x * 0.025, ofGetFrameNum() * 0.005);
+			auto next_noise_value = ofNoise(z * 0.05, (x + x_span) * 0.025, ofGetFrameNum() * 0.005);
 
-			for (auto& vertex : vertices) {
+			if (abs(x) <= 150) {
 
-				if (vertex.z > 0) {
+				auto param = ofMap(param_noise_value, 0, 1, -150, 150);
+				auto distance = abs(x - param);
+				noise_value = noise_value * (distance > 30 ? 0.1 : ofMap(distance, 0, 30, 0.5, 0.1)) * (abs(x) < 100 ? 1 : ofMap(abs(x), 100, 150, 1, 0));
+			}
+			else {
 
-					vertex.z = 0;
-					auto len = glm::length(vertex);
-					auto n = glm::normalize(vertex);
-					auto noise_value = ofNoise(n.x * 0.5, n.y * 0.5, len * 0.002 - ofGetFrameNum() * 0.03);
-					if (noise_value > 0.4) {
-
-						vertex.z = ofMap(noise_value, 0.4, 1, 0, -300) * ofMap(len, 0, radius, 0.25, 1);
-					}
-				}
+				noise_value = 0;
 			}
 
+			if (abs(x + x_span) <= 150) {
+
+				auto param = ofMap(param_noise_value, 0, 1, -150, 150);
+				auto distance = abs((x + x_span) - param);
+				next_noise_value = next_noise_value * (distance > 30 ? 0.1 : ofMap(distance, 0, 30, 0.5, 0.1)) * (abs(x + x_span) < 100 ? 1 : ofMap(abs(x + x_span), 100, 150, 1, 0));
+			}
+			else {
+
+				next_noise_value = 0;
+			}
+
+			auto height = ofMap(noise_value, 0, 1, -150, 350);
+			auto next_height = ofMap(next_noise_value, 0, 1, -150, 350);
+
+			vertices.push_back(glm::vec3(x, -150, z - 1));
+			vertices.push_back(glm::vec3(x + x_span, -150, z - 1));
+			vertices.push_back(glm::vec3(x + x_span, next_height, z - 1));
+			vertices.push_back(glm::vec3(x, height, z - 1));
+
+			vertices.push_back(glm::vec3(x, -150, z + 1));
+			vertices.push_back(glm::vec3(x + x_span, -150, z + 1));
+			vertices.push_back(glm::vec3(x + x_span, next_height, z + 1));
+			vertices.push_back(glm::vec3(x, height, z + 1));
+
+			auto index = this->face.getNumVertices();
 			this->face.addVertices(vertices);
-			this->frame.addVertices(vertices);
 
-			this->face.addIndex(index + 0); this->face.addIndex(index + 1); this->face.addIndex(index + 3);
-			this->face.addIndex(index + 0); this->face.addIndex(index + 3); this->face.addIndex(index + 2);
+			this->face.addIndex(index + 0); this->face.addIndex(index + 1); this->face.addIndex(index + 2);
+			this->face.addIndex(index + 0); this->face.addIndex(index + 2); this->face.addIndex(index + 3);
 
-			this->frame.addIndex(index + 0); this->frame.addIndex(index + 1);
-			this->frame.addIndex(index + 0); this->frame.addIndex(index + 2);
-			this->frame.addIndex(index + 3); this->frame.addIndex(index + 1);
-			this->frame.addIndex(index + 3); this->frame.addIndex(index + 2);
+			this->face.addIndex(index + 4); this->face.addIndex(index + 5); this->face.addIndex(index + 6);
+			this->face.addIndex(index + 4); this->face.addIndex(index + 6); this->face.addIndex(index + 7);
 
-			for (int i = index; i < this->face.getNumVertices(); i++) {
+			this->face.addIndex(index + 0); this->face.addIndex(index + 4); this->face.addIndex(index + 5);
+			this->face.addIndex(index + 0); this->face.addIndex(index + 5); this->face.addIndex(index + 1);
 
-				this->face.addColor(ofColor(255, 0, 0));
-				this->frame.addColor(ofColor(255));
+			this->face.addIndex(index + 2); this->face.addIndex(index + 6); this->face.addIndex(index + 7);
+			this->face.addIndex(index + 2); this->face.addIndex(index + 7); this->face.addIndex(index + 3);
+
+			this->line.addVertices(vertices);
+
+			this->line.addIndex(index + 0); this->line.addIndex(index + 1);
+			this->line.addIndex(index + 2); this->line.addIndex(index + 3);
+			this->line.addIndex(index + 4); this->line.addIndex(index + 5);
+			this->line.addIndex(index + 6); this->line.addIndex(index + 7);
+
+			for (int i = index; i < index + 8; i++) {
+
+				this->face.addColor(ofColor(255));
+				this->line.addColor(ofColor(0));
 			}
 		}
+
+		this->face.addIndex(start_index + 0); this->face.addIndex(start_index + 4); this->face.addIndex(start_index + 7);
+		this->face.addIndex(start_index + 0); this->face.addIndex(start_index + 7); this->face.addIndex(start_index + 3);
+
+		this->line.addIndex(start_index + 0); this->line.addIndex(start_index + 3);
+		this->line.addIndex(start_index + 0); this->line.addIndex(start_index + 4);
+		this->line.addIndex(start_index + 7); this->line.addIndex(start_index + 3);
+		this->line.addIndex(start_index + 7); this->line.addIndex(start_index + 4);
+
+		auto index = this->face.getNumVertices() - 8;
+
+		this->face.addIndex(index + 1); this->face.addIndex(index + 2); this->face.addIndex(index + 6);
+		this->face.addIndex(index + 1); this->face.addIndex(index + 6); this->face.addIndex(index + 5);
+
+		this->line.addIndex(index + 1); this->line.addIndex(index + 2);
+		this->line.addIndex(index + 1); this->line.addIndex(index + 5);
+		this->line.addIndex(index + 6); this->line.addIndex(index + 2);
+		this->line.addIndex(index + 6); this->line.addIndex(index + 5);
 	}
 }
 
@@ -87,18 +130,12 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
-	ofTranslate(0, -45, 0);
-	ofRotateX(105);
-	ofRotateZ(ofGetFrameNum() * 1.44);
 
 	this->face.draw();
-
-	ofTranslate(0, 0, -1.5);
-
-	this->frame.draw();
+	this->line.drawWireframe();
 
 	this->cam.end();
-
+	
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
 	int start = 500;
