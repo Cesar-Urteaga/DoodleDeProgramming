@@ -6,8 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(239);
-	ofSetLineWidth(2);
+	ofBackground(39);
 	ofEnableDepthTest();
 
 	this->line.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
@@ -22,25 +21,18 @@ void ofApp::update() {
 	this->line.clear();
 
 	auto x_span = 1;
-	auto z_span = 2;
+	auto z_span = 10;
 	for (auto z = -100; z <= 100; z += z_span) {
 
-		auto hue = ofRandom(255);
-		ofColor color;
-		color.setHsb(hue, 180, 255);
-
-		auto noise_seed = ofRandom(1000);
-		auto param_noise_seed = ofRandom(1000);
 		auto start_index = this->face.getNumVertices();
-
-		auto param_noise_value = ofNoise(z * 0.005, ofGetFrameNum() * 0.0001);
+		auto param_noise_value = ofNoise(z * 0.002 - ofGetFrameNum() * 0.002);
 
 		for (auto x = -500; x <= 500; x += x_span) {
 
 			vector<glm::vec3> vertices;
 
-			auto noise_value = ofNoise(z * 0.05, x * 0.025, ofGetFrameNum() * 0.005);
-			auto next_noise_value = ofNoise(z * 0.05, (x + x_span) * 0.025, ofGetFrameNum() * 0.005);
+			auto noise_value = ofNoise(z * 0.002 - ofGetFrameNum() * 0.002, x * 0.02);
+			auto next_noise_value = ofNoise(z * 0.002 - ofGetFrameNum() * 0.002, (x + x_span) * 0.02);
 
 			if (abs(x) <= 150) {
 
@@ -101,8 +93,8 @@ void ofApp::update() {
 
 			for (int i = index; i < index + 8; i++) {
 
-				this->face.addColor(ofColor(255));
-				this->line.addColor(ofColor(0));
+				this->face.addColor(ofColor(0));
+				this->line.addColor(ofColor(255));
 			}
 		}
 
