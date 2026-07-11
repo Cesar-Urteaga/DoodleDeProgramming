@@ -6,11 +6,11 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(239);
-	ofSetColor(0);
+	ofBackground(39);
+	ofSetColor(255);
 	ofEnableDepthTest();
 
-	this->len = 5;
+	this->len = 10;
 	for (int x = 0; x < ofGetWidth(); x += this->len) {
 
 		for (int y = 0; y < ofGetHeight(); y += this->len) {
@@ -37,13 +37,14 @@ void ofApp::update() {
 	auto noise_seed = glm::vec3(ofRandom(1000), ofRandom(1000), ofRandom(1000));
 	auto noise_location = glm::vec3(ofMap(ofNoise(noise_seed.x, ofGetFrameNum() * 0.005), 0, 1, 50, 670), ofMap(ofNoise(noise_seed.y, ofGetFrameNum() * 0.005), 0, 1, 50, 670), ofMap(ofNoise(noise_seed.z, ofGetFrameNum() * 0.005), 0, 1, -25, 25));
 	this->log_list.push_back(noise_location);
+	ofColor color;
 	while (this->log_list.size() > 30) { this->log_list.erase(this->log_list.begin()); }
 
 	for (int i = 0; i < this->box_location_list.size(); i++) {
 
-		ofColor color(ofMap(this->box_location_list[i].z, this->len * 3, this->len * -3, 39, 239));
+		color.setHsb(ofMap(this->box_location_list[i].z, this->len * 3, this->len * -3, 0, 255),130, 255);
 
-		if (glm::distance(this->box_location_list[i], noise_location) < 35) {
+		if (glm::distance(this->box_location_list[i], noise_location) < 50) {
 
 			this->alpah_param_list[i] = 0;
 		}
@@ -61,8 +62,9 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
-	ofRotateX(180);
-	ofTranslate(ofGetWidth() * -0.5, ofGetHeight() * -0.5);
+
+	this->cam.setPosition(this->log_list[15] + glm::vec3(0, 0, -200));
+	this->cam.setTarget(this->log_list.back());
 
 	ofNoFill();
 	ofBeginShape();
@@ -162,7 +164,7 @@ void ofApp::setBoxToMesh(ofMesh& face_target, ofMesh& frame_target, glm::vec3 lo
 	for (int i = 0; i < 8; i++) {
 
 		face_target.addColor(color);
-		frame_target.addColor(ofColor(128));
+		frame_target.addColor(ofColor(255));
 	}
 }
 
