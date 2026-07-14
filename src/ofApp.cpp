@@ -4,53 +4,95 @@
 void ofApp::setup() {
 
 	ofSetFrameRate(25);
-	ofSetWindowTitle("openframeworks");
+	ofSetWindowTitle("openFrameworks");
 
 	ofBackground(239);
-	ofEnableDepthTest();
+	ofSetLineWidth(2);
 
-	auto ico_sphere = ofIcoSpherePrimitive(150, 4);
-	this->sphere_mesh = ico_sphere.getMesh();
-
-	this->noise_param = ofRandom(1000);
+	this->font.loadFont("fonts/Kazesawa-Bold.ttf", 210, true, true, true);
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	this->noise_param += 0.005;
+	vector<glm::vec2> font_location_list;
 
-	this->draw_sphere_mesh = this->sphere_mesh;
+	ofFbo fbo;
+	fbo.allocate(ofGetWidth(), ofGetHeight());
+	fbo.begin();
+	ofTranslate(ofGetWidth() * 0.5, ofGetHeight() * 0.5);
+	ofClear(0);
+	ofSetColor(0);
 
-	for (auto& vertex : this->draw_sphere_mesh.getVertices()) {
+	string word = std::to_string((ofGetFrameNum() / 25) + 1990);
+	font.drawString(word, font.stringWidth(word) * -0.5, font.stringHeight(word) - 320);
 
-		auto noise_value = ofNoise(glm::vec4(vertex * 0.025, noise_param));
-		auto noise_param = (noise_value < 0.35 ? 1 : ofMap(noise_value, 0.35, 1, 1, 6));
-		noise_param = std::pow(1.5, noise_param);
-		auto noise_radius = 150 * noise_param;
+	fbo.end();
+	auto span = 2;
+	ofPixels pixels;
+	fbo.readToPixels(pixels);
+	for (int x = 0; x < 700; x += span) {
 
-		vertex = glm::normalize(vertex) * noise_radius;
+		for (int y = 0; y < 720; y += span) {
+
+			ofColor color = pixels.getColor(x, y);
+			if (color != ofColor(0, 0)) {
+
+				font_location_list.push_back(glm::vec3(x - ofGetWidth() * 0.5, y - ofGetHeight() * 0.25, 0));
+			}
+		}
+	}
+
+	for (int i = this->location_list.size() - 1; i >= 0; i--) {
+
+		this->radius_list[i] += this->speed_list[i];
+
+		if (this->radius_list[i] > this->max_radius_list[i]) {
+
+			this->location_list.erase(this->location_list.begin() + i);
+			this->radius_list.erase(this->radius_list.begin() + i);
+			this->speed_list.erase(this->speed_list.begin() + i);
+			this->max_radius_list.erase(this->max_radius_list.begin() + i);
+			this->color_list.erase(this->color_list.begin() + i);
+		}
+	}
+
+	ofColor color(0);
+	for (int i = 0; i < 50; i++) {
+
+		int rnd_index = ofRandom(font_location_list.size());
+
+		auto location = font_location_list[rnd_index];
+		this->location_list.push_back(location);
+		this->radius_list.push_back(1);
+		this->speed_list.push_back(ofRandom(0.25, 0.5));
+		this->max_radius_list.push_back(ofRandom(5, 15));
+		this->color_list.push_back(color);
 	}
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-	this->cam.begin();
-	ofRotateX(180);
-	ofRotateY(ofGetFrameNum() * 0.5);
-	ofRotateX(ofGetFrameNum() * 0.5);
+	ofTranslate(ofGetWindowSize() * 0.5);
 
-	ofSetColor(0, 0, 128);
-	this->draw_sphere_mesh.draw();
+	for (int i = 0; i < this->location_list.size(); i++) {
 
-	ofSetColor(128, 128, 255);
-	this->draw_sphere_mesh.drawWireframe();
+		if (this->radius_list[i] < this->max_radius_list[i] * 0.5) {
 
-	this->cam.end();
+			ofSetColor(this->color_list[i]);
+		}
+		else {
 
+			ofSetColor(ofColor(this->color_list[i], ofMap(this->radius_list[i], this->max_radius_list[i] * 0.5, this->max_radius_list[i], 255, 0)));
+		}
+
+		ofDrawCircle(this->location_list[i], this->radius_list[i]);
+	}
+
+	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 500;
+	int start = 50;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
@@ -63,6 +105,7 @@ void ofApp::draw() {
 			std::exit(1);
 		}
 	}
+	*/
 }
 
 //--------------------------------------------------------------
