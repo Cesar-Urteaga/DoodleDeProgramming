@@ -6,10 +6,11 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofSetLineWidth(2);
+	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
 
-	this->font.loadFont("fonts/Kazesawa-Bold.ttf", 210, true, true, true);
+	this->font.loadFont("fonts/Kazesawa-Bold.ttf", 230, true, true, true);
 }
 
 //--------------------------------------------------------------
@@ -24,7 +25,7 @@ void ofApp::update() {
 	ofClear(0);
 	ofSetColor(0);
 
-	string word = std::to_string((ofGetFrameNum() / 25) + 1990);
+	string word = std::to_string((ofGetFrameNum() / 25) + 101);
 	font.drawString(word, font.stringWidth(word) * -0.5, font.stringHeight(word) - 320);
 
 	fbo.end();
@@ -46,6 +47,7 @@ void ofApp::update() {
 	for (int i = this->location_list.size() - 1; i >= 0; i--) {
 
 		this->radius_list[i] += this->speed_list[i];
+		this->location_list[i].y += ofMap(this->location_list[i].y, 0, 720, 1, 18);
 
 		if (this->radius_list[i] > this->max_radius_list[i]) {
 
@@ -57,17 +59,21 @@ void ofApp::update() {
 		}
 	}
 
-	ofColor color(0);
-	for (int i = 0; i < 50; i++) {
+	ofColor color(139);
 
-		int rnd_index = ofRandom(font_location_list.size());
+	if (ofGetFrameNum() % 25 < 10) {
 
-		auto location = font_location_list[rnd_index];
-		this->location_list.push_back(location);
-		this->radius_list.push_back(1);
-		this->speed_list.push_back(ofRandom(0.25, 0.5));
-		this->max_radius_list.push_back(ofRandom(5, 15));
-		this->color_list.push_back(color);
+		for (int i = 0; i < 80; i++) {
+
+			int rnd_index = ofRandom(font_location_list.size());
+
+			auto location = font_location_list[rnd_index];
+			this->location_list.push_back(location);
+			this->radius_list.push_back(1);
+			this->speed_list.push_back(ofRandom(0.1, 0.2));
+			this->max_radius_list.push_back(ofRandom(5, 8));
+			this->color_list.push_back(color);
+		}
 	}
 }
 
@@ -92,7 +98,7 @@ void ofApp::draw() {
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 50;
+	int start = 500;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
