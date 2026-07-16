@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofSetLineWidth(1.5);
 	ofEnableDepthTest();
 
@@ -19,7 +19,7 @@ void ofApp::update() {
 	this->face.clear();
 	this->line.clear();
 
-	int deg_span = 5;
+	int deg_span = 15;
 	int radius_span = 10;
 	int radius_max = 1200;
 
@@ -50,7 +50,7 @@ void ofApp::update() {
 		}
 
 		this->line.addIndex(index); this->line.addIndex(index + 1);
-		this->line.addIndex(this->line.getNumVertices() - 1); this->line.addIndex(this->line.getNumVertices() - 2);
+		//this->line.addIndex(this->line.getNumVertices() - 1); this->line.addIndex(this->line.getNumVertices() - 2);
 	}
 
 }
@@ -60,6 +60,7 @@ void ofApp::draw() {
 
 	this->cam.begin();
 	ofRotateX(90);
+	ofRotateZ(ofGetFrameNum() * 0.72);
 
 	ofSetColor(39);
 	ofFill();
@@ -73,7 +74,7 @@ void ofApp::draw() {
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 500;
+	int start = 1000;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
