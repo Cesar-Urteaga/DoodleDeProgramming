@@ -4,97 +4,72 @@
 void ofApp::setup() {
 
 	ofSetFrameRate(25);
-	ofSetWindowTitle("openFrameworks");
+	ofSetWindowTitle("openframeworks");
 
-	ofBackground(39);
-	ofSetLineWidth(2);
-	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
+	ofBackground(239);
+	ofSetLineWidth(1.5);
+	ofEnableDepthTest();
 
-	this->font.loadFont("fonts/Kazesawa-Bold.ttf", 230, true, true, true);
+	this->line.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	vector<glm::vec2> font_location_list;
+	this->face.clear();
+	this->line.clear();
 
-	ofFbo fbo;
-	fbo.allocate(ofGetWidth(), ofGetHeight());
-	fbo.begin();
-	ofTranslate(ofGetWidth() * 0.5, ofGetHeight() * 0.5);
-	ofClear(0);
-	ofSetColor(0);
+	int deg_span = 5;
+	int radius_span = 10;
+	int radius_max = 1200;
 
-	string word = std::to_string((ofGetFrameNum() / 25) + 101);
-	font.drawString(word, font.stringWidth(word) * -0.5, font.stringHeight(word) - 320);
+	for (int deg = 0; deg < 360; deg += deg_span) {
 
-	fbo.end();
-	auto span = 2;
-	ofPixels pixels;
-	fbo.readToPixels(pixels);
-	for (int x = 0; x < 700; x += span) {
+		int index = this->line.getNumVertices();
 
-		for (int y = 0; y < 720; y += span) {
+		for (int radius = 100; radius < radius_max; radius += radius_span) {
 
-			ofColor color = pixels.getColor(x, y);
-			if (color != ofColor(0, 0)) {
+			auto noise_location = glm::vec2(cos(deg * DEG_TO_RAD), sin(deg * DEG_TO_RAD));
+			auto noise_value = ofNoise(glm::vec3(noise_location * 0.5, radius * 0.001 - ofGetFrameNum() * 0.02));
+			auto z = ofMap(noise_value, 0, 1, -150, 150);
 
-				font_location_list.push_back(glm::vec3(x - ofGetWidth() * 0.5, y - ofGetHeight() * 0.25, 0));
+			vector<glm::vec3> vertices;
+			vertices.push_back(glm::vec3(radius * cos((deg - deg_span * 0.5 + 0.5) * DEG_TO_RAD), radius * sin((deg - deg_span * 0.5 + 0.5) * DEG_TO_RAD), z));
+			vertices.push_back(glm::vec3(radius * cos((deg + deg_span * 0.5 - 0.5) * DEG_TO_RAD), radius * sin((deg + deg_span * 0.5 - 0.5) * DEG_TO_RAD), z));
+			this->face.addVertices(vertices);
+			this->line.addVertices(vertices);
+
+			if (radius > 100) {
+
+				this->face.addIndex(this->face.getNumVertices() - 1); this->face.addIndex(this->face.getNumVertices() - 2); this->face.addIndex(this->face.getNumVertices() - 4);
+				this->face.addIndex(this->face.getNumVertices() - 1); this->face.addIndex(this->face.getNumVertices() - 4); this->face.addIndex(this->face.getNumVertices() - 3);
+
+				this->line.addIndex(this->line.getNumVertices() - 1); this->line.addIndex(this->line.getNumVertices() - 3);
+				this->line.addIndex(this->line.getNumVertices() - 2); this->line.addIndex(this->line.getNumVertices() - 4);
 			}
 		}
+
+		this->line.addIndex(index); this->line.addIndex(index + 1);
+		this->line.addIndex(this->line.getNumVertices() - 1); this->line.addIndex(this->line.getNumVertices() - 2);
 	}
 
-	for (int i = this->location_list.size() - 1; i >= 0; i--) {
-
-		this->radius_list[i] += this->speed_list[i];
-		this->location_list[i].y += ofMap(this->location_list[i].y, 0, 720, 1, 18);
-
-		if (this->radius_list[i] > this->max_radius_list[i]) {
-
-			this->location_list.erase(this->location_list.begin() + i);
-			this->radius_list.erase(this->radius_list.begin() + i);
-			this->speed_list.erase(this->speed_list.begin() + i);
-			this->max_radius_list.erase(this->max_radius_list.begin() + i);
-			this->color_list.erase(this->color_list.begin() + i);
-		}
-	}
-
-	ofColor color(139);
-
-	if (ofGetFrameNum() % 25 < 10) {
-
-		for (int i = 0; i < 80; i++) {
-
-			int rnd_index = ofRandom(font_location_list.size());
-
-			auto location = font_location_list[rnd_index];
-			this->location_list.push_back(location);
-			this->radius_list.push_back(1);
-			this->speed_list.push_back(ofRandom(0.1, 0.2));
-			this->max_radius_list.push_back(ofRandom(5, 8));
-			this->color_list.push_back(color);
-		}
-	}
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-	ofTranslate(ofGetWindowSize() * 0.5);
+	this->cam.begin();
+	ofRotateX(90);
 
-	for (int i = 0; i < this->location_list.size(); i++) {
+	ofSetColor(39);
+	ofFill();
+	this->face.draw();
 
-		if (this->radius_list[i] < this->max_radius_list[i] * 0.5) {
+	ofSetColor(239);
+	ofNoFill();
+	this->line.drawWireframe();
 
-			ofSetColor(this->color_list[i]);
-		}
-		else {
-
-			ofSetColor(ofColor(this->color_list[i], ofMap(this->radius_list[i], this->max_radius_list[i] * 0.5, this->max_radius_list[i], 255, 0)));
-		}
-
-		ofDrawCircle(this->location_list[i], this->radius_list[i]);
-	}
+	this->cam.end();
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
