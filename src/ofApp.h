@@ -17,6 +17,4 @@ public:
 	void windowResized(int w, int h) {};
 	void dragEvent(ofDragInfo dragInfo) {};
 	void gotMessage(ofMessage msg) {};
-
-	glm::vec3 noise_seed;
 };
