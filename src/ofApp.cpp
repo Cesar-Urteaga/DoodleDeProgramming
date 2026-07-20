@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofEnableDepthTest();
 
 	this->frame.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
@@ -27,7 +27,7 @@ void ofApp::update() {
 	auto noise_seed_1 = ofRandom(1000);
 	auto noise_seed_2 = ofRandom(1000);
 
-	for (int v = 0; v < 360; v += v_span) {
+	for (int v = 0; v < 180; v += v_span) {
 
 		for (auto u = 0; u < 360; u += u_span) {
 			
@@ -38,7 +38,7 @@ void ofApp::update() {
 			if (noise_value > 0.45 && noise_value < 0.55) { 
 
 				auto gap = abs(noise_value - 0.5);
-				noise_r += r * ofMap(gap, 0.05, 0, 0, 1.5);
+				noise_r -= r * ofMap(gap, 0.05, 0, 0, 0.8);
 			}
 
 			vector<glm::vec3> vertices;
@@ -76,7 +76,7 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
-	ofRotateY(ofGetFrameNum() * 1.44);
+	ofRotateX(270);
 
 	ofSetColor(0);
 	this->face.draw();
@@ -88,7 +88,7 @@ void ofApp::draw() {
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 500;
+	int start = 1000;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
