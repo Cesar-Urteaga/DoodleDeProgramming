@@ -1,105 +1,94 @@
-#include "ofApp.h"
+#include "ofApp.h"	
 
 //--------------------------------------------------------------
 void ofApp::setup() {
 
 	ofSetFrameRate(25);
-	ofSetWindowTitle("openframeworks");
+	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(39);
-	ofSetCircleResolution(60);
-	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
+	ofBackground(239);
+	ofEnableDepthTest();
+
+	this->frame.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
 	ofSeedRandom(39);
+
+	this->face.clear();
+	this->frame.clear();
+
+	float R = 300;
+	int v_span = 3;
+	int u_span = 10;
+
+	auto noise_seed_1 = ofRandom(1000);
+	auto noise_seed_2 = ofRandom(1000);
+
+	for (int v = 0; v < 360; v += v_span) {
+
+		for (auto u = 0; u < 360; u += u_span) {
+			
+			auto r = 80.f;
+			auto noise_r = r;
+			auto noise_location = this->make_point(R, r, u, v);
+			auto noise_value = ofNoise(glm::vec4(noise_location * 0.005, ofGetFrameNum() * 0.01));
+			if (noise_value > 0.45 && noise_value < 0.55) { 
+
+				auto gap = abs(noise_value - 0.5);
+				noise_r += r * ofMap(gap, 0.05, 0, 0, 1.5);
+			}
+
+			vector<glm::vec3> vertices;
+			vertices.push_back(this->make_point(R, r, u, v - v_span * 0.5));
+			vertices.push_back(this->make_point(R, r, u + u_span, v - v_span * 0.5));
+			vertices.push_back(this->make_point(R, r, u + u_span, v + v_span * 0.5));
+			vertices.push_back(this->make_point(R, r, u, v + v_span * 0.5));
+
+			vertices.push_back(this->make_point(R, noise_r, u + u_span * 0.5, v));
+
+			int index = face.getNumVertices();
+			this->face.addVertices(vertices);
+
+			this->face.addIndex(index + 0); face.addIndex(index + 1); face.addIndex(index + 4);
+			this->face.addIndex(index + 1); face.addIndex(index + 2); face.addIndex(index + 4);
+			this->face.addIndex(index + 2); face.addIndex(index + 3); face.addIndex(index + 4);
+			this->face.addIndex(index + 3); face.addIndex(index + 0); face.addIndex(index + 4);
+
+			this->frame.addVertices(vertices);
+
+			this->frame.addIndex(index + 0); this->frame.addIndex(index + 1);
+			this->frame.addIndex(index + 1); this->frame.addIndex(index + 2);
+			this->frame.addIndex(index + 2); this->frame.addIndex(index + 3);
+			this->frame.addIndex(index + 3); this->frame.addIndex(index + 0);
+
+			this->frame.addIndex(index + 0); this->frame.addIndex(index + 4);
+			this->frame.addIndex(index + 1); this->frame.addIndex(index + 4);
+			this->frame.addIndex(index + 2); this->frame.addIndex(index + 4);
+			this->frame.addIndex(index + 3); this->frame.addIndex(index + 4);
+		}
+	}
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-	ofTranslate(ofGetWindowSize() * 0.5);
+	this->cam.begin();
+	ofRotateY(ofGetFrameNum() * 1.44);
 
-	auto len = 20;
-	auto head_size = 8;
+	ofSetColor(0);
+	this->face.draw();
 
-	for (int k = 0; k < 2; k++) {
+	ofSetColor(255);
+	this->frame.drawWireframe();
 
-		auto noise_seed = glm::vec3(ofRandom(1000), ofRandom(1000), ofRandom(1000));
-
-		ofMesh mesh;
-		vector<glm::vec3> right, left, frame;
-
-		glm::vec3 last_location;
-		float last_theta, last_radius;
-
-		for (int i = 0; i < len; i++) {
-
-			auto noise_deg = ofMap(ofNoise(noise_seed.x, (ofGetFrameNum() + i) * 0.005), 0, 1, 0, 720);
-			auto noise_radius = ofMap(ofNoise(noise_seed.y, (ofGetFrameNum() + i) * 0.003), 0, 1, -360, 360);
-			auto next_noise_deg = ofMap(ofNoise(noise_seed.x, (ofGetFrameNum() + i + 1) * 0.005), 0, 1, 0, 720);
-			auto next_noise_radius = ofMap(ofNoise(noise_seed.y, (ofGetFrameNum() + i + 1) * 0.003), 0, 1, -360, 360);
-
-			auto location = glm::vec3(noise_radius * cos(noise_deg * DEG_TO_RAD), noise_radius * sin(noise_deg * DEG_TO_RAD), 0);
-			auto next = glm::vec3(next_noise_radius * cos(next_noise_deg * DEG_TO_RAD), next_noise_radius * sin(next_noise_deg * DEG_TO_RAD), 0);
-
-			auto direction = next - location;
-			auto theta = atan2(direction.y, direction.x);
-
-			right.push_back(location + glm::vec3(ofMap(i, 0, len, 0, head_size) * cos(theta + PI * 0.5), ofMap(i, 0, len, 0, head_size) * sin(theta + PI * 0.5), 0));
-			left.push_back(location + glm::vec3(ofMap(i, 0, len, 0, head_size) * cos(theta - PI * 0.5), ofMap(i, 0, len, 0, head_size) * sin(theta - PI * 0.5), 0));
-
-			last_location = location;
-			last_theta = theta;
-			last_radius = noise_radius;
-		}
-
-		for (int i = 0; i < right.size(); i++) {
-
-			mesh.addVertex(left[i]);
-			mesh.addVertex(right[i]);
-		}
-
-		for (int i = 0; i < mesh.getNumVertices() - 2; i += 2) {
-
-			mesh.addIndex(i + 0); mesh.addIndex(i + 1); mesh.addIndex(i + 3);
-			mesh.addIndex(i + 0); mesh.addIndex(i + 2); mesh.addIndex(i + 3);
-		}
-
-		auto tmp_head_size = ofMap(mesh.getNumVertices() - 2, 0, mesh.getNumVertices(), 0, head_size);
-
-		mesh.addVertex(last_location);
-		int index = mesh.getNumVertices();
-		for (auto theta = last_theta - PI * 0.5; theta <= last_theta + PI * 0.5; theta += PI / 20) {
-
-			mesh.addVertex(last_location + glm::vec3(tmp_head_size * cos(theta), tmp_head_size * sin(theta), 0));
-			frame.push_back(last_location + glm::vec3(tmp_head_size * cos(theta), tmp_head_size * sin(theta), 0));
-		}
-
-		for (int i = index; i < mesh.getNumVertices() - 1; i++) {
-
-			mesh.addIndex(index); mesh.addIndex(i + 0); mesh.addIndex(i + 1);
-		}
-
-
-		ofColor color;
-		int span = 16;
-		int deg_span = 360 / span;
-		for (int i = 0; i < span; i++) {
-
-			color.setHsb(ofMap(i, 0, span, 0, 255), 200, 255);
-			ofSetColor(color);
-
-			ofRotate(deg_span);
-			mesh.draw();
-		}
-	}
+	this->cam.end();
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 12;
+	int start = 500;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
@@ -115,6 +104,20 @@ void ofApp::draw() {
 	*/
 }
 
+//--------------------------------------------------------------
+glm::vec3 ofApp::make_point(float R, float r, float u, float v) {
+
+	// 数学デッサン教室 描いて楽しむ数学たち　P.31
+
+	u *= DEG_TO_RAD;
+	v *= DEG_TO_RAD;
+
+	auto x = (R + r * cos(u)) * cos(v);
+	auto y = (R + r * cos(u)) * sin(v);
+	auto z = r * sin(u);
+
+	return glm::vec3(x, y, z);
+}
 
 //--------------------------------------------------------------
 int main() {
