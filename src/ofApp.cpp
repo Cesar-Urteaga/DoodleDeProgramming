@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofEnableDepthTest();
 }
 
@@ -20,6 +20,7 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
+	ofRotateY(ofGetFrameNum() * 2.88);
 
 	float R = 200;
 	float r = 50;
@@ -28,17 +29,19 @@ void ofApp::draw() {
 	ofMesh face, line;
 	line.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
 
-	for (int r = 80; r > 10; r -= 15) {
+	ofColor color;
+	for (int r = 80; r > 20; r -= 5) {
 
 		auto noise_seed = ofRandom(39);
+		color.setHsb(ofMap(r, 80, 20, 0, 255), 255, 255);
 
-		for (int i = 0; i < 6; i++) {
+		for (int i = 0; i < 5; i++) {
 
 			int draw_r = r + i;
 
 			int v_start = ofMap(ofNoise(noise_seed, i * 0.025 + ofGetFrameNum() * 0.005), 0, 1, -360, 360);
-			int v_end = v_start + 3;
 			int v_span = 2;
+			int v_end = v_start + v_span;
 
 			for (int v = v_start; v <= v_end; v += v_span) {
 
@@ -56,8 +59,8 @@ void ofApp::draw() {
 
 					for (int i = 0; i < 4; i++) {
 
-						face.addColor(ofColor(0));
-						line.addColor(ofColor(255));
+						face.addColor(ofColor(color, 92));
+						line.addColor(ofColor(color));
 					}
 
 					face.addIndex(face.getNumVertices() - 1); face.addIndex(face.getNumVertices() - 2); face.addIndex(face.getNumVertices() - 3);
