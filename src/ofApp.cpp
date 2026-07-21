@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofSetLineWidth(0.5);
 	ofEnableDepthTest();
 
@@ -44,9 +44,9 @@ void ofApp::update() {
 
 		auto distance = glm::distance(noise_location, glm::vec2(box_info.first.x, box_info.first.y));
 
-		if (distance < 40) {
+		if (distance < 60) {
 
-			box_info.second = box_info.second >= 1 ? 1 : box_info.second + ofMap(abs(distance - 40), 0, 40, 0.125, 0);
+			box_info.second = box_info.second >= 1 ? 1 : box_info.second + ofMap(abs(distance - 60), 0, 60, 15, 0);
 		}
 		else {
 
@@ -58,7 +58,12 @@ void ofApp::update() {
 
 		if (box_info.second > 0) {
 
-			auto len = ofMap(ofNoise(box_info.first.x * 0.02, box_info.first.y * 0.02, ofGetFrameNum() * 0.01), 0, 1, 0, max_height * box_info.second);
+			auto len = max_height - ofMap(ofNoise(box_info.first.x * 0.02, box_info.first.y * 0.02, ofGetFrameNum() * 0.01), 0, 1, 0, max_height * box_info.second);
+			this->setBoxToMesh(this->face, this->frame, glm::vec3(box_info.first.x, box_info.first.y, len * 0.5), this->size, this->size, len);
+		}
+		else {
+
+			auto len = max_height;
 			this->setBoxToMesh(this->face, this->frame, glm::vec3(box_info.first.x, box_info.first.y, len * 0.5), this->size, this->size, len);
 		}
 	}
@@ -68,30 +73,20 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
-	ofRotateX(295);
-
-	ofSetColor(239, 39, 39);
-	ofNoFill();
-	ofSetLineWidth(1.5);
-
-	ofBeginShape();
-	ofVertices(this->log_list);
-	ofEndShape();
-
-	ofFill();
-	ofDrawSphere(this->log_list.back(), 10);
+	ofRotateX(315);
 
 	ofSetColor(0);
 	this->face.drawFaces();
 
-	ofSetColor(239, 39, 39);
+	ofSetColor(255);
 	ofSetLineWidth(0.5);
 	this->frame.drawWireframe();
 
 	this->cam.end();
 
+	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 12;
+	int start = 500;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
@@ -104,6 +99,7 @@ void ofApp::draw() {
 			std::exit(1);
 		}
 	}
+	*/
 }
 
 
