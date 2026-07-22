@@ -6,66 +6,18 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(39);
-	ofSetLineWidth(0.5);
+	ofBackground(239);
+
 	ofEnableDepthTest();
-
-	this->frame.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
-
-	this->size = 10;
-	for (auto x = -450; x <= 450; x += this->size) {
-
-		for (auto y = -450; y <= 450; y += this->size) {
-
-			this->box_info_list.push_back(std::make_pair(glm::vec2(x, y), 0.f));
-		}
-	}
+	ofSetLineWidth(3);
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	ofSeedRandom(39);
+	if (ofGetFrameNum() % 50 < 35) {
 
-	this->face.clear();
-	this->frame.clear();
-
-	auto max_height = 150;
-	auto threshold = 150;
-	auto noise_seed = glm::vec2(ofRandom(1000), ofRandom(1000));
-	auto noise_location = glm::vec2(ofMap(ofNoise(noise_seed.x, ofGetFrameNum() * 0.01), 0, 1, -300, 300), ofMap(ofNoise(noise_seed.y, ofGetFrameNum() * 0.01), 0, 1, -300, 300));
-	this->log_list.push_back(glm::vec3(noise_location, 50));
-	while (this->log_list.size() > 30) {
-
-		this->log_list.erase(this->log_list.begin());
-	}
-
-	for (auto& box_info : this->box_info_list) {
-
-		auto distance = glm::distance(noise_location, glm::vec2(box_info.first.x, box_info.first.y));
-
-		if (distance < 60) {
-
-			box_info.second = box_info.second >= 1 ? 1 : box_info.second + ofMap(abs(distance - 60), 0, 60, 15, 0);
-		}
-		else {
-
-			box_info.second = box_info.second <= 0 ? 0 : box_info.second - 0.02;
-		}
-	}
-
-	for (auto& box_info : this->box_info_list) {
-
-		if (box_info.second > 0) {
-
-			auto len = max_height - ofMap(ofNoise(box_info.first.x * 0.02, box_info.first.y * 0.02, ofGetFrameNum() * 0.01), 0, 1, 0, max_height * box_info.second);
-			this->setBoxToMesh(this->face, this->frame, glm::vec3(box_info.first.x, box_info.first.y, len * 0.5), this->size, this->size, len);
-		}
-		else {
-
-			auto len = max_height;
-			this->setBoxToMesh(this->face, this->frame, glm::vec3(box_info.first.x, box_info.first.y, len * 0.5), this->size, this->size, len);
-		}
+		this->noise_step += ofMap(ofGetFrameNum() % 50, 0, 35, 0.05, 0.002);
 	}
 }
 
@@ -73,14 +25,69 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
-	ofRotateX(315);
 
-	ofSetColor(0);
-	this->face.drawFaces();
+	int width = 350;
+	int height = 350;
+	int len = 30;
+	ofColor color;
+	for (int z = -600; z <= 600; z += 30) {
 
-	ofSetColor(255);
-	ofSetLineWidth(0.5);
-	this->frame.drawWireframe();
+		color.setHsb(ofMap(z, -600, 600, 0, 255), 100, 255);
+
+		ofPushMatrix();
+		ofTranslate(0, 0, z);
+		ofRotate(ofMap(ofNoise((z + 300) * 0.0008 + this->noise_step), 0, 1, -720, 720));
+
+		ofFill();
+		ofSetColor(39);
+
+		ofBeginShape();
+
+		ofVertex(glm::vec2(width * 0.5, height * -0.25));
+		ofVertex(glm::vec2(width * 1.0, height * -0.25));
+		ofVertex(glm::vec2(width * 1.0, height * 0.25));
+		ofVertex(glm::vec2(width * 0.5, height * 0.25));
+
+		ofEndShape(true);
+
+		ofNoFill();
+		ofSetColor(color);
+
+		ofBeginShape();
+
+		ofVertex(glm::vec2(width * 0.5, height * -0.25));
+		ofVertex(glm::vec2(width * 1.0, height * -0.25));
+		ofVertex(glm::vec2(width * 1.0, height * 0.25));
+		ofVertex(glm::vec2(width * 0.5, height * 0.25));
+
+		ofEndShape(true);
+
+		ofFill();
+		ofSetColor(39);
+
+		ofBeginShape();
+
+		ofVertex(glm::vec2(width * -0.5, height * -0.25));
+		ofVertex(glm::vec2(width * -1.0, height * -0.25));
+		ofVertex(glm::vec2(width * -1.0, height * 0.25));
+		ofVertex(glm::vec2(width * -0.5, height * 0.25));
+
+		ofEndShape(true);
+
+		ofNoFill();
+		ofSetColor(color);
+
+		ofBeginShape();
+
+		ofVertex(glm::vec2(width * -0.5, height * -0.25));
+		ofVertex(glm::vec2(width * -1.0, height * -0.25));
+		ofVertex(glm::vec2(width * -1.0, height * 0.25));
+		ofVertex(glm::vec2(width * -0.5, height * 0.25));
+
+		ofEndShape(true);
+
+		ofPopMatrix();
+	}
 
 	this->cam.end();
 
@@ -100,72 +107,6 @@ void ofApp::draw() {
 		}
 	}
 	*/
-}
-
-
-//--------------------------------------------------------------
-void ofApp::setBoxToMesh(ofMesh& face_target, ofMesh& frame_target, glm::vec3 location, float size) {
-
-	this->setBoxToMesh(face_target, frame_target, location, size, size, size);
-}
-
-//--------------------------------------------------------------
-void ofApp::setBoxToMesh(ofMesh& face_target, ofMesh& frame_target, glm::vec3 location, float height, float width, float depth) {
-
-	int index = face_target.getVertices().size();
-
-	face_target.addVertex(location + glm::vec3(width * -0.5 * 0.999, height * 0.5 * 0.999, depth * -0.5 * 0.999));
-	face_target.addVertex(location + glm::vec3(width * 0.5 * 0.999, height * 0.5 * 0.999, depth * -0.5 * 0.999));
-	face_target.addVertex(location + glm::vec3(width * 0.5 * 0.999, height * 0.5 * 0.999, depth * 0.5 * 0.999));
-	face_target.addVertex(location + glm::vec3(width * -0.5 * 0.999, height * 0.5 * 0.999, depth * 0.5 * 0.999));
-
-	face_target.addVertex(location + glm::vec3(width * -0.5 * 0.999, height * -0.5 * 0.999, depth * -0.5 * 0.999));
-	face_target.addVertex(location + glm::vec3(width * 0.5 * 0.999, height * -0.5 * 0.999, depth * -0.5 * 0.999));
-	face_target.addVertex(location + glm::vec3(width * 0.5 * 0.999, height * -0.5 * 0.999, depth * 0.5 * 0.999));
-	face_target.addVertex(location + glm::vec3(width * -0.5 * 0.999, height * -0.5 * 0.999, depth * 0.5 * 0.999));
-
-	face_target.addIndex(index + 0); face_target.addIndex(index + 1); face_target.addIndex(index + 2);
-	face_target.addIndex(index + 0); face_target.addIndex(index + 2); face_target.addIndex(index + 3);
-
-	face_target.addIndex(index + 4); face_target.addIndex(index + 5); face_target.addIndex(index + 6);
-	face_target.addIndex(index + 4); face_target.addIndex(index + 6); face_target.addIndex(index + 7);
-
-	face_target.addIndex(index + 0); face_target.addIndex(index + 4); face_target.addIndex(index + 1);
-	face_target.addIndex(index + 4); face_target.addIndex(index + 5); face_target.addIndex(index + 1);
-
-	face_target.addIndex(index + 1); face_target.addIndex(index + 5); face_target.addIndex(index + 6);
-	face_target.addIndex(index + 6); face_target.addIndex(index + 2); face_target.addIndex(index + 1);
-
-	face_target.addIndex(index + 2); face_target.addIndex(index + 6); face_target.addIndex(index + 7);
-	face_target.addIndex(index + 7); face_target.addIndex(index + 3); face_target.addIndex(index + 2);
-
-	face_target.addIndex(index + 3); face_target.addIndex(index + 7); face_target.addIndex(index + 4);
-	face_target.addIndex(index + 4); face_target.addIndex(index + 0); face_target.addIndex(index + 3);
-
-	frame_target.addVertex(location + glm::vec3(width * -0.5, height * 0.5, depth * -0.5));
-	frame_target.addVertex(location + glm::vec3(width * 0.5, height * 0.5, depth * -0.5));
-	frame_target.addVertex(location + glm::vec3(width * 0.5, height * 0.5, depth * 0.5));
-	frame_target.addVertex(location + glm::vec3(width * -0.5, height * 0.5, depth * 0.5));
-
-	frame_target.addVertex(location + glm::vec3(width * -0.5, height * -0.5, depth * -0.5));
-	frame_target.addVertex(location + glm::vec3(width * 0.5, height * -0.5, depth * -0.5));
-	frame_target.addVertex(location + glm::vec3(width * 0.5, height * -0.5, depth * 0.5));
-	frame_target.addVertex(location + glm::vec3(width * -0.5, height * -0.5, depth * 0.5));
-
-	frame_target.addIndex(index + 0); frame_target.addIndex(index + 1);
-	frame_target.addIndex(index + 1); frame_target.addIndex(index + 2);
-	frame_target.addIndex(index + 2); frame_target.addIndex(index + 3);
-	frame_target.addIndex(index + 3); frame_target.addIndex(index + 0);
-
-	frame_target.addIndex(index + 4); frame_target.addIndex(index + 5);
-	frame_target.addIndex(index + 5); frame_target.addIndex(index + 6);
-	frame_target.addIndex(index + 6); frame_target.addIndex(index + 7);
-	frame_target.addIndex(index + 7); frame_target.addIndex(index + 4);
-
-	frame_target.addIndex(index + 0); frame_target.addIndex(index + 4);
-	frame_target.addIndex(index + 1); frame_target.addIndex(index + 5);
-	frame_target.addIndex(index + 2); frame_target.addIndex(index + 6);
-	frame_target.addIndex(index + 3); frame_target.addIndex(index + 7);
 }
 
 //--------------------------------------------------------------
