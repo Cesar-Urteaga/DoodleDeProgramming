@@ -6,10 +6,8 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(239);
-
+	ofBackground(39);
 	ofEnableDepthTest();
-	ofSetLineWidth(3);
 }
 
 //--------------------------------------------------------------
@@ -25,14 +23,15 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
+	ofRotateY(ofGetFrameNum() * 2.88);
 
-	int width = 350;
-	int height = 350;
+	int width = 50;
+	int height = 400;
 	int len = 30;
 	ofColor color;
-	for (int z = -600; z <= 600; z += 30) {
+	for (int z = -500; z <= 500; z += 10) {
 
-		color.setHsb(ofMap(z, -600, 600, 0, 255), 100, 255);
+		color.setHsb(ofMap(z, -500, 500, 0, 255), 100, 255);
 
 		ofPushMatrix();
 		ofTranslate(0, 0, z);
@@ -93,7 +92,7 @@ void ofApp::draw() {
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 500;
+	int start = 525;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
