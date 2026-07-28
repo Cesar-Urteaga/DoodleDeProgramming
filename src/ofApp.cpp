@@ -4,18 +4,71 @@
 void ofApp::setup() {
 
 	ofSetFrameRate(25);
-	ofSetWindowTitle("openframeworks");
+	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(39);
+	ofBackground(239);
 	ofEnableDepthTest();
+
+	this->frame.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
+
+	float span = 50;
+	for (int x = -1200; x <= 1200; x += span) {
+
+		for (int y = -2000; y <= 2000; y += span) {
+
+			vector<glm::vec3> vertices;
+			vertices.push_back(glm::vec3(x, y, 0));
+			vertices.push_back(glm::vec3(x + span, y, 0));
+			vertices.push_back(glm::vec3(x + span, y + span, 0));
+			vertices.push_back(glm::vec3(x, y + span, 0));
+
+			this->face.addVertices(vertices);
+
+			this->face.addIndex(this->face.getNumVertices() - 1);
+			this->face.addIndex(this->face.getNumVertices() - 4);
+			this->face.addIndex(this->face.getNumVertices() - 3);
+
+			this->face.addIndex(this->face.getNumVertices() - 1);
+			this->face.addIndex(this->face.getNumVertices() - 2);
+			this->face.addIndex(this->face.getNumVertices() - 3);
+
+			this->frame.addVertices(vertices);
+
+			this->frame.addIndex(this->frame.getNumVertices() - 1);
+			this->frame.addIndex(this->frame.getNumVertices() - 2);
+
+			this->frame.addIndex(this->frame.getNumVertices() - 1);
+			this->frame.addIndex(this->frame.getNumVertices() - 4);
+
+			this->frame.addIndex(this->frame.getNumVertices() - 3);
+			this->frame.addIndex(this->frame.getNumVertices() - 4);
+
+			this->frame.addIndex(this->frame.getNumVertices() - 3);
+			this->frame.addIndex(this->frame.getNumVertices() - 2);
+		}
+	}
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	if (ofGetFrameNum() % 50 < 35) {
+	this->face.clearColors();
+	this->frame.clearColors();
 
-		this->noise_step += ofMap(ofGetFrameNum() % 50, 0, 35, 0.05, 0.002);
+	auto index = 0;
+	ofColor color;
+	for (auto& vertex : this->face.getVertices()) {
+
+		auto len = ofMap(vertex.y, -2000, 2000, 450, 10);
+
+		auto noise_value = ofNoise(glm::distance(glm::vec3(0, 2700, 0), vertex) * 0.001 - ofGetFrameNum() * 0.05, vertex.x * 0.00025, vertex.y * 0.00025);
+		vertex.z = ofMap(noise_value, 0, 1, -len, len);
+
+		this->frame.setVertex(index++, vertex);
+
+		color.setHsb(230, ofMap(vertex.z, -len, len, 200, 255), ofMap(vertex.z, -len, len, 255, 0));
+		this->face.addColor(color);
+		this->frame.addColor(ofColor(39));
 	}
 }
 
@@ -23,76 +76,17 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
-	ofRotateY(ofGetFrameNum() * 2.88);
+	ofRotateX(90);
+	ofRotateZ(270);
 
-	int width = 50;
-	int height = 400;
-	int len = 30;
-	ofColor color;
-	for (int z = -500; z <= 500; z += 10) {
-
-		color.setHsb(ofMap(z, -500, 500, 0, 255), 100, 255);
-
-		ofPushMatrix();
-		ofTranslate(0, 0, z);
-		ofRotate(ofMap(ofNoise((z + 300) * 0.0008 + this->noise_step), 0, 1, -720, 720));
-
-		ofFill();
-		ofSetColor(39);
-
-		ofBeginShape();
-
-		ofVertex(glm::vec2(width * 0.5, height * -0.25));
-		ofVertex(glm::vec2(width * 1.0, height * -0.25));
-		ofVertex(glm::vec2(width * 1.0, height * 0.25));
-		ofVertex(glm::vec2(width * 0.5, height * 0.25));
-
-		ofEndShape(true);
-
-		ofNoFill();
-		ofSetColor(color);
-
-		ofBeginShape();
-
-		ofVertex(glm::vec2(width * 0.5, height * -0.25));
-		ofVertex(glm::vec2(width * 1.0, height * -0.25));
-		ofVertex(glm::vec2(width * 1.0, height * 0.25));
-		ofVertex(glm::vec2(width * 0.5, height * 0.25));
-
-		ofEndShape(true);
-
-		ofFill();
-		ofSetColor(39);
-
-		ofBeginShape();
-
-		ofVertex(glm::vec2(width * -0.5, height * -0.25));
-		ofVertex(glm::vec2(width * -1.0, height * -0.25));
-		ofVertex(glm::vec2(width * -1.0, height * 0.25));
-		ofVertex(glm::vec2(width * -0.5, height * 0.25));
-
-		ofEndShape(true);
-
-		ofNoFill();
-		ofSetColor(color);
-
-		ofBeginShape();
-
-		ofVertex(glm::vec2(width * -0.5, height * -0.25));
-		ofVertex(glm::vec2(width * -1.0, height * -0.25));
-		ofVertex(glm::vec2(width * -1.0, height * 0.25));
-		ofVertex(glm::vec2(width * -0.5, height * 0.25));
-
-		ofEndShape(true);
-
-		ofPopMatrix();
-	}
+	this->face.draw();
+	this->frame.drawWireframe();
 
 	this->cam.end();
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 525;
+	int start = 1000;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
