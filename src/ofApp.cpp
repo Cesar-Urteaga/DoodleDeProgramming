@@ -6,13 +6,13 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofEnableDepthTest();
 
 	this->frame.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
 
 	float span = 50;
-	for (int x = -1200; x <= 1200; x += span) {
+	for (int x = -2500; x <= 2500; x += span) {
 
 		for (int y = -2000; y <= 2000; y += span) {
 
@@ -66,9 +66,9 @@ void ofApp::update() {
 
 		this->frame.setVertex(index++, vertex);
 
-		color.setHsb(230, ofMap(vertex.z, -len, len, 200, 255), ofMap(vertex.z, -len, len, 255, 0));
+		color.setHsb(ofMap(vertex.x, -2500, 2500, 0, 255), ofMap(vertex.z, -len, len, 200, 255), ofMap(vertex.z, -len, len, 255, 0));
 		this->face.addColor(color);
-		this->frame.addColor(ofColor(39));
+		this->frame.addColor(color);
 	}
 }
 
@@ -76,8 +76,6 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
-	ofRotateX(90);
-	ofRotateZ(270);
 
 	this->face.draw();
 	this->frame.drawWireframe();
@@ -86,7 +84,7 @@ void ofApp::draw() {
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 1000;
+	int start = 500;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
