@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(255);
+	ofBackground(39);
 	ofEnableDepthTest();
 
 	this->frame.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
@@ -20,25 +20,24 @@ void ofApp::update() {
 	this->frame.clear();
 
 	int y = 200;
-	for (int x = -300 * 3; x <= 300 * 3; x += 300) {
+	int x = 0;
 
-		auto noise_seed = ofRandom(1000);
-		for (int i = 1; i >= -1; i -= 2) {
+	auto noise_seed = ofRandom(1000);
+	for (int i = 1; i >= -1; i -= 2) {
 
-			for (auto radius = 100; radius <= 150; radius += 2) {
+		for (double radius = 1; radius <= 50; radius += 0.5) {
 
-				auto noise_value = ofNoise(noise_seed, radius * 0.002 + ofGetFrameNum() * 0.005);
-				auto rotation = glm::rotate(glm::mat4(), ofMap(noise_value, 0, 1, -720, 720) * (float)DEG_TO_RAD, glm::vec3(1, 0, 0));
+			auto noise_value = ofNoise(noise_seed, radius * 0.005 + ofGetFrameNum() * 0.006);
+			auto rotation = glm::rotate(glm::mat4(), ofMap(noise_value, 0, 1, -720, 720) * (float)DEG_TO_RAD, glm::vec3(1, 0, 0));
 
-				ofColor face_color;
-				if (i == 1) {
+			ofColor face_color;
+			if (i == 1) {
 
-					this->setRingToMesh(this->face, this->frame, glm::vec3(x, y * i, 0), radius, 2, 30, rotation, ofColor(239, 39, 39), ofColor(239));
-				}
-				else {
+				this->setRingToMesh(this->face, this->frame, glm::vec3(x, y * i, 0), radius, 2, 10, rotation, ofColor(239, 39, 39), ofColor(239));
+			}
+			else {
 
-					this->setRingToMesh(this->face, this->frame, glm::vec3(x, y * i, 0), radius, 2, 30, rotation, ofColor(0), ofColor(239));
-				}
+				this->setRingToMesh(this->face, this->frame, glm::vec3(x, y * i, 0), radius, 2, 10, rotation, ofColor(0), ofColor(239));
 			}
 		}
 	}
