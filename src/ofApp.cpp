@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofSetLineWidth(2);
 	ofEnableDepthTest();
 }
@@ -20,25 +20,23 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
-	ofRotateX(90);
+	ofRotateZ(90);
 
-	for (int x = -360; x <= 360; x += 144) {
+	for (int x = -120; x <= 120; x += 120) {
 
-		for (int y = -1480; y <= 360; y += 144) {
+		for (int y = -120; y <= 120; y += 120) {
 
 			ofPushMatrix();
 			ofTranslate(x, y);
 
-			ofRotateZ(ofMap(ofNoise(x, y, ofGetFrameNum() * 0.0005), 0, 1, -360, 360));
-
-			auto radius = 60;
+			auto radius = 50;
 			auto deg_start = 0;
 			auto deg_end = deg_start + 180;
-			auto deg_span = 8;
+			auto deg_span = 4;
 			for (int deg = deg_start; deg < deg_end; deg += deg_span) {
 
 				auto center = glm::vec2(radius * cos((deg + deg_span / 2) * DEG_TO_RAD), 0);
-				auto noise_value = ofNoise((x + center.x) * 0.0075, y * 0.0075, ofGetFrameNum() * 0.005);
+				auto noise_value = ofNoise((x + center.x) * 0.0075 + ofGetFrameNum() * 0.035, y * 0.0075);
 				auto rotate = noise_value < 0.5 ? 0.f : ofMap(noise_value, 0.5, 1, 0, 360);
 
 				ofPushMatrix();
@@ -56,14 +54,14 @@ void ofApp::draw() {
 				reverse(vertices_2.begin(), vertices_2.end());
 
 				ofFill();
-				ofSetColor(239);
+				ofSetColor(0);
 				ofBeginShape();
 				ofVertices(vertices_1);
 				ofVertices(vertices_2);
 				ofEndShape(true);
 
 				ofNoFill();
-				ofSetColor(0);
+				ofSetColor(239);
 				ofBeginShape();
 				ofVertices(vertices_1);
 				ofVertices(vertices_2);
