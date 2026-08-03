@@ -1,77 +1,54 @@
-#include "ofApp.h"
+#include "ofApp.h"	
 
 //--------------------------------------------------------------
 void ofApp::setup() {
 
 	ofSetFrameRate(25);
-	ofSetWindowTitle("openframeworks");
+	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(39);
-	ofSetLineWidth(2);
-	ofEnableDepthTest();
+	ofBackground(239);
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
+	ofSeedRandom(39);
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
 	this->cam.begin();
-	ofRotateZ(90);
 
-	for (int x = -120; x <= 120; x += 120) {
+	auto numberOfActor = 120;
 
-		for (int y = -120; y <= 120; y += 120) {
+	auto noise_param = glm::vec2(ofRandom(1000), ofRandom(1000));
+	for (int i = 0; i < numberOfActor; i++) {
 
-			ofPushMatrix();
-			ofTranslate(x, y);
+		ofPushMatrix();
 
-			auto radius = 50;
-			auto deg_start = 0;
-			auto deg_end = deg_start + 180;
-			auto deg_span = 4;
-			for (int deg = deg_start; deg < deg_end; deg += deg_span) {
+		auto rotate_deg = ofMap(ofNoise(noise_param.x, i * 0.01 - ofGetFrameNum() * 0.025), 0, 1, -20, 20);
+		ofRotateY(rotate_deg);
 
-				auto center = glm::vec2(radius * cos((deg + deg_span / 2) * DEG_TO_RAD), 0);
-				auto noise_value = ofNoise((x + center.x) * 0.0075 + ofGetFrameNum() * 0.035, y * 0.0075);
-				auto rotate = noise_value < 0.5 ? 0.f : ofMap(noise_value, 0.5, 1, 0, 360);
+		auto radius = 50 + i * 10;
+		auto deg = ofMap(ofNoise(noise_param.y, i * 0.1 + ofGetFrameNum() * 0.0025), 0, 1, 0, 1440);
+		auto len = 150;
 
-				ofPushMatrix();
-				ofTranslate(center);
-				ofRotateX(rotate);
+		ofSetColor(255);
+		for (int k = 0; k < len; k++) {
 
-				vector<glm::vec2> vertices_1, vertices_2;
-				for (int tmp_deg = deg + 1; tmp_deg < deg + deg_span; tmp_deg++) {
-
-					auto point = glm::vec2(radius * cos(tmp_deg * DEG_TO_RAD), radius * sin(tmp_deg * DEG_TO_RAD));
-					vertices_1.push_back(point - center);
-					vertices_2.push_back(glm::vec2(point.x, -point.y) - center);
-				}
-
-				reverse(vertices_2.begin(), vertices_2.end());
-
-				ofFill();
-				ofSetColor(0);
-				ofBeginShape();
-				ofVertices(vertices_1);
-				ofVertices(vertices_2);
-				ofEndShape(true);
-
-				ofNoFill();
-				ofSetColor(239);
-				ofBeginShape();
-				ofVertices(vertices_1);
-				ofVertices(vertices_2);
-				ofEndShape(true);
-
-				ofPopMatrix();
-			}
-
-			ofPopMatrix();
+			auto location = glm::vec2(radius * cos((deg + k * 0.25) * DEG_TO_RAD), radius * sin((deg + k * 0.25) * DEG_TO_RAD));
+			ofDrawCircle(location, 7);
 		}
+
+		ofSetColor(0);
+		for (int k = 0; k < len; k++) {
+
+			auto location = glm::vec2(radius * cos((deg + k * 0.25) * DEG_TO_RAD), radius * sin((deg + k * 0.25) * DEG_TO_RAD));
+			ofDrawCircle(location, 5);
+		}
+
+		ofPopMatrix();
 	}
 
 	this->cam.end();
@@ -93,6 +70,7 @@ void ofApp::draw() {
 	}
 	*/
 }
+
 
 //--------------------------------------------------------------
 int main() {
