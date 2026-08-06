@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofEnableDepthTest();
 
 	this->frame.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
@@ -19,29 +19,42 @@ void ofApp::update() {
 	this->face.clear();
 	this->frame.clear();
 
-	for (int x = -400; x < 0; x += 400) {
+	int x = -400;
+	int y = 0;
+	float noise_seed = ofRandom(1000);
 
-		int i = 0;
-		for (int y = -450; y <= 450; y += 75) {
+	glm::highp_mat4 rotation;
+	for (auto radius = 200; radius <= 300; radius += 10) {
 
-			glm::highp_mat4 rotation;
-			i++;
-			for (auto radius = 5; radius <= 25; radius += 1) {
+		glm::highp_mat4 rotation;
+		auto noise_value = ofNoise(noise_seed, y, ofGetFrameNum() * 0.006 - radius * 0.001);
 
-				glm::highp_mat4 rotation;
-				auto noise_value = ofNoise(y, ofGetFrameNum() * 0.006 - radius * 0.001);
+		if (noise_value < 0.2) { noise_value = 0; }
+		else if (noise_value < 0.4) { noise_value = ofMap(noise_value, 0.2, 0.4, 0, 0.5); }
+		else if (noise_value < 0.6) { noise_value = 0.5; }
+		else if (noise_value < 0.8) { noise_value = ofMap(noise_value, 0.6, 0.8, 0.5, 1.0); }
+		else { noise_value = 1; }
 
-				if (noise_value < 0.2) { noise_value = 0; }
-				else if (noise_value < 0.4) { noise_value = ofMap(noise_value, 0.2, 0.4, 0, 0.5); }
-				else if (noise_value < 0.6) { noise_value = 0.5; }
-				else if (noise_value < 0.8) { noise_value = ofMap(noise_value, 0.6, 0.8, 0.5, 1.0); }
-				else { noise_value = 1; }
+		rotation = glm::rotate(glm::mat4(), ofMap(noise_value, 0, 1, -360, 360) * (float)DEG_TO_RAD, glm::vec3(0, 1, 0));
 
-				rotation = glm::rotate(glm::mat4(), ofMap(noise_value, 0, 1, -360, 360) * (float)DEG_TO_RAD, glm::vec3(0, 1, 0));
+		this->setRingToMesh(this->face, this->frame, glm::vec3(x, y, 0), radius, 15, 1, rotation);
+	}
 
-				this->setRingToMesh(this->face, this->frame, glm::vec3(i % 2 ? x : -x, y, 0), radius, 1, 1, rotation);
-			}
-		}
+	noise_seed = ofRandom(1000);
+	for (auto radius = 50; radius <= 150; radius += 10) {
+
+		glm::highp_mat4 rotation;
+		auto noise_value = ofNoise(noise_seed, y, ofGetFrameNum() * 0.006 - radius * 0.001);
+
+		if (noise_value < 0.2) { noise_value = 0; }
+		else if (noise_value < 0.4) { noise_value = ofMap(noise_value, 0.2, 0.4, 0, 0.5); }
+		else if (noise_value < 0.6) { noise_value = 0.5; }
+		else if (noise_value < 0.8) { noise_value = ofMap(noise_value, 0.6, 0.8, 0.5, 1.0); }
+		else { noise_value = 1; }
+
+		rotation = glm::rotate(glm::mat4(), ofMap(noise_value, 0, 1, -360, 360) * (float)DEG_TO_RAD, glm::vec3(0, 1, 0));
+
+		this->setRingToMesh(this->face, this->frame, glm::vec3(x, y, 0), radius, 15, 1, rotation);
 	}
 }
 
@@ -50,10 +63,10 @@ void ofApp::draw() {
 
 	this->cam.begin();
 
-	ofSetColor(255);
+	ofSetColor(0);
 	this->face.draw();
 
-	ofSetColor(0);
+	ofSetColor(239);
 	this->frame.drawWireframe();
 
 	this->cam.end();
