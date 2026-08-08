@@ -6,8 +6,8 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
-	ofSetColor(39);
+	ofBackground(39);
+	ofSetColor(239);
 	ofNoFill();
 	ofEnableDepthTest();
 
@@ -20,7 +20,7 @@ void ofApp::update() {
 	this->face.clear();
 	this->line.clear();
 
-	float span = 20;
+	float span = 1;
 	float threshold_1 = 0.43;
 	float threshold_2 = 0.57;
 	float noise_param = 0.005;
@@ -32,18 +32,18 @@ void ofApp::update() {
 
 		for (float y = 0; y <= 400; y += span) {
 
-			for (float z = -200; z <= 0; z += span / 5 ) {
+			for (float z = -200; z <= 0; z += span * 15) {
 
 				line_color = ofColor(ofMap(z, -200, 0, 39, 239));
 
-				auto noise_value = ofNoise(x * noise_param, y * noise_param, z * noise_param * 0.3 + ofGetFrameNum() * 0.01);
+				auto noise_value = ofNoise(x * noise_param, y * noise_param, z * noise_param * 0.5 + ofGetFrameNum() * 0.01);
 				
 				if (noise_value < threshold_1 || noise_value > threshold_2) { continue; }
 
-				auto noise_value_1 = ofNoise((x - span) * noise_param, y * noise_param, z * noise_param * 0.3 + ofGetFrameNum() * 0.01);
-				auto noise_value_2 = ofNoise(x * noise_param, (y + span) * noise_param, z * noise_param * 0.3 + ofGetFrameNum() * 0.01);
-				auto noise_value_3 = ofNoise((x + span) * noise_param, y * noise_param, z * noise_param * 0.3 + ofGetFrameNum() * 0.01);
-				auto noise_value_4 = ofNoise(x * noise_param, (y - span) * noise_param, z * noise_param * 0.3 + ofGetFrameNum() * 0.01);
+				auto noise_value_1 = ofNoise((x - span) * noise_param, y * noise_param, z * noise_param * 0.5 + ofGetFrameNum() * 0.01);
+				auto noise_value_2 = ofNoise(x * noise_param, (y + span) * noise_param, z * noise_param * 0.5 + ofGetFrameNum() * 0.01);
+				auto noise_value_3 = ofNoise((x + span) * noise_param, y * noise_param, z * noise_param * 0.5 + ofGetFrameNum() * 0.01);
+				auto noise_value_4 = ofNoise(x * noise_param, (y - span) * noise_param, z * noise_param * 0.5 + ofGetFrameNum() * 0.01);
 
 
 				auto index = this->face.getNumVertices();
@@ -100,8 +100,6 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
-
-	ofDrawBox(glm::vec3(0, 0, -100), 410, 410, 200);
 
 	ofTranslate(-200, -200);
 
