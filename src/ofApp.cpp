@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofEnableDepthTest();
 
 	this->base_radius = 65;
@@ -25,7 +25,7 @@ void ofApp::update() {
 	this->frame.clear();
 
 	int radius_start = this->base_radius;
-	int radius_max = this->base_radius * 3;
+	int radius_max = this->base_radius * 6;
 	for (auto& triangle : this->ico_sphere.getMesh().getUniqueFaces()) {
 
 		auto noise_seed_x = ofRandom(1000);
@@ -58,13 +58,21 @@ void ofApp::update() {
 			vertices.push_back(glm::vec4(location + glm::normalize(triangle.getVertex(1) - avg) * ofMap(radius, radius_start, radius_end, glm::length(triangle.getVertex(1) - avg), 0), 0) * rotation_z * rotation_y * rotation_x);
 			vertices.push_back(glm::vec4(location + glm::normalize(triangle.getVertex(2) - avg) * ofMap(radius, radius_start, radius_end, glm::length(triangle.getVertex(2) - avg), 0), 0) * rotation_z * rotation_y * rotation_x);
 
+			for (auto& vertex : vertices) {
+
+				if (glm::length(vertex) > this->base_radius * 4) {
+
+					vertex = glm::normalize(vertex) * this->base_radius * 4;
+				}
+			}
+
 			this->face.addVertices(vertices);
 			this->frame.addVertices(vertices);
 
 			for (int i = 0; i < vertices.size(); i++) {
 
-				this->face.addColor(ofColor(39, 39, 239));
-				this->frame.addColor(ofColor(239));
+				this->face.addColor(ofColor(39));
+				this->frame.addColor(ofColor(255));
 			}
 
 			if (radius == radius_start || radius == radius_end) {
@@ -94,14 +102,14 @@ void ofApp::update() {
 		}
 	}
 
-	this->noise_param -= 0.05;
+	this->noise_param -= 0.01;
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
 	this->cam.begin();
-	ofRotateY(15);
+	ofRotateY(ofGetFrameNum() * 0.36);
 
 	this->frame.drawWireframe();
 	this->face.draw();
@@ -110,7 +118,7 @@ void ofApp::draw() {
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 500;
+	int start = 50;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream  os;
