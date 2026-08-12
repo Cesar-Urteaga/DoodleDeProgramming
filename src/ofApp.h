@@ -19,7 +19,7 @@ public:
 	void gotMessage(ofMessage msg) {};
 
 	ofEasyCam cam;
-	ofMesh face, line;
+	ofMesh line;
 
 	float noise_param;
 };

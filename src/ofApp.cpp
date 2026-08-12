@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofEnableDepthTest();
 	ofSetLineWidth(1);
 
@@ -18,23 +18,22 @@ void ofApp::update() {
 
 	this->noise_param += 0.01;
 
-	this->face.clear();
 	this->line.clear();
 
-	float phi_deg_step = 0.15;
-	float theta_deg_step = 0.15;
+	float phi_deg_step = 0.1;
+	float theta_deg_step = 0.1;
 	float theta_start = 70;
 	float theta_end = 110;
 	float threshold_1 = 0.45;
 	float threshold_2 = 0.55;
-	float noise_span = 0.03;
+	float noise_span = 0.025;
 
 	ofColor face_color(0), line_color(255);
 	for (float radius = 250; radius <= 300; radius += 5) {
 
-		line_color.setHsb(230, 200, ofMap(radius, 250, 300, 0, 255));
-
-		for (float phi_deg = 0; phi_deg < 360; phi_deg += phi_deg_step) {
+		line_color.setHsb(ofMap(ofGetFrameNum() % 250, 0, 250, 0, 255), 255, ofMap(radius, 250, 300, 0, 255));
+		
+		for (float phi_deg = 30; phi_deg < 150; phi_deg += phi_deg_step) {
 
 			for (float theta_deg = theta_start; theta_deg <= theta_end; theta_deg += theta_deg_step) {
 
@@ -67,7 +66,6 @@ void ofApp::update() {
 					radius * cos((theta_deg + theta_deg_step) * DEG_TO_RAD) * noise_span,
 					this->noise_param);
 
-				auto index = this->face.getNumVertices();
 				vector<glm::vec3> vertices;
 
 				vertices.push_back(glm::vec3(
@@ -87,12 +85,6 @@ void ofApp::update() {
 					radius * sin((theta_deg + theta_deg_step * 0.5) * DEG_TO_RAD) * sin((phi_deg - phi_deg_step * 0.5) * DEG_TO_RAD),
 					radius * cos((theta_deg + theta_deg_step * 0.5) * DEG_TO_RAD)));
 
-				this->face.addVertices(vertices);
-				
-				for (int i = 0; i < vertices.size(); i++) { this->face.addColor(face_color); }
-
-				this->face.addIndex(index + 0); this->face.addIndex(index + 1); this->face.addIndex(index + 3);
-				this->face.addIndex(index + 0); this->face.addIndex(index + 3); this->face.addIndex(index + 2);
 
 				if (threshold_1 > noise_value_1 || noise_value_1 > threshold_2 || theta_deg == theta_start) {
 
@@ -132,14 +124,13 @@ void ofApp::draw() {
 	this->cam.begin();
 	ofRotateX(90);
 
-	this->face.draw();
 	this->line.draw();
 
 	this->cam.end();
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 5;
+	int start = 2;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream  os;
