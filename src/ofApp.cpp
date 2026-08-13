@@ -6,66 +6,35 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(39);
+	ofBackground(239);
+	ofSetLineWidth(2);
 	ofEnableDepthTest();
-	ofSetLineWidth(1);
 
-	this->line.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
+	this->frame.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	this->noise_param += 0.01;
+	this->face.clear();
+	this->frame.clear();
 
-	this->line.clear();
+	int radius = 300;
+	float phi_deg_step = 3;
+	float theta_deg_step = 3;
 
-	float phi_deg_step = 0.1;
-	float theta_deg_step = 0.1;
-	float theta_start = 70;
-	float theta_end = 110;
-	float threshold_1 = 0.45;
-	float threshold_2 = 0.55;
-	float noise_span = 0.025;
+	ofColor color;
 
-	ofColor face_color(0), line_color(255);
-	for (float radius = 250; radius <= 300; radius += 5) {
+	for (float phi_deg = 0; phi_deg < 360; phi_deg += phi_deg_step) {
 
-		line_color.setHsb(ofMap(ofGetFrameNum() % 250, 0, 250, 0, 255), 255, ofMap(radius, 250, 300, 0, 255));
-		
-		for (float phi_deg = 30; phi_deg < 150; phi_deg += phi_deg_step) {
+		for (float deg_start = 10; deg_start < 180; deg_start += 10) {
 
-			for (float theta_deg = theta_start; theta_deg <= theta_end; theta_deg += theta_deg_step) {
+			color.setHsb(ofMap(deg_start, 0, 180, 255, 180), 255, 255);
+			radius = 300 - deg_start;
 
-				auto noise_value = ofNoise(
-					radius * cos(phi_deg * DEG_TO_RAD) * noise_span,
-					radius * sin(phi_deg * DEG_TO_RAD) * noise_span,
-					radius * cos(theta_deg * DEG_TO_RAD) * noise_span,
-					this->noise_param);
+			for (float theta_deg = deg_start; theta_deg < deg_start + theta_deg_step; theta_deg += theta_deg_step) {
 
-				if (threshold_1 > noise_value || noise_value > threshold_2) { continue; }
-
-				auto noise_value_1 = ofNoise(
-					radius * cos(phi_deg * DEG_TO_RAD) * noise_span,
-					radius * sin(phi_deg * DEG_TO_RAD) * noise_span,
-					radius * cos((theta_deg - theta_deg_step) * DEG_TO_RAD) * noise_span,
-					this->noise_param);
-				auto noise_value_2 = ofNoise(
-					radius * cos((phi_deg + phi_deg_step) * DEG_TO_RAD) * noise_span,
-					radius * sin((phi_deg + phi_deg_step) * DEG_TO_RAD) * noise_span,
-					radius * cos(theta_deg * DEG_TO_RAD) * noise_span,
-					this->noise_param);
-				auto noise_value_3 = ofNoise(
-					radius * cos((phi_deg - phi_deg_step) * DEG_TO_RAD) * noise_span,
-					radius * sin((phi_deg - phi_deg_step) * DEG_TO_RAD) * noise_span,
-					radius * cos(theta_deg * DEG_TO_RAD) * noise_span,
-					this->noise_param);
-				auto noise_value_4 = ofNoise(
-					radius * cos(phi_deg * DEG_TO_RAD) * noise_span,
-					radius * sin(phi_deg * DEG_TO_RAD) * noise_span,
-					radius * cos((theta_deg + theta_deg_step) * DEG_TO_RAD) * noise_span,
-					this->noise_param);
-
+				auto index = this->face.getNumVertices();
 				vector<glm::vec3> vertices;
 
 				vertices.push_back(glm::vec3(
@@ -85,33 +54,28 @@ void ofApp::update() {
 					radius * sin((theta_deg + theta_deg_step * 0.5) * DEG_TO_RAD) * sin((phi_deg - phi_deg_step * 0.5) * DEG_TO_RAD),
 					radius * cos((theta_deg + theta_deg_step * 0.5) * DEG_TO_RAD)));
 
+				for (auto& vertex : vertices) {
 
-				if (threshold_1 > noise_value_1 || noise_value_1 > threshold_2 || theta_deg == theta_start) {
+					auto rotation_x = glm::rotate(glm::mat4(), ofMap(ofNoise(theta_deg * 0.0035, ofGetFrameNum() * 0.0005), 0, 1, -360, 360) * (float)DEG_TO_RAD, glm::vec3(1, 0, 0));
+					auto rotation_y = glm::rotate(glm::mat4(), ofMap(ofNoise(theta_deg * 0.0035, ofGetFrameNum() * 0.0005), 0, 1, -360, 360) * (float)DEG_TO_RAD, glm::vec3(0, 1, 0));
+					auto rotation_z = glm::rotate(glm::mat4(), ofMap(ofNoise(theta_deg * 0.0035, ofGetFrameNum() * 0.0005), 0, 1, -360, 360) * (float)DEG_TO_RAD, glm::vec3(0, 0, 1));
 
-					this->line.addVertex(vertices[0]); this->line.addVertex(vertices[1]);
-					this->line.addIndex(this->line.getNumVertices() - 1); this->line.addIndex(this->line.getNumVertices() - 2);
-					this->line.addColor(line_color); this->line.addColor(line_color);
+					vertex = glm::vec4(vertex, 0) * rotation_z * rotation_y * rotation_x;
 				}
 
-				if (threshold_1 > noise_value_2 || noise_value_2 > threshold_2) {
+				this->face.addVertices(vertices);
+				this->frame.addVertices(vertices);
 
-					this->line.addVertex(vertices[0]); this->line.addVertex(vertices[2]);
-					this->line.addIndex(this->line.getNumVertices() - 1); this->line.addIndex(this->line.getNumVertices() - 2);
-					this->line.addColor(line_color); this->line.addColor(line_color);
-				}
+				this->face.addIndex(index + 0); this->face.addIndex(index + 1); this->face.addIndex(index + 3);
+				this->face.addIndex(index + 0); this->face.addIndex(index + 3); this->face.addIndex(index + 2);
 
-				if (threshold_1 > noise_value_3 || noise_value_3 > threshold_2) {
+				this->frame.addIndex(index + 0); this->frame.addIndex(index + 1);
+				this->frame.addIndex(index + 3); this->frame.addIndex(index + 2);
 
-					this->line.addVertex(vertices[1]); this->line.addVertex(vertices[3]);
-					this->line.addIndex(this->line.getNumVertices() - 1); this->line.addIndex(this->line.getNumVertices() - 2);
-					this->line.addColor(line_color); this->line.addColor(line_color);
-				}
+				for (int i = index; i < this->face.getNumVertices(); i++) {
 
-				if (threshold_1 > noise_value_4 || noise_value_4 > threshold_2 || theta_deg == theta_end) {
-
-					this->line.addVertex(vertices[2]); this->line.addVertex(vertices[3]);
-					this->line.addIndex(this->line.getNumVertices() - 1); this->line.addIndex(this->line.getNumVertices() - 2);
-					this->line.addColor(line_color); this->line.addColor(line_color);
+					this->face.addColor(ofColor(0));
+					this->frame.addColor(color);
 				}
 			}
 		}
@@ -122,15 +86,16 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
-	ofRotateX(90);
+	ofRotateY(ofGetFrameNum() * 0.36);
 
-	this->line.draw();
+	this->face.draw();
+	this->frame.draw();
 
 	this->cam.end();
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 2;
+	int start = 500;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream  os;
