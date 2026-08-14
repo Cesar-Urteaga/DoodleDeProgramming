@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofSetLineWidth(2);
 	ofEnableDepthTest();
 
@@ -16,21 +16,25 @@ void ofApp::setup() {
 //--------------------------------------------------------------
 void ofApp::update() {
 
+	if (ofGetFrameNum() % 50 < 15) {
+
+		this->noise_step += ofMap(ofGetFrameNum() % 50, 0, 15, 0.1, 0.00001);
+	}
+
 	this->face.clear();
 	this->frame.clear();
 
-	int radius = 300;
 	float phi_deg_step = 3;
-	float theta_deg_step = 3;
+	float theta_deg_step = 2;
 
 	ofColor color;
 
 	for (float phi_deg = 0; phi_deg < 360; phi_deg += phi_deg_step) {
 
-		for (float deg_start = 10; deg_start < 180; deg_start += 10) {
+		for (float deg_start = 5; deg_start < 185; deg_start += 10) {
 
-			color.setHsb(ofMap(deg_start, 0, 180, 255, 180), 255, 255);
-			radius = 300 - deg_start;
+			color.setHsb(ofMap(deg_start, 0, 180, 255, 0), 255, 255);
+			int radius = 300 - deg_start;
 
 			for (float theta_deg = deg_start; theta_deg < deg_start + theta_deg_step; theta_deg += theta_deg_step) {
 
@@ -56,9 +60,9 @@ void ofApp::update() {
 
 				for (auto& vertex : vertices) {
 
-					auto rotation_x = glm::rotate(glm::mat4(), ofMap(ofNoise(theta_deg * 0.0035, ofGetFrameNum() * 0.0005), 0, 1, -360, 360) * (float)DEG_TO_RAD, glm::vec3(1, 0, 0));
-					auto rotation_y = glm::rotate(glm::mat4(), ofMap(ofNoise(theta_deg * 0.0035, ofGetFrameNum() * 0.0005), 0, 1, -360, 360) * (float)DEG_TO_RAD, glm::vec3(0, 1, 0));
-					auto rotation_z = glm::rotate(glm::mat4(), ofMap(ofNoise(theta_deg * 0.0035, ofGetFrameNum() * 0.0005), 0, 1, -360, 360) * (float)DEG_TO_RAD, glm::vec3(0, 0, 1));
+					auto rotation_x = glm::rotate(glm::mat4(), ofMap(ofNoise(theta_deg * 0.01 + this->noise_step), 0, 1, -360, 360) * (float)DEG_TO_RAD, glm::vec3(1, 0, 0));
+					auto rotation_y = glm::rotate(glm::mat4(), ofMap(ofNoise(theta_deg * 0.01 + this->noise_step), 0, 1, -360, 360) * (float)DEG_TO_RAD, glm::vec3(0, 1, 0));
+					auto rotation_z = glm::rotate(glm::mat4(), ofMap(ofNoise(theta_deg * 0.01 + this->noise_step), 0, 1, -360, 360) * (float)DEG_TO_RAD, glm::vec3(0, 0, 1));
 
 					vertex = glm::vec4(vertex, 0) * rotation_z * rotation_y * rotation_x;
 				}
@@ -74,7 +78,7 @@ void ofApp::update() {
 
 				for (int i = index; i < this->face.getNumVertices(); i++) {
 
-					this->face.addColor(ofColor(0));
+					this->face.addColor(ofColor(color, 64));
 					this->frame.addColor(color);
 				}
 			}
@@ -86,7 +90,7 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
-	ofRotateY(ofGetFrameNum() * 0.36);
+	ofRotateY(ofGetFrameNum() * 1.44);
 
 	this->face.draw();
 	this->frame.draw();
