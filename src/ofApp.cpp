@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofSetLineWidth(2);
 	ofEnableDepthTest();
 
@@ -27,17 +27,16 @@ void ofApp::draw() {
 	this->face.clear();
 	this->line.clear();
 
-	auto start_deg = ofGetFrameNum() * 15;
-	auto phi_len = 25;
-	auto theta_deg_step = 0.5;
+	auto radius = 250;
+	auto start_deg = ofGetFrameNum() * 5;
+	auto phi_len = 20;
+	auto theta_deg_step = 0.1;
 
-	for (float theta_deg = 0; theta_deg < 360; theta_deg += theta_deg_step) {
+	for (float theta_deg = 0; theta_deg < 180; theta_deg += theta_deg_step) {
 
-		auto radius = theta_deg < 180 ? 250 : 150;
-
-		auto phi_deg = start_deg + theta_deg * 15;
+		auto phi_deg = start_deg + theta_deg * 3;
 		auto next_theta_deg = theta_deg + theta_deg_step;
-		auto next_phi_deg = start_deg + next_theta_deg * 15;
+		auto next_phi_deg = start_deg + next_theta_deg * 3;
 
 		vector<glm::vec3> vertices;
 		vertices.push_back(glm::vec3(
@@ -64,22 +63,25 @@ void ofApp::draw() {
 		this->line.addVertices(vertices);
 		this->line.addIndex(this->line.getNumVertices() - 1); this->line.addIndex(this->line.getNumVertices() - 4);
 		this->line.addIndex(this->line.getNumVertices() - 2); this->line.addIndex(this->line.getNumVertices() - 3);
-
-		for (int i = 0; i < vertices.size(); i++) {
-
-			this->face.addColor(ofColor(239));
-			this->line.addColor(ofColor(39));
-		}
 	}
 
-	this->face.draw();
-	this->line.drawWireframe();
+	ofColor color;
+	for (int i = 0; i < 6; i++) {
+
+		ofRotateZ(30);
+		color.setHsb(ofMap(i, 0, 6, 0, 255), 180, 255);
+
+		ofSetColor(color);
+		this->face.draw();
+		ofSetColor(255);
+		this->line.drawWireframe();
+	}
 
 	this->cam.end();
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 500;
+	int start = 15;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream  os;
