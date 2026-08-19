@@ -4,85 +4,72 @@
 void ofApp::setup() {
 
 	ofSetFrameRate(25);
-	ofSetWindowTitle("openframeworks");
+	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(39);
-	ofEnableDepthTest();
+	ofBackground(239);
+	ofSetColor(39);
+	ofSetCircleResolution(60);
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	ofSeedRandom(39);
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-	this->cam.begin();
+	ofTranslate(ofGetWindowSize() * 0.5);
 
-	float v_span = 0.1;
-	int u_span = 20;
-	float radius = 200;
+	float start_radius = 30;
+	float end_radius = 600;
 
-	ofMesh face, line;
-	ofColor face_color(0), line_color;
-	line.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
+	ofFill();
+	ofSetColor(39);
+	for (float deg = 0; deg < 360; deg += 5) {
 
-	for (float r = 70; r <= 80; r += 5) {
+		for (float radius = start_radius; radius < end_radius; radius += 1) {
 
-		for (float v = 0; v <= 360; v += v_span) {
+			auto location = glm::vec2(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD));
+			auto noise_location = glm::vec2(cos(deg * DEG_TO_RAD), sin(deg * DEG_TO_RAD));
+			auto noise_value = ofNoise(glm::vec3(noise_location * 10, radius * 0.025 + ofGetFrameNum() * 0.1));
 
-			bool flag = true;
-			int u_start = ofMap(ofNoise(radius * cos(v * DEG_TO_RAD) * 0.0005, radius * sin(v * DEG_TO_RAD) * 0.0005, ofGetFrameNum() * 0.002), 0, 1, -720, 720);
-			int next_u = ofMap(ofNoise(radius * cos((v + v_span) * DEG_TO_RAD) * 0.0005, radius * sin((v + v_span) * DEG_TO_RAD) * 0.0005, ofGetFrameNum() * 0.002), 0, 1, -720, 720);
-			for (int u = u_start; u < u_start + 360; u += u_span) {
+			if (noise_value < 0.65) {
 
-				if (flag) {
-
-					face.addVertex(this->make_point(radius, r, u, v));
-					face.addVertex(this->make_point(radius, r, u + u_span, v));
-					face.addVertex(this->make_point(radius, r, next_u + u_span, v + v_span));
-					face.addVertex(this->make_point(radius, r, next_u, v + v_span));
-
-					line.addVertex(this->make_point(radius, r, u, v));
-					line.addVertex(this->make_point(radius, r, u + u_span, v));
-					line.addVertex(this->make_point(radius, r, next_u + u_span, v + v_span));
-					line.addVertex(this->make_point(radius, r, next_u, v + v_span));
-
-					line_color.setHsb(ofMap(u, u_start, u_start + 360, 0, 255), 180, 255);
-
-					face.addColor(face_color);
-					face.addColor(face_color);
-					face.addColor(face_color);
-					face.addColor(face_color);
-
-					line.addColor(line_color);
-					line.addColor(line_color);
-					line.addColor(line_color);
-					line.addColor(line_color);
-
-					face.addIndex(face.getNumVertices() - 1); face.addIndex(face.getNumVertices() - 2); face.addIndex(face.getNumVertices() - 3);
-					face.addIndex(face.getNumVertices() - 1); face.addIndex(face.getNumVertices() - 3); face.addIndex(face.getNumVertices() - 4);
-
-					line.addIndex(line.getNumVertices() - 1); line.addIndex(line.getNumVertices() - 4);
-					line.addIndex(line.getNumVertices() - 2); line.addIndex(line.getNumVertices() - 3);
-				}
-
-				next_u += u_span;
-				flag = !flag;
+				ofDrawCircle(location, 3);
 			}
 		}
 	}
 
-	face.drawFaces();
-	line.drawWireframe();
+	for (float deg = 0; deg < 360; deg += 0.5) {
 
-	this->cam.end();
+		ofDrawCircle(glm::vec2((start_radius - 8) * cos(deg * DEG_TO_RAD), (start_radius - 8) * sin(deg * DEG_TO_RAD)), 3);
+	}
+
+	ofSetColor(239);
+	for (float deg = 0; deg < 360; deg += 5) {
+
+		for (float radius = start_radius; radius < end_radius; radius += 1) {
+
+			auto location = glm::vec2(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD));
+			auto noise_location = glm::vec2(cos(deg * DEG_TO_RAD), sin(deg * DEG_TO_RAD));
+			auto noise_value = ofNoise(glm::vec3(noise_location * 10, radius * 0.025 + ofGetFrameNum() * 0.1));
+
+			if (noise_value < 0.65) {
+
+				ofDrawCircle(location, 1);
+			}
+		}
+	}
+
+	for (float deg = 0; deg < 360; deg += 0.5) {
+
+		ofDrawCircle(glm::vec2((start_radius - 8) * cos(deg * DEG_TO_RAD), (start_radius - 8) * sin(deg * DEG_TO_RAD)), 1);
+	}
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 500;
+	int start = 50;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream  os;
@@ -96,21 +83,6 @@ void ofApp::draw() {
 		}
 	}
 	*/
-}
-
-//--------------------------------------------------------------
-glm::vec3 ofApp::make_point(float R, float r, float u, float v) {
-
-	// 数学デッサン教室 描いて楽しむ数学たち　P.31
-
-	u *= DEG_TO_RAD;
-	v *= DEG_TO_RAD;
-
-	auto x = (R + r * cos(u)) * cos(v);
-	auto y = (R + r * cos(u)) * sin(v);
-	auto z = r * sin(u);
-
-	return glm::vec3(x, y, z);
 }
 
 //--------------------------------------------------------------
