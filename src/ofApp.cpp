@@ -6,17 +6,14 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(39);
-	ofSetColor(39);
-	ofSetCircleResolution(60);
+	ofBackground(239);
+	ofSetLineWidth(2);
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
 	ofSeedRandom(39);
-
-	this->noise_step += 0.25;
 }
 
 //--------------------------------------------------------------
@@ -24,64 +21,51 @@ void ofApp::draw() {
 
 	ofTranslate(ofGetWindowSize() * 0.5);
 
-	float start_radius = 5;
-	float end_radius = 600;
+	auto radius = 250;
+	for (int k = 0; k < 75; k++) {
 
-	ofFill();
-	ofSetColor(39, 39, 239);
-	ofSeedRandom(39);
-	for (float deg = 0; deg < 360; deg += 5) {
+		auto noise_seed = glm::vec3(ofRandom(1000), ofRandom(1000), ofRandom(1000));
+		auto max_size = ofMap(k, 0, 75, 5, 10);
 
-		auto scale = ofRandom(0.01, 2);
+		ofSetColor(0);
+		for (int i = 0; i < 15; i++) {
 
-		for (float radius = start_radius; radius < end_radius; radius += 1) {
+			auto deg = (ofGetFrameNum() + i) * 1.44 + k * 4;
+			auto base_location = glm::vec2(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD));
 
-			auto location = glm::vec2(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD));
-			auto noise_location = glm::vec2(cos(deg * DEG_TO_RAD), sin(deg * DEG_TO_RAD));
-			auto noise_value = ofNoise(glm::vec3(noise_location * 10, radius * 0.025 + this->noise_step * scale));
+			auto location = glm::vec2(
+				ofMap(ofNoise(noise_seed.x, (k + i + ofGetFrameNum()) * 0.035), 0, 1, -40, 40),
+				ofMap(ofNoise(noise_seed.y, (k + i + ofGetFrameNum()) * 0.035), 0, 1, -40, 40));
 
-			if (noise_value < 0.4) {
+			location += base_location;
+			auto size = ofMap(i, 0, 15, 3, max_size + 3); 
 
-				ofDrawCircle(location, 5);
-			}
+			ofDrawCircle(location, size);
 		}
-	}
 
-	for (float deg = 0; deg < 360; deg += 0.5) {
+		ofSetColor(255);
+		for (int i = 0; i < 15; i++) {
 
-		ofDrawCircle(glm::vec2((start_radius - 8) * cos(deg * DEG_TO_RAD), (start_radius - 8) * sin(deg * DEG_TO_RAD)), 3);
-	}
+			auto deg = (ofGetFrameNum() + i) * 1.44 + k * 4;
+			auto base_location = glm::vec2(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD));
 
-	ofSetColor(255);
-	ofSeedRandom(39);
-	for (float deg = 0; deg < 360; deg += 5) {
+			auto location = glm::vec2(
+				ofMap(ofNoise(noise_seed.x, (k + i + ofGetFrameNum()) * 0.035), 0, 1, -40, 40),
+				ofMap(ofNoise(noise_seed.y, (k + i + ofGetFrameNum()) * 0.035), 0, 1, -40, 40));
 
-		auto scale = ofRandom(0.01, 2);
+			location += base_location;
+			auto size = ofMap(i, 0, 15, 1, max_size);
 
-		for (float radius = start_radius; radius < end_radius; radius += 1) {
-
-			auto location = glm::vec2(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD));
-			auto noise_location = glm::vec2(cos(deg * DEG_TO_RAD), sin(deg * DEG_TO_RAD));
-			auto noise_value = ofNoise(glm::vec3(noise_location * 10, radius * 0.025 + this->noise_step * scale));
-
-			if (noise_value < 0.4) {
-
-				ofDrawCircle(location, 1);
-			}
+			ofDrawCircle(location, size);
 		}
-	}
-
-	for (float deg = 0; deg < 360; deg += 0.5) {
-
-		ofDrawCircle(glm::vec2((start_radius - 8) * cos(deg * DEG_TO_RAD), (start_radius - 8) * sin(deg * DEG_TO_RAD)), 1);
 	}
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 50;
+	int start = 30;
 	if (ofGetFrameNum() > start) {
 
-		std::ostringstream  os;
+		std::ostringstream os;
 		os << std::setw(4) << std::setfill('0') << ofGetFrameNum() - start;
 		ofImage image;
 		image.grabScreen(0, 0, ofGetWidth(), ofGetHeight());
