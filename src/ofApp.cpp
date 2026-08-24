@@ -6,7 +6,7 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(239);
+	ofBackground(39);
 	ofSetLineWidth(2);
 	ofEnableDepthTest();
 }
@@ -22,37 +22,37 @@ void ofApp::draw() {
 
 	this->cam.begin();
 
-	int v_span = 8;
+	int v_span = 4;
 	int u_span = 2;
 	int R = 200;
 
 	ofMesh face, line;
 	line.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
 
-	int r = 70;
+	int r = 50;
 	float noise_seed = ofRandom(1000);
 
-	for (int i = 0; i < 30; i++) {
+	for (int i = 0; i < 10; i++) {
 
 		for (int v = 0; v <= 360; v += v_span * 1.5) {
 
-			int u_start = i * 12 + ofMap(ofNoise(noise_seed, cos(v * DEG_TO_RAD) * 0.025, sin(v * DEG_TO_RAD) * 0.025, ofGetFrameNum() * 0.005), 0, 1, -720, 720);
-			int next_u = i * 12 + ofMap(ofNoise(noise_seed, cos((v + v_span * 0.7) * DEG_TO_RAD) * 0.025, sin((v + v_span * 0.7) * DEG_TO_RAD) * 0.025, ofGetFrameNum() * 0.005), 0, 1, -720, 720);
+			int u_start = i * 36 + ofMap(ofNoise(noise_seed, cos(v * DEG_TO_RAD) * 0.2, sin(v * DEG_TO_RAD) * 0.2, ofGetFrameNum() * 0.002), 0, 1, -720, 720);
+			int next_u = i * 36 + ofMap(ofNoise(noise_seed, cos((v + v_span * 1.25) * DEG_TO_RAD) * 0.2, sin((v + v_span * 1.25) * DEG_TO_RAD) * 0.2, ofGetFrameNum() * 0.002), 0, 1, -720, 720);
 			for (int u = u_start; u < u_start + 10; u += u_span) {
 
 				face.addVertex(this->make_point(R, r, u, v));
 				face.addVertex(this->make_point(R, r, u + u_span, v));
-				face.addVertex(this->make_point(R, r, next_u + u_span, v + v_span * 0.7));
-				face.addVertex(this->make_point(R, r, next_u, v + v_span * 0.7));
+				face.addVertex(this->make_point(R, r, next_u + u_span, v + v_span * 1.25));
+				face.addVertex(this->make_point(R, r, next_u, v + v_span * 1.25));
 
 				line.addVertex(this->make_point(R, r, u, v));
 				line.addVertex(this->make_point(R, r, u + u_span, v));
-				line.addVertex(this->make_point(R, r, next_u + u_span, v + v_span * 0.7));
-				line.addVertex(this->make_point(R, r, next_u, v + v_span * 0.7));
+				line.addVertex(this->make_point(R, r, next_u + u_span, v + v_span * 1.25));
+				line.addVertex(this->make_point(R, r, next_u, v + v_span * 1.25));
 
-				ofColor line_color = ofColor(255);
+				ofColor line_color = ofColor(39);
 				ofColor face_color;
-				face_color.setHsb(ofMap(i, 0, 30, 0, 255), 255, 255);
+				face_color.setHsb(ofMap(i, 0, 10, 0, 255), 255, 255);
 
 				face.addColor(face_color);
 				face.addColor(face_color);
@@ -89,7 +89,7 @@ void ofApp::draw() {
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 5;
+	int start = 500;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
