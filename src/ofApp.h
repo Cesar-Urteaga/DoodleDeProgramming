@@ -17,8 +17,4 @@ public:
 	void windowResized(int w, int h) {};
 	void dragEvent(ofDragInfo dragInfo) {};
 	void gotMessage(ofMessage msg) {};
-
-	glm::vec3 make_point(float R, float r, float u, float v);
-
-	ofEasyCam cam;
 };
