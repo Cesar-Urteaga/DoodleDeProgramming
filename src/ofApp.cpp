@@ -6,14 +6,69 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(39);
-	ofSetColor(255);
-	ofSetCircleResolution(60);
+	ofBackground(239);
+	ofSetLineWidth(2);
+
+	this->font.loadFont("fonts/Kazesawa-Bold.ttf", 220, true, true, true);
+
+	ofFbo fbo;
+	fbo.allocate(ofGetWidth(), ofGetHeight());
+	fbo.begin();
+	ofTranslate(ofGetWidth() * 0.5, ofGetHeight() * 0.5);
+	ofClear(0);
+	ofSetColor(0);
+
+	auto word = "0827";
+	font.drawString(word, font.stringWidth(word) * -0.5, font.stringHeight(word) - 300);
+
+	fbo.end();
+	auto span = 2;
+	ofPixels pixels;
+	fbo.readToPixels(pixels);
+	for (int x = 0; x < 700; x += span) {
+
+		for (int y = 0; y < 720; y += span) {
+
+			ofColor color = pixels.getColor(x, y);
+			if (color != ofColor(0, 0)) {
+
+				this->font_location_list.push_back(glm::vec3(x - ofGetWidth() * 0.5, y - ofGetHeight() * 0.25, 0));
+			}
+		}
+	}
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
+	for (int i = this->location_list.size() - 1; i >= 0; i--) {
+
+		this->radius_list[i] += this->speed_list[i];
+
+		if (this->radius_list[i] > this->max_radius_list[i]) {
+
+			this->location_list.erase(this->location_list.begin() + i);
+			this->radius_list.erase(this->radius_list.begin() + i);
+			this->speed_list.erase(this->speed_list.begin() + i);
+			this->max_radius_list.erase(this->max_radius_list.begin() + i);
+			this->color_list.erase(this->color_list.begin() + i);
+		}
+	}
+
+	ofColor color;
+	for (int i = 0; i < 100; i++) {
+
+		int rnd_index = ofRandom(this->font_location_list.size());
+
+		auto location = this->font_location_list[rnd_index];
+		this->location_list.push_back(location);
+		this->radius_list.push_back(1);
+		this->speed_list.push_back(ofRandom(0.25, 0.5));
+		this->max_radius_list.push_back(ofRandom(5, 15));
+
+		color.setHsb(int(ofGetFrameNum() + ofRandom(-30, 30)) % 255, 255, 255);
+		this->color_list.push_back(color);
+	}
 }
 
 //--------------------------------------------------------------
@@ -21,28 +76,23 @@ void ofApp::draw() {
 
 	ofTranslate(ofGetWindowSize() * 0.5);
 
-	float start_radius = 0;
-	float end_radius = 600;
-	float noise_gap = ofMap(ofNoise(39, ofGetFrameNum() * 0.005), 0, 1, 0, 0.1);
+	for (int i = 0; i < this->location_list.size(); i++) {
 
-	for (float deg = 0; deg < 360; deg += 0.25) {
+		if (this->radius_list[i] < this->max_radius_list[i] * 0.5) {
 
-		for (float radius = start_radius; radius < end_radius; radius += 1) {
-
-			auto location = glm::vec2(radius * cos(deg * DEG_TO_RAD), radius * sin(deg * DEG_TO_RAD));
-			auto noise_location = glm::vec2(cos(deg * DEG_TO_RAD), sin(deg * DEG_TO_RAD));
-			auto noise_value = ofNoise(glm::vec4(noise_location * 5, radius * 0.003, ofGetFrameNum() * 0.05));
-
-			if (noise_value > 0.5 - noise_gap && noise_value < 0.5 + noise_gap) {
-
-				ofDrawCircle(location, 1);
-			}
+			ofSetColor(this->color_list[i]);
 		}
+		else {
+
+			ofSetColor(ofColor(this->color_list[i], ofMap(this->radius_list[i], this->max_radius_list[i] * 0.5, this->max_radius_list[i], 255, 0)));
+		}
+
+		ofDrawCircle(this->location_list[i], this->radius_list[i]);
 	}
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 10;
+	int start = 100;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
