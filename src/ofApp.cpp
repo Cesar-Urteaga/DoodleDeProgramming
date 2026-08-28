@@ -6,10 +6,11 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openFrameworks");
 
-	ofBackground(239);
+	ofBackground(39);
+	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
 	ofSetLineWidth(2);
 
-	this->font.loadFont("fonts/Kazesawa-Bold.ttf", 220, true, true, true);
+	this->font.loadFont("fonts/Kazesawa-Bold.ttf", 180, true, true, true);
 
 	ofFbo fbo;
 	fbo.allocate(ofGetWidth(), ofGetHeight());
@@ -18,8 +19,8 @@ void ofApp::setup() {
 	ofClear(0);
 	ofSetColor(0);
 
-	auto word = "0827";
-	font.drawString(word, font.stringWidth(word) * -0.5, font.stringHeight(word) - 300);
+	auto word = "MELT";
+	font.drawString(word, font.stringWidth(word) * -0.5, font.stringHeight(word) - 280);
 
 	fbo.end();
 	auto span = 2;
@@ -55,19 +56,22 @@ void ofApp::update() {
 		}
 	}
 
-	ofColor color;
-	for (int i = 0; i < 100; i++) {
+	if (ofGetFrameNum() % 50 < 25) {
 
-		int rnd_index = ofRandom(this->font_location_list.size());
+		ofColor color;
+		for (int i = 0; i < 100; i++) {
 
-		auto location = this->font_location_list[rnd_index];
-		this->location_list.push_back(location);
-		this->radius_list.push_back(1);
-		this->speed_list.push_back(ofRandom(0.25, 0.5));
-		this->max_radius_list.push_back(ofRandom(5, 15));
+			int rnd_index = ofRandom(this->font_location_list.size());
 
-		color.setHsb(int(ofGetFrameNum() + ofRandom(-30, 30)) % 255, 255, 255);
-		this->color_list.push_back(color);
+			auto location = this->font_location_list[rnd_index];
+			this->location_list.push_back(location);
+			this->radius_list.push_back(1);
+			this->speed_list.push_back(ofRandom(0.5, 1));
+			this->max_radius_list.push_back(ofRandom(5, 15));
+
+			color.setHsb(int(ofGetFrameNum() + ofRandom(255)) % 255, 200, 255);
+			this->color_list.push_back(color);
+		}
 	}
 }
 
@@ -92,7 +96,7 @@ void ofApp::draw() {
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 100;
+	int start = 105;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
