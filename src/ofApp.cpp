@@ -4,99 +4,97 @@
 void ofApp::setup() {
 
 	ofSetFrameRate(25);
-	ofSetWindowTitle("openFrameworks");
+	ofSetWindowTitle("openframeworks");
 
-	ofBackground(39);
-	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
+	ofBackground(239);
 	ofSetLineWidth(2);
+	ofEnableDepthTest();
 
-	this->font.loadFont("fonts/Kazesawa-Bold.ttf", 180, true, true, true);
+	this->font_size = 15;
+	this->font.loadFont("fonts/Kazesawa-Bold.ttf", this->font_size, true, true, true);
 
-	ofFbo fbo;
-	fbo.allocate(ofGetWidth(), ofGetHeight());
-	fbo.begin();
-	ofTranslate(ofGetWidth() * 0.5, ofGetHeight() * 0.5);
-	ofClear(0);
-	ofSetColor(0);
+	this->word_list = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 
-	auto word = "MELT";
-	font.drawString(word, font.stringWidth(word) * -0.5, font.stringHeight(word) - 280);
+	int sample_count = 80;
 
-	fbo.end();
-	auto span = 2;
-	ofPixels pixels;
-	fbo.readToPixels(pixels);
-	for (int x = 0; x < 700; x += span) {
+	for (auto& word : this->word_list) {
 
-		for (int y = 0; y < 720; y += span) {
+		vector<vector<glm::vec3>> vertices_list;
+		vector<ofPath> word_path = this->font.getStringAsPoints(word, true, false);
 
-			ofColor color = pixels.getColor(x, y);
-			if (color != ofColor(0, 0)) {
+		for (int word_index = 0; word_index < word_path.size(); word_index++) {
 
-				this->font_location_list.push_back(glm::vec3(x - ofGetWidth() * 0.5, y - ofGetHeight() * 0.25, 0));
+			vector<ofPolyline> outline = word_path[word_index].getOutline();
+
+			for (int outline_index = 0; outline_index < outline.size(); outline_index++) {
+
+				auto vertices = outline[outline_index].getResampledByCount(sample_count).getVertices();
+				vertices_list.push_back(vertices);
 			}
 		}
+
+		this->word_vertices_list.push_back(vertices_list);
 	}
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	for (int i = this->location_list.size() - 1; i >= 0; i--) {
-
-		this->radius_list[i] += this->speed_list[i];
-
-		if (this->radius_list[i] > this->max_radius_list[i]) {
-
-			this->location_list.erase(this->location_list.begin() + i);
-			this->radius_list.erase(this->radius_list.begin() + i);
-			this->speed_list.erase(this->speed_list.begin() + i);
-			this->max_radius_list.erase(this->max_radius_list.begin() + i);
-			this->color_list.erase(this->color_list.begin() + i);
-		}
-	}
-
-	if (ofGetFrameNum() % 50 < 25) {
-
-		ofColor color;
-		for (int i = 0; i < 100; i++) {
-
-			int rnd_index = ofRandom(this->font_location_list.size());
-
-			auto location = this->font_location_list[rnd_index];
-			this->location_list.push_back(location);
-			this->radius_list.push_back(1);
-			this->speed_list.push_back(ofRandom(0.5, 1));
-			this->max_radius_list.push_back(ofRandom(5, 15));
-
-			color.setHsb(int(ofGetFrameNum() + ofRandom(255)) % 255, 200, 255);
-			this->color_list.push_back(color);
-		}
-	}
+	ofSeedRandom(39);
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-	ofTranslate(ofGetWindowSize() * 0.5);
+	this->cam.begin();
 
-	for (int i = 0; i < this->location_list.size(); i++) {
+	ofColor fill_color(239), no_fill_color;
+	for (int i = 0; i < 1024 + 512; i++) {
 
-		if (this->radius_list[i] < this->max_radius_list[i] * 0.5) {
+		auto word_index = i % this->word_list.size();
+		auto noise_param = glm::vec3(ofRandom(1000), ofRandom(1000), ofRandom(1000));
+		auto word_size = this->font.getStringBoundingBox(this->word_list[word_index], 0, 0);
+		auto radius = ofRandom(95, 105);
+		no_fill_color.setHsb(int(ofGetFrameNum() * 2 + ofRandom(50)) % 255, 255, 200);
 
-			ofSetColor(this->color_list[i]);
+		for (int k = 0; k < 2; k++) {
+
+			if (k == 0) {
+
+				ofFill();
+				ofSetColor(fill_color);
+			}
+			else {
+
+				ofNoFill();
+				ofSetColor(no_fill_color);
+			}
+
+			ofBeginShape();
+			for (int vertices_index = 0; vertices_index < this->word_vertices_list[word_index].size(); vertices_index++) {
+
+				if (vertices_index != 0) { ofNextContour(true); }
+
+				auto vertices = this->word_vertices_list[word_index][vertices_index];
+				for (auto& vertex : vertices) {
+
+					auto rotation_x = glm::rotate(glm::mat4(), ofMap(ofNoise(noise_param.x, vertex.x * 0.0001, ofGetFrameNum() * 0.0015), 0, 1, -PI * 2, PI * 2), glm::vec3(1, 0, 0));
+					auto rotation_y = glm::rotate(glm::mat4(), ofMap(ofNoise(noise_param.y, vertex.y * 0.0001, ofGetFrameNum() * 0.0015), 0, 1, -PI * 2, PI * 2), glm::vec3(0, 1, 0));
+					auto rotation_z = glm::rotate(glm::mat4(), ofMap(ofNoise(noise_param.z, vertex.z * 0.0001, ofGetFrameNum() * 0.0015), 0, 1, -PI * 2, PI * 2), glm::vec3(0, 0, 1));
+
+					glm::vec3 location = glm::vec4(glm::vec3(vertex - glm::vec3(word_size.getWidth() * 0.5, -word_size.getHeight() * 0.5, radius)), 0) * rotation_z * rotation_y * rotation_x;
+					ofVertex(location);
+				}
+			}
+			ofEndShape(true);
 		}
-		else {
-
-			ofSetColor(ofColor(this->color_list[i], ofMap(this->radius_list[i], this->max_radius_list[i] * 0.5, this->max_radius_list[i], 255, 0)));
-		}
-
-		ofDrawCircle(this->location_list[i], this->radius_list[i]);
 	}
+
+	this->cam.end();
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 105;
+	int start = 200;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
