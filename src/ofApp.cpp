@@ -6,8 +6,8 @@ void ofApp::setup() {
 	ofSetFrameRate(25);
 	ofSetWindowTitle("openframeworks");
 
-	ofBackground(239);
-	ofSetLineWidth(2);
+	ofBackground(39);
+	ofSetLineWidth(1);
 	ofEnableDepthTest();
 
 	this->font_size = 15;
@@ -47,15 +47,17 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	this->cam.begin();
+	ofRotateX(15);
+	ofRotateZ(20);
 
-	ofColor fill_color(239), no_fill_color;
-	for (int i = 0; i < 1024 + 512; i++) {
+	ofColor fill_color(0), no_fill_color;
+	for (int i = 0; i < 168; i++) {
 
 		auto word_index = i % this->word_list.size();
 		auto noise_param = glm::vec3(ofRandom(1000), ofRandom(1000), ofRandom(1000));
 		auto word_size = this->font.getStringBoundingBox(this->word_list[word_index], 0, 0);
 		auto radius = ofRandom(95, 105);
-		no_fill_color.setHsb(int(ofGetFrameNum() * 2 + ofRandom(50)) % 255, 255, 200);
+		no_fill_color.setHsb(ofRandom(255), 255, 200);
 
 		for (int k = 0; k < 2; k++) {
 
@@ -80,9 +82,9 @@ void ofApp::draw() {
 
 					auto rotation_x = glm::rotate(glm::mat4(), ofMap(ofNoise(noise_param.x, vertex.x * 0.0001, ofGetFrameNum() * 0.0015), 0, 1, -PI * 2, PI * 2), glm::vec3(1, 0, 0));
 					auto rotation_y = glm::rotate(glm::mat4(), ofMap(ofNoise(noise_param.y, vertex.y * 0.0001, ofGetFrameNum() * 0.0015), 0, 1, -PI * 2, PI * 2), glm::vec3(0, 1, 0));
-					auto rotation_z = glm::rotate(glm::mat4(), ofMap(ofNoise(noise_param.z, vertex.z * 0.0001, ofGetFrameNum() * 0.0015), 0, 1, -PI * 2, PI * 2), glm::vec3(0, 0, 1));
+					auto rotation_z = glm::rotate(glm::mat4(), ofMap(ofNoise(noise_param.z, vertex.z * 0.0001, ofGetFrameNum() * 0.01), 0, 1, -PI * 2, PI * 2), glm::vec3(0, 0, 1));
 
-					glm::vec3 location = glm::vec4(glm::vec3(vertex - glm::vec3(word_size.getWidth() * 0.5, -word_size.getHeight() * 0.5, radius)), 0) * rotation_z * rotation_y * rotation_x;
+					glm::vec3 location = glm::vec4(glm::vec3(vertex - glm::vec3(word_size.getWidth() * 0.5, -word_size.getHeight() * 0.5, radius)), 0) * rotation_z * rotation_y;
 					ofVertex(location);
 				}
 			}
@@ -94,7 +96,7 @@ void ofApp::draw() {
 
 	/*
 	// ffmpeg -i img_%04d.jpg aaa.mp4
-	int start = 200;
+	int start = 500;
 	if (ofGetFrameNum() > start) {
 
 		std::ostringstream os;
