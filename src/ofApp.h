@@ -18,11 +18,12 @@ public:
 	void dragEvent(ofDragInfo dragInfo) {};
 	void gotMessage(ofMessage msg) {};
 
+	void setBoxToMesh(ofMesh& face_target, ofMesh& frame_target, glm::vec3 location, float size);
+	void setBoxToMesh(ofMesh& face_target, ofMesh& frame_target, glm::vec3 location, float height, float width, float depth);
+
 	ofEasyCam cam;
+	ofMesh face, frame;
 
-	float font_size;
-	ofTrueTypeFont font;
-
-	vector<string> word_list;
-	vector<vector<vector<glm::vec3>>> word_vertices_list;
+	vector<glm::vec3> location_list;
+	vector<ofColor> color_list;
 };
